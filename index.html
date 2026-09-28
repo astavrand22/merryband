@@ -40,6 +40,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .stat{flex:1;background:var(--plum);border-radius:12px;padding:10px;text-align:center}
 .stat b{display:block;font-size:24px;color:var(--amber)}
 .stat small{font-size:12px;opacity:.8}
+.stat.best b{color:var(--neon)}
+#bestStart{font-weight:600;color:var(--amber);margin:-8px 0 14px;min-height:0}
+#bestStart:empty{display:none}
+.newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .cause{border:2px solid var(--flag);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(224,48,43,.08)}
 .cause h3{font-size:18px;margin-bottom:6px}
 .cause p{font-size:14px;line-height:1.45;margin-bottom:12px;opacity:.9}
@@ -82,6 +86,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
   <div class="card">
     <h1>Keys Out</h1>
     <p class="sub">Level 1: Last call</p>
+    <p id="bestStart"></p>
     <ul class="rules">
       <li><span>🚩</span>Creeps look like everyone else until they make a move. Hit them once the red flag goes up.</li>
       <li><span>💔</span>Hit a bystander and you lose a heart.</li>
@@ -103,6 +108,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat"><b id="stScore">0</b><small>Score</small></div>
       <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
       <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
+      <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
     </div>
     <div class="cause">
       <h3 id="causeTitle"></h3>
@@ -562,6 +568,24 @@ function updateHUD(){
   const mult=Math.min(4,1+Math.floor(g.combo/3)); $('combo').textContent=mult>1?('Combo x'+mult):'';
   for(const w of WEAPONS){const el=$('cd-'+w.id); if(el&&w.cooldown){el.style.width=((g.cool[w.id]||0)/w.cooldown*100)+'%'}}
 }
+/* ---------- best score (saved in this browser only, no login) ---------- */
+const BEST_KEY='keysout.best.v1';
+function loadBest(){
+  try{ const v=JSON.parse(localStorage.getItem(BEST_KEY)); return v&&Number.isFinite(v.score)?v:null }catch(e){ return null }
+}
+function saveBest(rec){ try{ localStorage.setItem(BEST_KEY,JSON.stringify(rec)) }catch(e){} }
+let bestMem=loadBest(); // fallback if storage is blocked (private mode)
+function showBestStart(){
+  $('bestStart').textContent=bestMem&&bestMem.score>0?('Your best: '+bestMem.score):'';
+}
+function recordScore(){
+  const prev=bestMem?bestMem.score:0;
+  const isNew=game.score>prev;
+  if(isNew){ bestMem={score:game.score,kos:game.kos,saves:game.saves,at:new Date().toISOString()}; saveBest(bestMem) }
+  return {isNew:isNew&&prev>0, best:Math.max(prev,game.score)};
+}
+showBestStart();
+
 function startGame(){
   newGame(); state='play';
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
@@ -572,6 +596,9 @@ function endGame(win){
   $('endTitle').textContent=win?'You made it home.':'Rough night.';
   $('endSub').textContent=win?'You survived last call.':'Out of hearts. The bar\u2019s still open.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
+  const rec=recordScore(); $('stBest').textContent=rec.best;
+  if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
+  showBestStart();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
 }
