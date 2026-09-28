@@ -45,6 +45,15 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 #bestStart{font-weight:600;color:var(--amber);margin:-8px 0 14px;min-height:0}
 #bestStart:empty{display:none}
 .newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
+.tips{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--plum)}
+.tips .label{margin-bottom:8px}
+.tip{padding:8px 0;border-top:1px solid var(--line)}
+.tip:first-of-type{border-top:0;padding-top:0}
+.tip b{display:block;font-size:15px;margin-bottom:3px;color:var(--cream)}
+.tip p{font-size:14px;line-height:1.45;opacity:.9}
+.tip a{font-size:12px;color:var(--amber)}
+.tips .more{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--amber)}
+#tipStart{margin-bottom:16px}
 .cause{border:2px solid var(--flag);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(224,48,43,.08)}
 .cause h3{font-size:18px;margin-bottom:6px}
 .cause p{font-size:14px;line-height:1.45;margin-bottom:12px;opacity:.9}
@@ -100,6 +109,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <li><span>🍸</span>Stop the Spiker before he gets to a drink. That's a save.</li>
       <li><span>🔑</span>Tap to swing your keys. More weapons unlock as you score.</li>
     </ul>
+    <div class="tips" id="tipStart" aria-live="polite"></div>
     <button class="btn" id="startBtn">Start the night</button>
     <button class="btn alt" id="giveBtnStart">Donate to survivors' legal help</button>
     <p class="note">Cartoon violence against fictional predators. No assaults are shown.<br>If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
@@ -116,6 +126,11 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
       <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
       <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
+    </div>
+    <div class="tips" id="tipsEnd">
+      <div class="label">Off the screen</div>
+      <div id="tipList"></div>
+      <a class="more" href="tips.html">All real-life tips</a>
     </div>
     <div class="share">
       <div class="label">Share your score</div>
