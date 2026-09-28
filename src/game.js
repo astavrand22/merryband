@@ -164,11 +164,11 @@ function buzz(kind) {
 function applyHit(c, dmg) {
   if (c.state === 'ko' || c.state === 'bail') return;
   const s = sc(c.y);
-  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That was a bystander.'); return; }
+  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That\u2019s just a girl trying to leave.'); return; }
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
-    floatText(c.x, c.y - 96 * s, 'Wait for the flag  -50', '#FFF1E0'); return;
+    floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
@@ -183,7 +183,7 @@ function ko(c) {
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
   buzz(save ? 'save' : 'ko');
-  floatText(c.x, c.y - 100 * s, (save ? 'Save! +' : 'KO +') + pts, save ? '#FF4F9A' : '#F4B942');
+  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -237,7 +237,7 @@ function sprayTick(dt) {
 }
 function useGlitter() {
   const w = WPN('glitter');
-  if (game.cool.glitter > 0) { toast('Glitter is recharging.'); return; }
+  if (game.cool.glitter > 0) { toast('Glitter\u2019s reloading. Hang on.'); return; }
   game.cool.glitter = w.cooldown;
   const R = clamp(W * 0.18, 70, 120);
   let n = 0;
@@ -248,7 +248,7 @@ function useGlitter() {
     if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { flag(c); glitterBomb(c); n++; }
   }
   if (n) buzz('tag');
-  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTER BOMBED x' + n : 'GLITTER BOMBED') : 'Nobody here', '#FF4F9A', n > 0);
+  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTERED x' + n : 'GLITTERED \u2014 good luck washing that off') : 'Swung at air', '#FF4F9A', n > 0);
 }
 // He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
 // stuck wiping his face for a moment.
@@ -316,7 +316,7 @@ const CALL_LINES = [
 ];
 function fakeCall() {
   const w = WPN('call');
-  if (game.cool.call > 0) { toast('Your friend just called. Give it a sec.'); return; }
+  if (game.cool.call > 0) { toast('You just made that call. Give her a sec.'); return; }
   game.cool.call = w.cooldown;
   buzz('call');
   phoneFx(pick(CALL_LINES));
@@ -324,17 +324,17 @@ function fakeCall() {
   for (const c of game.chars) {
     if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander' || !c.flagged) continue;
     const s = sc(c.y), v = VILLAINS[c.kind];
-    if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Witness.', '#FFF1E0'); continue; }
+    if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Somebody\u2019s watching now.', '#FFF1E0'); continue; }
     if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
     const save = c.kind === 'spiker';
     const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
     game.score += pts; if (save) game.saves++;
     c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
     S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
-    floatText(c.x, c.y - 100 * s, (save ? 'Save! ' : 'Bye. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
+    floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER ' : 'Scattered. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
     bailed++;
   }
-  if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to scare off', '#FFF1E0');
+  if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to spook', '#FFF1E0');
   checkUnlocks();
 }
 function phoneFx(line) {
@@ -403,15 +403,15 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('Grabbed.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
-        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('Drink spiked.'); }
+        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
       else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
