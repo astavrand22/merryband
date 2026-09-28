@@ -47,6 +47,43 @@ function recordScore(){
 }
 showBestStart();
 
+/* ---------- real-life tips ---------- */
+const rpick=a=>a[Math.floor(Math.random()*a.length)];
+function tipEl(t){
+  const d=document.createElement('div'); d.className='tip';
+  const b=document.createElement('b'); b.textContent=t.title;
+  const p=document.createElement('p'); p.textContent=t.text;
+  const a=document.createElement('a'); a.href=t.url; a.target='_blank'; a.rel='noopener'; a.textContent='Source: '+t.source;
+  d.append(b,p,a); return d;
+}
+function showStartTip(){
+  const box=$('tipStart'); box.innerHTML='';
+  const l=document.createElement('div'); l.className='label'; l.textContent='Real-life tip';
+  const more=document.createElement('a'); more.className='more'; more.href='tips.html'; more.textContent='All tips';
+  box.append(l,tipEl(rpick(TIPS)),more);
+}
+// Two tips for what actually happened this run: what hurt you first, then who you fought,
+// then what you used. Random within each, so repeat players see different ones.
+let lastTipIds=[];
+function pickTips(g,n=2){
+  const order=[...new Set(g.events)].concat([...g.faced],[...g.used],['general']);
+  const out=[];
+  for(const tag of order){
+    const pool=TIPS.filter(t=>t.tags.includes(tag)&&!out.includes(t));
+    const fresh=pool.filter(t=>!lastTipIds.includes(t.id));
+    const cand=fresh.length?fresh:pool;
+    if(cand.length) out.push(rpick(cand));
+    if(out.length>=n) break;
+  }
+  lastTipIds=out.map(t=>t.id);
+  return out;
+}
+function showEndTips(){
+  const list=$('tipList'); list.innerHTML='';
+  pickTips(game).forEach(t=>list.appendChild(tipEl(t)));
+}
+showStartTip();
+
 function startGame(){
   audioUnlock(); // browsers only allow sound after a tap, and this is that tap
   newGame(); state='play';
@@ -61,7 +98,7 @@ function endGame(win){
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
-  showBestStart();
+  showBestStart(); showStartTip(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
   lastRun={win,score:game.score,kos:game.kos,saves:game.saves}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
@@ -87,10 +124,10 @@ function gameLink(){ return SHARE.url || (/^https?:/.test(location.protocol)?loc
 const plural=(n,one,many)=>n+' '+(n===1?one:many);
 function shareText(withLink){
   const r=lastRun, pts=r.score.toLocaleString('en-US');
-  let t=r.win?`I made it home from Last Call in Keys Out with ${pts} points`:`I scored ${pts} in Keys Out before the night got rough`;
   const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
-  if(bits.length) t+=': '+bits.join(', ');
-  t+='. Your turn.';
+  let t=r.win?'Walked home through Last Call':'Last Call got rough';
+  if(bits.length) t+=' \u2014 '+bits.join(', ');
+  t+=`. ${pts} points in Keys Out. Your turn.`;
   const link=gameLink();
   if(withLink&&link) t+='\n'+link;
   if(SHARE.tag) t+=(withLink&&link?' ':'\n')+'#'+SHARE.tag;

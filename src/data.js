@@ -2,6 +2,10 @@
    Plain JavaScript (not JSON) so the game still runs when index.html is opened straight from disk. */
 const CONFIG = { levelSeconds: 60, hearts: 3 };
 
+// Who the characters look like. Villains are men 99 times in 100; bystanders are a mix,
+// so looking like a man is never a reason to hit someone. Only the red flag is.
+const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance: 0.35 };
+
 // behavior: 'target-drink' | 'approach' | 'lunge'
 // tell: seconds [min,max] before the red flag goes up. speed is relative to room size.
 // tellText: a few words shown by the flag the first time this villain flags in a run, so new players
@@ -20,11 +24,11 @@ const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 }
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call'. unlock = score needed.
 const WEAPONS = [
-  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing.' },
-  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  hint:'Tap a creep to write CREEP on his forehead. Marked creeps take double damage and slow down.', slow:0.65 },
-  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  hint:'Hold and aim. Bystanders feel it too.' },
-  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, hint:'Tap to glitter-bomb creeps. Bombed creeps take double damage.' },
-  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Your friend calls. Followers and Spikers bail, Grabbers freeze.', freeze:1.5 }
+  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing. Aim low.' },
+  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  hint:'Brand CREEP on his forehead. Marked men move slow and bruise easy.', slow:0.65 },
+  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  hint:'Hold and aim. She\u2019ll catch it too.' },
+  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, hint:'Glitter-bomb them. Never comes off. Double damage.' },
+  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 }
 ];
 
 // Haptics: a short buzz when you land a hit. Patterns are milliseconds (on, off, on...).

@@ -1,0 +1,187 @@
+{
+  "$schema": "../schema/armor.schema.json",
+  "version": "0.1.0",
+  "note": "The law is his armor, not her sword. Legal mechanisms appear as protection the player must strip, never as weapons she picks up. Weapons stay unbound by realism; the armor carries the whole education.",
+  "layers": [
+    {
+      "id": "the_one_voice",
+      "name": "One Voice",
+      "order": 100,
+      "flavor": "He is not afraid of her. He has done this before and nothing happened.",
+      "mechanic": {
+        "type": "invulnerability",
+        "description": "While this layer holds, all damage to the predator is reduced to a chip value. Damage scales with the number of corroborating accounts the player has surfaced in the chapter: 1 voice = chip, 3 = partial, 5+ = full.",
+        "hud": "A counter, not a health bar. The player watches it fill."
+      },
+      "break_condition": "Aggregation. Find other survivors, prior complaints, personnel records, or a pattern in the institution's own files.",
+      "jurisdiction_conditional": false,
+      "teaches": ["pattern-evidence", "civil-vs-criminal"],
+      "design_note": "This is the spine of the game. The single most honest mechanic we have: he is untouchable against one person and vulnerable against eleven. It is also the emotional argument for the petition layer — joining is the mechanic."
+    },
+    {
+      "id": "the_clock",
+      "name": "The Clock",
+      "order": 90,
+      "flavor": "A countdown that was already running before she knew it existed.",
+      "mechanic": {
+        "type": "timer",
+        "description": "A visible timer on the arena. At zero, the predator becomes untargetable and the level ends in a loss state that is explicitly not the player's fault. Timer length is set by the jurisdiction profile.",
+        "hud": "Clock face, desaturating as it runs down."
+      },
+      "break_condition": "A lookback window. In jurisdiction profiles with an active revival window, a door marked EXPIRED reopens and the timer resets once.",
+      "jurisdiction_conditional": true,
+      "teaches": ["what-is-an-sol", "lookback-windows"],
+      "design_note": "The loss state must never read as player failure. Copy on the fail screen names the statute, not her."
+    },
+    {
+      "id": "the_predispute_nda",
+      "name": "The Paper She Signed On Day One",
+      "order": 80,
+      "flavor": "Page fourteen, initialled, in a stack she was given nine minutes to sign.",
+      "mechanic": {
+        "type": "barrier",
+        "description": "A translucent wall. While it stands, the player cannot use exposure-type attacks and cannot recruit other voices from inside the same organisation.",
+        "hud": "Document overlay across the arena."
+      },
+      "break_condition": "Breakable. Federal law makes pre-dispute non-disclosure and non-disparagement clauses covering sexual assault and harassment unenforceable.",
+      "jurisdiction_conditional": false,
+      "teaches": ["speak-out-act"],
+      "design_note": "Pairs with the_postdispute_nda. The asymmetry is the whole lesson and it should be discovered, not explained."
+    },
+    {
+      "id": "the_postdispute_nda",
+      "name": "The Cheque",
+      "order": 79,
+      "flavor": "This one she gets to read. This one comes with a number on it.",
+      "mechanic": {
+        "type": "choice",
+        "description": "Not a barrier — an offer. Accepting ends the level immediately with a real reward (funds the player can spend) and permanently silences that survivor's voice for the aggregation counter. Declining keeps the fight and the risk.",
+        "hud": "A modal the player can dismiss, and can return to."
+      },
+      "break_condition": "None. This one is enforceable and the game should not pretend otherwise.",
+      "jurisdiction_conditional": true,
+      "teaches": ["speak-out-act"],
+      "design_note": "Never punish the player for taking it. Many survivors do, for sound reasons. The game should show what it costs the collective without moralising at the individual. Some state laws restrict these further; jurisdiction profile sets whether the offer is limited."
+    },
+    {
+      "id": "the_side_door",
+      "name": "The Side Door",
+      "order": 70,
+      "flavor": "He walks out of the room. The room follows him.",
+      "mechanic": {
+        "type": "escape",
+        "description": "At a damage threshold the predator exits into a small grey private chamber. Inside: no audience, no other voices, damage capped, and the outcome is decided by an arbiter sprite the player cannot reach. Effectively unwinnable.",
+        "hud": "Arena shrinks. Spectators vanish. Audio dampens."
+      },
+      "break_condition": "Nail it shut. Federal law lets a survivor reject a pre-dispute arbitration agreement for these claims, and courts rather than arbitrators decide whether it applies.",
+      "jurisdiction_conditional": true,
+      "teaches": ["efaa"],
+      "design_note": "Teach the gap too: it operates where the Federal Arbitration Act applies. Some jurisdiction profiles leave the door working. The player should meet that at least once."
+    },
+    {
+      "id": "the_statute_gap",
+      "name": "Not A Crime Here",
+      "order": 60,
+      "flavor": "She lands it clean. The number that comes up is zero.",
+      "mechanic": {
+        "type": "damage_nullifier",
+        "description": "Jurisdiction-conditional. Attacks tagged with conduct categories the local code does not reach register as NO OFFENSE IN THIS JURISDICTION. Common nullified tags: incapacity, absence-of-consent-without-force, coercion-without-threat.",
+        "hud": "Damage number replaced with statute text. No sound. Let it land flat."
+      },
+      "break_condition": "Not breakable in-level. Breakable only on the map, by changing the law.",
+      "jurisdiction_conditional": true,
+      "teaches": ["consent-definitions"],
+      "design_note": "The single most effective teaching device in the design. Do not soften it. The player's own rage at the inconsistency is the lesson. Must be immediately followed by the reform action per SAFETY.md §2."
+    },
+    {
+      "id": "the_ring",
+      "name": "The Ring",
+      "order": 59,
+      "flavor": "A wedding band, worn as plate armour.",
+      "mechanic": {
+        "type": "damage_nullifier",
+        "description": "A specialised statute_gap. In jurisdiction profiles carrying a spousal exemption, conduct tagged incapacity is nullified where the parties are married or cohabiting. Some profiles add a short reporting deadline that shortens the_clock to days.",
+        "hud": "The ring glints on each nullified hit."
+      },
+      "break_condition": "Not breakable in-level.",
+      "jurisdiction_conditional": true,
+      "teaches": ["spousal-exemptions"],
+      "design_note": "Marital rape is a crime in all fifty states. The surviving carve-outs are narrower and uglier than that headline suggests, and most people have no idea they exist. Build one level around it."
+    },
+    {
+      "id": "the_locker",
+      "name": "The Evidence Locker",
+      "order": 50,
+      "flavor": "The proof exists. It is in a box. The box is forty feet away and nobody will open it.",
+      "mechanic": {
+        "type": "resource_denial",
+        "description": "Not armour he raises — ammunition she is denied. The kit that would corroborate her, and link him to others, sits unsubmitted or untested. Feeds the_one_voice counter if recovered.",
+        "hud": "Visible, numbered, out of reach."
+      },
+      "break_condition": "Bureaucratic, not financial. The money is largely appropriated. The obstruction is a decision that her case was not worth submitting.",
+      "jurisdiction_conditional": true,
+      "teaches": ["kit-backlog", "kit-backlog-economics"],
+      "design_note": "Do not build this as a funding boss. Congress has appropriated heavily and the backlog persisted. The boss is the person who decided not to submit. Keep the donate ask ($1,000 tests one kit) as a side action, not the win condition."
+    },
+    {
+      "id": "the_institution",
+      "name": "The House",
+      "order": 40,
+      "flavor": "It knew. It moved him. It is still standing.",
+      "mechanic": {
+        "type": "damage_sink",
+        "description": "A separate, larger health pool. Absorbs a share of damage aimed at the predator. Critically: it is the pool that reliably empties. Depleting it produces the level's real win, while the predator himself frequently walks.",
+        "hud": "Second bar, behind his."
+      },
+      "break_condition": "Discovery, pattern, and money at risk. Institutional liability is where outcomes have actually moved.",
+      "jurisdiction_conditional": true,
+      "teaches": ["institutional-liability", "civil-vs-criminal"],
+      "design_note": "The asymmetry most players will not know: the man often walks, the organisation that protected him sometimes pays. Maps cleanly onto mini-boss escapes, boss falls. Some profiles add the_immunity."
+    },
+    {
+      "id": "the_immunity",
+      "name": "Immunity",
+      "order": 39,
+      "flavor": "The House cannot be sued here. It was good enough to be charitable.",
+      "mechanic": {
+        "type": "damage_cap",
+        "description": "Jurisdiction-conditional cap on damage to the_institution, or a hard ceiling on the level's payout. Charitable and governmental immunity doctrines, plus damages caps.",
+        "hud": "The second bar shows a marked ceiling."
+      },
+      "break_condition": "Not breakable in-level.",
+      "jurisdiction_conditional": true,
+      "teaches": ["institutional-liability"],
+      "design_note": "Use sparingly. One level. It is the bleakest mechanic here and needs the strongest action beat after it."
+    },
+    {
+      "id": "the_countersuit",
+      "name": "The Countersuit",
+      "order": 30,
+      "flavor": "He has lawyers and she has a job she needs.",
+      "mechanic": {
+        "type": "punisher",
+        "description": "A reactive layer. If the player uses exposure-type attacks before the_one_voice counter reaches its threshold, the predator counterattacks: the player loses funds, loses a voice from the counter, and the level's difficulty rises.",
+        "hud": "Telegraphed. The player should learn the timing, not be ambushed."
+      },
+      "break_condition": "Corroboration first, exposure second. Weight of voices makes the counterattack whiff.",
+      "jurisdiction_conditional": true,
+      "teaches": ["defamation-and-anti-slapp"],
+      "design_note": "Teaches sequencing, which is real strategic advice survivors receive. Some profiles have anti-SLAPP protections that weaken it."
+    },
+    {
+      "id": "the_transfer",
+      "name": "The Transfer",
+      "order": 20,
+      "flavor": "A quiet reassignment. A good reference. A new town.",
+      "mechanic": {
+        "type": "phase_escape",
+        "description": "On defeat in a chapter, the predator is not removed — he reappears in a later chapter under a different institution, with a fresh the_one_voice counter and a new set of survivors.",
+        "hud": "The chapter-end card shows where he went."
+      },
+      "break_condition": "Only the_institution falling, or a reporting requirement that follows him.",
+      "jurisdiction_conditional": false,
+      "teaches": ["institutional-liability", "pattern-evidence"],
+      "design_note": "The most documented institutional pattern there is. Makes the campaign structure carry a thesis: you cannot win this one man at a time."
+    }
+  ]
+}
