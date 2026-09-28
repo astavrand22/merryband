@@ -91,8 +91,8 @@ function startGame(){
 }
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false;
-  $('endTitle').textContent=win?'You made it home.':'Rough night.';
-  $('endSub').textContent=win?'You survived last call.':'Out of hearts. The bar\u2019s still open.';
+  $('endTitle').textContent=win?'Made it home.':'Rough night.';
+  $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
@@ -115,10 +115,10 @@ function gameLink(){ return SHARE.url || (/^https?:/.test(location.protocol)?loc
 const plural=(n,one,many)=>n+' '+(n===1?one:many);
 function shareText(withLink){
   const r=lastRun, pts=r.score.toLocaleString('en-US');
-  let t=r.win?`I made it home from Last Call in Keys Out with ${pts} points`:`I scored ${pts} in Keys Out before the night got rough`;
   const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
-  if(bits.length) t+=': '+bits.join(', ');
-  t+='. Your turn.';
+  let t=r.win?'Walked home through Last Call':'Last Call got rough';
+  if(bits.length) t+=' \u2014 '+bits.join(', ');
+  t+=`. ${pts} points in Keys Out. Your turn.`;
   const link=gameLink();
   if(withLink&&link) t+='\n'+link;
   if(SHARE.tag) t+=(withLink&&link?' ':'\n')+'#'+SHARE.tag;
