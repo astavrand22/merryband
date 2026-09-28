@@ -1,0 +1,171 @@
+{
+  "$schema": "../schema/codex-card.schema.json",
+  "tier": 3,
+  "tier_name": "volatile",
+  "review_interval_months": 3,
+  "note": "These expire. A closed lookback window shown as open is not a stale fact — it is harmful misinformation to the one player who most needed it to be right. The build FAILS on an expired card. Every card here carries a visible 'verify this' marker in game and a route to a lawyer.",
+  "warning_banner": "This changes. Check it, and talk to a lawyer before relying on it.",
+  "cards": [
+    {
+      "id": "lookback-windows",
+      "title": "Doors that reopen",
+      "unlocked_by": "the_clock",
+      "plain": "Some states temporarily revive claims whose deadline has already passed. For the length of the window, a survivor can file even though the ordinary statute of limitations expired years or decades ago. Windows are temporary, differ in who qualifies, and close on a hard date.",
+      "gap": "They are patchy, short, and heavily dependent on which state the conduct occurred in. Many close before the people they were written for ever hear about them.",
+      "in_game": "the_clock resets once, in jurisdiction profiles with an active window.",
+      "instances": [
+        {
+          "jurisdiction": "Rhode Island",
+          "scope": "childhood sexual abuse, civil",
+          "opens": "2026-07-01",
+          "closes": "2028-06-30",
+          "verification_status": "verified-secondary"
+        },
+        {
+          "jurisdiction": "California",
+          "scope": "adult survivors, civil, revival of time-barred claims",
+          "opens": "2026-01-01",
+          "closes": "2027-12-31",
+          "verification_status": "CONFLICTING",
+          "conflict_note": "Secondary sources describe two different California adult-survivor windows: AB 2777 (assaults on or after 1 Jan 2009, filing through 31 Dec 2026) and AB 250 (two-year revival, 1 Jan 2026 to 31 Dec 2027). Both statutes appear to exist with different eligibility. DO NOT SHIP THIS CARD until read against the statute text or the California Courts self-help site. Law-firm marketing pages are not adequate here."
+        },
+        {
+          "jurisdiction": "New York City",
+          "scope": "Gender-Motivated Violence Act, gender-motivated violence in the five boroughs",
+          "opens": "2026-01-29",
+          "closes": "2027-07-29",
+          "verification_status": "CONFLICTING",
+          "conflict_note": "Sources give both a March 2026 to March 2027 window and a 29 Jan 2026 to approx 29 Jul 2027 window. Verify against the NYC Administrative Code amendment before shipping."
+        }
+      ],
+      "sources": [
+        { "label": "Survivor Rights Center — 2026 SOL reform wave", "url": "https://survivorrightscenter.org/articles/2026-sol-reform-wave-state-by-state/" },
+        { "label": "Survivor Rights Center — lookback window tracker", "url": "https://www.survivorrightscenter.org/articles/2026-state-lookback-window-tracker-which-states-have-open-windows/" },
+        { "label": "Wagner Law Group — California AB 2777 window", "url": "https://thewagnerlawgroup.com/californias-lookback-window/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "BLOCKED",
+      "verification_note": "Two instances carry unresolved conflicts between secondary sources on live filing deadlines. Resolve against statute text (California) and the NYC Administrative Code amendment (New York City) before this card is shown to any player. Until then the card is withheld and the_clock uses no reset in those profiles.",
+      "expires_on": "2026-12-31",
+      "review_after": "2026-11-01",
+      "ship_blocked": true,
+      "ship_blocked_reason": "Two instances carry unresolved source conflicts on live filing deadlines. Primary-source verification required."
+    },
+    {
+      "id": "spousal-exemptions",
+      "title": "The ring",
+      "unlocked_by": "the_ring",
+      "plain": "Marital rape is a crime in all fifty states. That headline hides what survived. A number of states kept narrower carve-outs: offences defined by the victim's inability to consent sometimes do not apply where the parties are married or cohabiting. In practice that has meant a spouse who was drugged or unconscious falls outside the statute, because the conduct was not 'forcible'. Some states have attached short reporting deadlines to spousal cases, and some classify the same act as a lesser offence when the parties are married.",
+      "gap": "Almost nobody knows these exist, including people living in the states that have them. The carve-outs are shrinking — Ohio closed its version in 2024 — but state by state, slowly, and several attempts have died in committee across multiple sessions.",
+      "in_game": "the_ring. One level built entirely around it.",
+      "sources": [
+        { "label": "The 19th — why bills to end spousal rape loopholes hit snags (AEquitas counts)", "url": "https://19thnews.org/2021/05/why-bills-to-end-spousal-rape-loopholes-hit-snags/" },
+        { "label": "HealthyWomen — incapacity carve-outs", "url": "https://www.healthywomen.org/your-care/marital-rape" },
+        { "label": "Ohio Capital Journal — HB 161", "url": "https://ohiocapitaljournal.com/2024/04/25/marital-rape-loophole-closed-by-ohio-general-assembly-bill-moves-to-governors-desk/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "STALE-DATA",
+      "verification_note": "The state counts in circulation trace to an AEquitas survey from around 2020. Several states have amended since. DO NOT state a number of states in game. Describe the mechanism, not the count, until we have a current survey. Ask AEquitas directly.",
+      "expires_on": "2027-03-31",
+      "review_after": "2026-12-31",
+      "ship_blocked": false,
+      "ship_constraint": "Mechanism only. No state count, no state list, until re-surveyed."
+    },
+    {
+      "id": "consent-definitions",
+      "title": "Not a crime here",
+      "unlocked_by": "the_statute_gap",
+      "plain": "What counts as a sexual offence is defined state by state. Some codes are built around force or threat of force. Others are built around absence of consent. The difference decides whether conduct involving incapacity, coercion, or a person who froze is an offence at all in that state. Federal offence definitions have moved — agencies revised the definition of rape to drop any requirement that the victim physically resisted — but state criminal codes change on their own schedule.",
+      "gap": "The patchwork means the same conduct is a felony in one state and nothing in the next. This is the single most important fact about sexual assault law in the United States and it is almost never taught.",
+      "in_game": "the_statute_gap. Damage number replaced with statute text, no sound. Must be followed immediately by the reform action beat.",
+      "sources": [
+        { "label": "RAINN — state law database", "url": "https://apps.rainn.org/policy/" },
+        { "label": "AEquitas — statute analysis", "url": "https://aequitasresource.org/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "needs-primary-source",
+      "verification_note": "Build the per-jurisdiction mapping from RAINN's state database and statute text, not from summaries. This card drives a damage nullifier — being wrong here is being wrong loudly.",
+      "expires_on": "2027-06-30",
+      "review_after": "2026-12-31",
+      "ship_blocked": false
+    },
+    {
+      "id": "kit-backlog",
+      "title": "The locker",
+      "unlocked_by": "the_locker",
+      "plain": "Forensic evidence is collected and then, often, not submitted or not tested. Nobody knows the national total — a Congressional Research Service summary of existing research found estimates ranging from 90,000 to 400,000, and a multi-year records effort located more than 225,000. Testing works: studies have found a quarter to a half of tested kits produce a CODIS-eligible DNA profile, and half to sixty percent of those hit. One federally supported effort identified 127 serial assaults out of a single backlog.",
+      "gap": "There is no federal mandate to track or test, so states count differently or not at all. And the obstruction is not mainly money — substantial federal funding has gone to this through SAKI and DNA capacity programmes, and backlogs persisted anyway. Analyses point to policy, protocol and training failures, and a DOJ-funded study of unsubmitted kits in Detroit identified victim-blaming among officers as a factor in decisions not to submit.",
+      "in_game": "the_locker is a bureaucratic obstruction boss, NOT a funding boss. The money is on the table. Someone decided her case was not worth submitting.",
+      "sources": [
+        { "label": "CRS R44237 — sexual assault kits and the backlog", "url": "https://www.congress.gov/crs-product/R44237" },
+        { "label": "USAFacts — rape kits awaiting testing by state", "url": "https://usafacts.org/articles/how-many-rape-kits-are-awaiting-testing-in-the-us-see-the-data-by-state/" },
+        { "label": "US News on USAFacts and End the Backlog analysis", "url": "https://www.usnews.com/news/best-states/articles/2023-06-20/rape-kit-backlogs-remain-in-states-despite-funding" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified-secondary",
+      "verification_note": "Use CRS, BJS, NIJ and End the Backlog directly. A large volume of aggregator content recycles unsourced attrition statistics — do not cite content farms.",
+      "expires_on": "2027-09-28",
+      "review_after": "2027-03-28",
+      "ship_blocked": false
+    },
+    {
+      "id": "kit-backlog-economics",
+      "title": "What it would cost",
+      "unlocked_by": "the_locker",
+      "plain": "Testing one kit is commonly put at $1,000 to $1,500, with a range down to about $500 depending on the jurisdiction. What states actually spent was lower: across 21 states that appropriated funds, $84.7 million tested over 129,412 kits — about $644 per kit on average, ranging from $154 in Hawai'i to $1,807 in Colorado. Against a backlog somewhere between 100,000 and 400,000, the lab work for every known untested kit lands somewhere around $100 million to $400 million nationally.",
+      "gap": "Testing is the cheap part. A DNA hit is a lead, not a case — investigating a decade-old cold case, finding a survivor who has moved on, and prosecuting it costs far more than the lab work. And the appropriations have already been large. The constraint is not the budget line.",
+      "in_game": "Donate unit: $1,000 tests one kit. Side action, never the win condition.",
+      "roi_note": "Advocacy-commissioned economics estimate savings above $400,000 per averted assault and up to $20,000 per offender DNA submission. Directional only — the researcher was working with the campaign. Label it as such in game or leave it out.",
+      "sources": [
+        { "label": "End the Backlog — legislative handbook (state spending per kit)", "url": "https://www.endthebacklog.org/wp-content/uploads/2022/02/ETB_Legislative-Handbook_January-2020.pdf" },
+        { "label": "End the Backlog — why the backlog exists", "url": "https://www.endthebacklog.org/what-is-the-backlog/why-the-backlog-exists/" },
+        { "label": "End the Backlog — return on testing", "url": "https://www.endthebacklog.org/blog/testing-all-rape-kits-provides-returns-of-up-to-65000/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "STALE-DATA",
+      "verification_note": "Per-kit figures date to roughly 2020 and lab costs have almost certainly risen. Refresh before quoting a dollar figure to players.",
+      "expires_on": "2027-03-31",
+      "review_after": "2026-12-31",
+      "ship_blocked": false,
+      "ship_constraint": "Present figures as a range with the year attached. No single headline number."
+    },
+    {
+      "id": "defamation-and-anti-slapp",
+      "title": "The countersuit",
+      "unlocked_by": "the_countersuit",
+      "plain": "A person who is publicly accused can sue the accuser for defamation. This happens, and the threat of it happening shapes what survivors say and when. Most states have anti-SLAPP statutes intended to get meritless suits aimed at silencing speech thrown out early, sometimes with fees shifted to the person who brought them — but coverage, procedure and strength vary enormously by state, and some states have little or none.",
+      "gap": "The asymmetry is the point. Defending a defamation claim costs money and time even when it fails, and the person bringing it usually has more of both. Corroboration and sequencing matter more than being right.",
+      "in_game": "the_countersuit punishes exposure attacks used before the_one_voice counter reaches threshold. Jurisdiction profiles with strong anti-SLAPP weaken it.",
+      "sources": [
+        { "label": "Public Participation Project — state anti-SLAPP status", "url": "https://anti-slapp.org/your-states-free-speech-protection" },
+        { "label": "Legal Information Institute — defamation", "url": "https://www.law.cornell.edu/wex/defamation" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "needs-primary-source",
+      "verification_note": "Written from general knowledge of the doctrine, not from a current survey. Before this ships: confirm current state-by-state anti-SLAPP coverage, and have a lawyer check the framing — this is the card most likely to be read by a player as advice about her own situation.",
+      "expires_on": "2027-06-30",
+      "review_after": "2026-12-31",
+      "ship_blocked": false,
+      "ship_constraint": "Mechanism only. No per-state claims until surveyed. Must carry the 'talk to a lawyer' route prominently."
+    },
+    {
+      "id": "title-ix-status",
+      "title": "Campus",
+      "unlocked_by": "campus_chapter",
+      "plain": "Title IX governs how schools that receive federal funding must handle sex-based harassment and assault. A 2024 rule took effect that August; a federal court vacated it nationwide in January 2025, which restored the 2020 regulations as the operative framework. Further rulemaking has been signalled and litigation is ongoing.",
+      "gap": "This is genuinely unsettled and politically contested. Secondary sources already disagree about what is currently in force. State law applies alongside the federal rules and varies.",
+      "in_game": "HOLD. Do not build a campus chapter on this until the picture stabilises.",
+      "sources": [
+        { "label": "Sobel Law Solutions — which Title IX rules apply in 2026", "url": "https://sobellawsolutions.com/blog-title-ix-regulations-2026" },
+        { "label": "Sobel Law Solutions — May 2026 status", "url": "https://sobellawsolutions.com/blog-title-ix-may-2026" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "CONTESTED",
+      "verification_note": "Sources conflict on 2026 status. Verify only against the Federal Register and the Department of Education directly. Treat any secondary summary as unreliable here.",
+      "expires_on": "2026-12-31",
+      "review_after": "2026-11-01",
+      "ship_blocked": true,
+      "ship_blocked_reason": "Contested and fast-moving. Not suitable for a game mechanic yet."
+    }
+  ]
+}

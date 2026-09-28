@@ -1,0 +1,94 @@
+{
+  "$schema": "../schema/codex-card.schema.json",
+  "tier": 1,
+  "tier_name": "stable",
+  "review_interval_months": 36,
+  "note": "Principles that do not move. Safe to write into the game's spine. Still dated and sourced, because 'stable' is a judgement we should be able to re-check.",
+  "cards": [
+    {
+      "id": "civil-vs-criminal",
+      "title": "Two different fights",
+      "unlocked_by": "the_institution",
+      "plain": "A criminal case is the state prosecuting him. A civil case is a survivor suing him, or suing the organisation that kept him. They are separate. One can fail while the other succeeds, and they run on different deadlines, different standards, and different decision-makers. A prosecutor decides whether to bring the criminal case. The survivor decides whether to bring the civil one.",
+      "gap": "Neither is a remedy she controls the outcome of, and both cost her time, exposure, and money. Declining to pursue either is not a sign the account was untrue.",
+      "in_game": "The predator's health bar and The House's health bar are separate pools for this reason.",
+      "sources": [
+        { "label": "RAINN — the criminal justice system for victims", "url": "https://rainn.org/articles/criminal-justice-system-victims" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    },
+    {
+      "id": "burden-of-proof",
+      "title": "How sure does anyone have to be",
+      "unlocked_by": "the_institution",
+      "plain": "Criminal conviction requires proof beyond a reasonable doubt — the highest standard the law uses. Most civil claims require only a preponderance of the evidence: more likely than not. A defendant can be acquitted criminally and still be found liable civilly on the same facts, because the second question is an easier one to answer yes to.",
+      "gap": "The high criminal standard is not a flaw — it protects the accused. But it means 'not convicted' and 'did not happen' are very different statements, and the public routinely treats them as the same one.",
+      "in_game": "Damage from the same attack differs between the criminal route and the civil route.",
+      "sources": [
+        { "label": "Legal Information Institute — burden of proof", "url": "https://www.law.cornell.edu/wex/burden_of_proof" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    },
+    {
+      "id": "what-is-an-sol",
+      "title": "The clock",
+      "unlocked_by": "the_clock",
+      "plain": "A statute of limitations is a deadline for bringing a case. It starts running at or near the time of the event, not at the time a survivor is ready. Deadlines differ by state, by whether the claim is criminal or civil, and by whether the survivor was a child or an adult. Miss it and the case is barred regardless of what happened.",
+      "gap": "The design assumes people report promptly. Delayed disclosure is the norm in sexual violence, not the exception, so the deadline systematically excludes the cases it most affects.",
+      "in_game": "the_clock. The fail state names the statute, never the player.",
+      "sources": [
+        { "label": "Legal Information Institute — statute of limitations", "url": "https://www.law.cornell.edu/wex/statute_of_limitations" },
+        { "label": "RAINN — state law database", "url": "https://apps.rainn.org/policy/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    },
+    {
+      "id": "discovery",
+      "title": "Discovery",
+      "unlocked_by": "the_institution",
+      "plain": "In a civil case, each side can compel the other to hand over documents and answer questions under oath. This is how internal complaints, personnel files, prior settlements, and what an institution knew and when tend to surface. Criminal cases have their own disclosure rules, but a private survivor has no equivalent power on her own.",
+      "gap": "Discovery only exists once a case is filed and survives early dismissal. Before that, she has no way to find out whether there were others — which is exactly what she needs to know before deciding to file.",
+      "in_game": "How the player surfaces voices for the_one_voice counter inside The House.",
+      "sources": [
+        { "label": "Legal Information Institute — discovery", "url": "https://www.law.cornell.edu/wex/discovery" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    },
+    {
+      "id": "pattern-evidence",
+      "title": "Why the eleventh one matters",
+      "unlocked_by": "the_one_voice",
+      "plain": "A single account is a credibility contest. Multiple independent accounts of the same conduct change what a prosecutor, a jury, an employer, and a journalist will do. DNA linkage does the same thing mechanically: testing evidence across cases reveals that separate assaults share an offender.",
+      "gap": "Nothing in the system is built to find the pattern. Survivors are handled one at a time, by design, and often prevented from finding each other by the mechanisms in this codex.",
+      "in_game": "the_one_voice. The whole game.",
+      "sources": [
+        { "label": "CRS — sexual assault kits and the backlog (serial offender identification)", "url": "https://www.congress.gov/crs-product/R44237" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    },
+    {
+      "id": "institutional-liability",
+      "title": "The House usually falls before he does",
+      "unlocked_by": "the_institution",
+      "plain": "Claims against an organisation — for negligent hiring, negligent supervision, failure to act on complaints, or covering up — often reach further than claims against the individual. The organisation has records, insurance, a reputation, and assets. The individual frequently has none of those, and a judgment against someone with no money is a piece of paper.",
+      "gap": "This is also why institutions settle quietly. A confidential settlement resolves the organisation's exposure and leaves the man in place, or moves him.",
+      "in_game": "The House as a second, larger health pool — the one that reliably empties.",
+      "sources": [
+        { "label": "Legal Information Institute — respondeat superior", "url": "https://www.law.cornell.edu/wex/respondeat_superior" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified",
+      "review_after": "2029-09-28"
+    }
+  ]
+}

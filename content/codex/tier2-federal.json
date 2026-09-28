@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema/codex-card.schema.json",
+  "tier": 2,
+  "tier_name": "federal-frameworks",
+  "review_interval_months": 12,
+  "note": "Federal statutes. They move slowly but they do move, and courts narrow them. Annual review, build warns at 13 months.",
+  "cards": [
+    {
+      "id": "speak-out-act",
+      "title": "The paper she signed on day one",
+      "unlocked_by": "the_predispute_nda",
+      "plain": "The Speak Out Act, signed 7 December 2022, makes pre-dispute non-disclosure and non-disparagement clauses unenforceable where the dispute involves sexual assault or sexual harassment. That is the NDA buried in an onboarding stack, signed before anything happened. It cannot be used to silence her afterwards.",
+      "gap": "It only reaches pre-dispute agreements. An NDA signed as part of a settlement, after the dispute arises, remains enforceable — and that is the one that comes with a cheque attached. Several states, including California, Illinois, New Jersey and New York, restrict settlement NDAs further; most do not.",
+      "in_game": "the_predispute_nda breaks. the_postdispute_nda does not, and is offered as a real choice with a real cost.",
+      "sources": [
+        { "label": "Mintz — Speak Out Act summary", "url": "https://www.mintz.com/insights-center/viewpoints/2226/2022-12-08-newly-enacted-federal-speak-out-act-limits-use-some" },
+        { "label": "Kelley Drye — pre-dispute only", "url": "https://www.kelleydrye.com/viewpoints/blogs/labor-days/the-fall-of-the-nda-compliance-and-litigation-following-the-speak-out-act" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified-secondary",
+      "verification_note": "Cite the public law text before launch. Secondary sources are consistent but we should be reading the statute.",
+      "review_after": "2027-09-28"
+    },
+    {
+      "id": "efaa",
+      "title": "The side door",
+      "unlocked_by": "the_side_door",
+      "plain": "The Ending Forced Arbitration of Sexual Assault and Sexual Harassment Act took effect for claims arising or accruing on or after 3 March 2022. It lets a survivor refuse a pre-dispute arbitration agreement for these claims and go to court instead, and it gives courts — not arbitrators — the power to decide whether the Act applies.",
+      "gap": "It operates where the Federal Arbitration Act applies. Where it does not, whether arbitration is compelled falls back to state law. Courts have also read a plausibility threshold into which claims escape arbitration, so invoking it is not automatic.",
+      "in_game": "the_side_door can be nailed shut — in most jurisdiction profiles. At least one profile must leave it working, so the player meets the gap.",
+      "sources": [
+        { "label": "Katz Banks Kumin — EFAA and Speak Out Act analysis", "url": "https://katzbanks.com/employment-law-blog/new-speak-out-act-voids-predispute-nondisclosure-provisions/" },
+        { "label": "Outten & Golden — overview", "url": "https://www.outtengolden.com/newsroom/new-legislation-voids-ndas-in-sexual-harassment-and-sexual-assault-allegations-under-federal-state-and-tribal-laws" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified-secondary",
+      "verification_note": "Case law on scope is actively developing. Re-check the plausibility-threshold line annually.",
+      "review_after": "2027-09-28"
+    },
+    {
+      "id": "take-it-down-act",
+      "title": "Forty-eight hours",
+      "unlocked_by": "platform_boss",
+      "plain": "The TAKE IT DOWN Act was signed 19 May 2025. It makes knowingly publishing non-consensual intimate images a federal crime, expressly including realistic AI-generated ones, and requires covered platforms to remove a reported image within 48 hours of a valid request. Platforms had until 19 May 2026 to have that process running. The FTC enforces platform compliance; DOJ handles the criminal side.",
+      "gap": "It targets publication, not creation, and it does not touch the tools that generate the images. Civil liberties groups have raised concerns that its definitions do not clearly carve out satire, newsworthy material, or private storage. It does not preempt state law, and state coverage varies — a handful of states still have no adult NCII deepfake statute of their own.",
+      "in_game": "A boss defeated by filing rather than punching. Deliberate pacing contrast, and directly actionable for a player it is happening to.",
+      "sources": [
+        { "label": "Skadden — TAKE IT DOWN Act", "url": "https://www.skadden.com/insights/publications/2025/06/take-it-down-act" },
+        { "label": "FTC consumer alert — what enforcement means for you", "url": "https://consumer.ftc.gov/consumer-alerts/2026/05/what-will-ftcs-enforcement-take-it-down-act-mean-you" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "verified-secondary",
+      "verification_note": "Platform compliance deadline passed May 2026; early enforcement posture is still forming. Re-check FTC actions before launch.",
+      "review_after": "2027-09-28"
+    },
+    {
+      "id": "kit-cost-to-survivor",
+      "title": "The exam is free. The rest is not.",
+      "unlocked_by": "the_locker",
+      "plain": "Under the Violence Against Women Act, a survivor is not to be charged for the forensic exam itself — a state entity covers it. The exam takes hours and is invasive, and it is collected on the possibility of a case that may never be brought.",
+      "gap": "Billing errors happen and survivors have been charged in practice. And a free exam does not mean a tested kit: submission and testing are separate decisions made by other people.",
+      "in_game": "Framing text on the_locker.",
+      "sources": [
+        { "label": "MuckRock — cost is a significant hurdle", "url": "https://www.muckrock.com/news/archives/2018/mar/22/rape-kit-cost/" }
+      ],
+      "last_verified": "2026-09-28",
+      "verification_status": "needs-primary-source",
+      "verification_note": "Source is dated. Confirm current VAWA provisions and any state variation before this card ships.",
+      "review_after": "2027-03-28"
+    }
+  ]
+}
