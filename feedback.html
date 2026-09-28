@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keys Out: Suggestions</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1A0E1D;--plum:#2A1830;--amber:#F4B942;--neon:#FF4F9A;--flag:#E0302B;--cream:#FFF1E0;--line:#5a3a60}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:Rubik,system-ui,sans-serif}
+main{max-width:460px;margin:0 auto;padding:28px 16px 48px}
+h1{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:40px;line-height:.95;color:var(--neon);text-shadow:3px 3px 0 var(--flag);margin-bottom:8px}
+.sub{font-size:16px;opacity:.85;margin-bottom:22px;line-height:1.45}
+label{display:block;font-weight:600;font-size:14px;margin:0 0 6px}
+.field{margin-bottom:16px}
+select,input,textarea{width:100%;background:var(--plum);color:var(--cream);border:2px solid var(--line);border-radius:12px;padding:12px;font:400 16px Rubik,system-ui,sans-serif}
+textarea{min-height:150px;resize:vertical;line-height:1.4}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--amber)}
+.hint{font-size:12px;opacity:.7;margin-top:6px;line-height:1.4}
+.warn{border:2px solid var(--flag);border-radius:14px;padding:12px 14px;margin-bottom:18px;background:rgba(224,48,43,.08);font-size:14px;line-height:1.45}
+.warn a,.note a,.contrib a{color:var(--amber)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;font:800 17px Rubik,system-ui,sans-serif;cursor:pointer;background:var(--neon);color:var(--ink);text-align:center;text-decoration:none}
+.btn.alt{background:transparent;color:var(--cream);border:2px solid var(--line);margin-top:10px}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.btn[disabled]{opacity:.45;cursor:default}
+#status{font-size:13px;margin-top:10px;color:var(--amber);min-height:18px}
+.contrib{margin-top:34px;padding-top:22px;border-top:2px solid var(--line)}
+.contrib h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:22px;color:var(--amber);margin-bottom:8px}
+.contrib p,.contrib li{font-size:14px;line-height:1.5;opacity:.9}
+.contrib ol{margin:10px 0 0 20px;display:grid;gap:6px}
+.back{display:inline-block;margin-bottom:18px;color:var(--amber);font-size:14px;text-decoration:none}
+.note{font-size:13px;line-height:1.45;opacity:.75;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Back to the game</a>
+  <h1>Tell us</h1>
+  <p class="sub">Ideas for villains, weapons, levels or causes. Bugs. Things that felt off. We read all of it.</p>
+
+  <div class="warn">
+    This is for feedback on the game, not for reporting an assault. If something happened to you, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.
+  </div>
+
+  <form id="form" novalidate>
+    <div class="field">
+      <label for="kind">What is it?</label>
+      <select id="kind">
+        <option value="Idea">An idea or suggestion</option>
+        <option value="Villain">A new villain</option>
+        <option value="Weapon">A new weapon</option>
+        <option value="Cause">A petition or cause to feature</option>
+        <option value="Bug">Something's broken</option>
+        <option value="Other">Something else</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="title">In a few words</label>
+      <input id="title" maxlength="100" placeholder="e.g. A villain who fakes a phone call">
+    </div>
+    <div class="field">
+      <label for="msg">Tell us more</label>
+      <textarea id="msg" maxlength="4000" placeholder="How it would work, what it would look like, what went wrong…"></textarea>
+    </div>
+    <div class="field">
+      <label for="name">Name or handle <span style="opacity:.6;font-weight:400">(optional)</span></label>
+      <input id="name" maxlength="60" autocomplete="nickname">
+    </div>
+
+    <button type="button" class="btn" id="ghBtn">Post on GitHub</button>
+    <p class="hint">Public, and needs a free GitHub account. Others can see and add to your idea.</p>
+    <button type="button" class="btn alt" id="mailBtn" hidden>Send privately by email</button>
+    <div id="status" aria-live="polite"></div>
+  </form>
+
+  <section class="contrib">
+    <h2>Build it with us</h2>
+    <p>Keys Out lives on GitHub. If you code, draw or write, you can propose a change directly.</p>
+    <ol>
+      <li>Read the <a href="https://github.com/astavrand22/merryband/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contributing guide</a>.</li>
+      <li>Fork <a href="https://github.com/astavrand22/merryband" target="_blank" rel="noopener">astavrand22/merryband</a> and make your change. Most tuning lives in the <code>CONFIG</code> block of <code>index.html</code>.</li>
+      <li>Open a pull request. We review everything before it goes live.</li>
+    </ol>
+  </section>
+
+  <p class="note">Please keep it about the game. Don't include anyone's real name or personal story in a public post.</p>
+</main>
+
+<script>
+/* ============ CONFIG ============ */
+const REPO = 'astavrand22/merryband';
+const FEEDBACK_EMAIL = ''; // add an address to turn on the private email option
+/* ================================ */
+
+const $ = id => document.getElementById(id);
+const LABELS = { Idea:'suggestion', Villain:'villain-idea', Weapon:'weapon-idea', Cause:'cause', Bug:'bug', Other:'suggestion' };
+
+if (FEEDBACK_EMAIL) $('mailBtn').hidden = false;
+
+function read(){
+  const kind = $('kind').value, title = $('title').value.trim(), msg = $('msg').value.trim(), name = $('name').value.trim();
+  if (!title && !msg){ $('status').textContent = 'Add a few words first.'; $('title').focus(); return null; }
+  $('status').textContent = '';
+  const body = msg + (name ? `\n\n— ${name}` : '') + '\n\n_Sent from the in-game feedback page._';
+  return { kind, subject: `[${kind}] ${title || msg.slice(0,60)}`, body };
+}
+
+$('ghBtn').onclick = () => {
+  const f = read(); if (!f) return;
+  const url = `https://github.com/${REPO}/issues/new?` + new URLSearchParams({ title: f.subject, body: f.body, labels: LABELS[f.kind] });
+  window.open(url, '_blank', 'noopener');
+  $('status').textContent = 'Opened GitHub. Hit "Submit new issue" there to post it.';
+};
+
+$('mailBtn').onclick = () => {
+  const f = read(); if (!f) return;
+  location.href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('Keys Out: ' + f.subject)}&body=${encodeURIComponent(f.body)}`;
+  $('status').textContent = 'Opening your email app.';
+};
+</script>
+</body>
+</html>

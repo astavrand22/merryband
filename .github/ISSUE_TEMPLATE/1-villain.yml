@@ -1,0 +1,32 @@
+name: New villain
+description: Pitch a fictional predator for the game
+title: "[Villain] "
+labels: ["villain-idea"]
+body:
+  - type: markdown
+    attributes:
+      value: Villains are fictional and stopped before they act. No real people, no stereotypes. See the [content guidelines](https://github.com/astavrand22/merryband/blob/main/CONTRIBUTING.md#content-guidelines).
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      placeholder: The Fake Caller
+    validations:
+      required: true
+  - type: textarea
+    id: tell
+    attributes:
+      label: The red flag
+      description: What does he do that gives him away? This is the moment players learn to spot.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: How he moves in the game
+      description: Does he target a drink, follow you, lunge, something new?
+  - type: input
+    id: level
+    attributes:
+      label: Which level or setting?
+      placeholder: Last Call (bar), parking garage, rideshare…
