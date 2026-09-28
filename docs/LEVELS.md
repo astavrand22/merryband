@@ -54,7 +54,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 **Gaps in what's built**
 
 - No petition URL or final cause copy.
-- No sound or haptics.
+- No music. Sound effects and haptics are in.
 - Nothing persists: best score, gold lipstick and unlocks are lost on reload.
 - Villains and weapons are config objects inside the HTML, not the separate data files the original design called for.
 - Characters are drawn from shapes, so villains and bystanders differ only by the flag. That's intentional for fairness but gives each villain little personality.

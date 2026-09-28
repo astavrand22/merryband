@@ -85,14 +85,16 @@ function showEndTips(){
 showStartTip();
 
 function startGame(){
+  audioUnlock(); // browsers only allow sound after a tap, and this is that tap
   newGame(); state='play';
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false;
-  $('endTitle').textContent=win?'Made it home.':'Rough night.';
-  $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
+  if(win) sfx('win');
+  $('endTitle').textContent=win?'You made it home.':'Rough night.';
+  $('endSub').textContent=win?'You survived last call.':'Out of hearts. The bar\u2019s still open.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
@@ -103,6 +105,13 @@ function endGame(win){
 }
 $('startBtn').onclick=startGame;
 $('againBtn').onclick=startGame;
+/* ---------- sound on/off (saved in this browser only, no login) ---------- */
+function renderMute(){
+  const b=$('muteBtn'); b.textContent=muted?'🔇':'🔊';
+  b.setAttribute('aria-pressed',String(!muted)); // pressed = sound on
+}
+$('muteBtn').onclick=()=>{ setMuted(!muted); audioUnlock(); renderMute() };
+renderMute();
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;

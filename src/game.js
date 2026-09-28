@@ -70,6 +70,7 @@ function setArms(v, pose) {
   const arm = (x1, y1, x2, y2) => { a.lineBetween(x1, y1, x2, y2); a.fillStyle(p.skin, 1).fillCircle(x2, y2, 3.4); };
   if (pose === 'grab') { arm(-11,-56,-24,-48); arm(11,-56,24,-48); }
   else if (pose === 'wipe') { arm(-11,-56,-6,-72); arm(11,-56,6,-72); }
+  else if (pose === 'cheer') { arm(-11,-56,-22,-78); arm(11,-56,22,-78); }
   else if (pose === 'vial') { arm(-11,-56,-14,-32); arm(11,-56,20,-64); a.fillStyle(COLORS.spiked, 1).fillRect(18, -74, 4, 9); }
   else { arm(-11,-56,-14,-32); arm(11,-56,14,-32); }
 }
@@ -113,7 +114,14 @@ function flag(c) {
   if (c.flagged) return;
   c.flagged = true;
   c.view.flag.setVisible(true);
+  sfx('flag');
   if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
+  // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
+  const tellText = VILLAINS[c.kind].tellText;
+  if (tellText && !game.seenTells.has(c.kind)) {
+    game.seenTells.add(c.kind);
+    floatText(c.x, c.y - 128 * sc(c.y), tellText, '#FF8A80');
+  }
   if (c.kind === 'grabber') { c.state = 'windup'; c.windup = VILLAINS.grabber.windup; }
   else if (c.kind === 'spiker') {
     const taken = game.chars.filter(o => o !== c && o.kind === 'spiker' && o.flagged && o.state !== 'ko').map(o => o.drink);
@@ -168,11 +176,12 @@ function applyHit(c, dmg) {
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
-    floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
+    sfx('miss');
+    floatText(c.x, c.y - 96 * s, 'Wait for the flag  -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
-  if (c.hp <= 0) ko(c); else buzz('hit');
+  if (c.hp <= 0) ko(c); else { buzz('hit'); sfx('hit'); }
 }
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
@@ -183,7 +192,13 @@ function ko(c) {
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
   buzz(save ? 'save' : 'ko');
-  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
+  sfx(save ? 'save' : 'ko');
+  // Land the hit: a beat of stillness and a small shake, then the women at the counter react.
+  hitStop(save ? FEEL.hitStopSave : FEEL.hitStopKo);
+  if (!reduceMotion) S.cameras.main.shake(FEEL.koShakeMs, FEEL.koShakeAmt, true);
+  const cheerers = game.combo % 3 === 0 ? [0, 1, 2] : (save && c.drink != null ? [c.drink] : []);
+  cheerers.forEach(i => cheerPatron(i, save && i === c.drink));
+  floatText(c.x, c.y - 100 * s, (save ? 'Save! +' : 'KO +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -191,6 +206,25 @@ function ko(c) {
   S.tweens.add({ targets:c.view, angle:(c.dir || 1) * 80, alpha:0, duration:900, onComplete:() => { c.view.destroy(); c.dead = true; } });
   checkUnlocks();
 }
+// Hit-stop: game.freeze is seconds of paused action, counted down in BarScene.update().
+function hitStop(sec) { if (!reduceMotion && game) game.freeze = Math.max(game.freeze || 0, sec); }
+
+/* ---------- the women at the counter ---------- */
+const THANKS = ['Thank you!', 'You saved my drink!', 'Oh my god, thanks!'];
+// Patron i (same index as her drink) throws her arms up and hops. thanks = she also says so.
+function cheerPatron(i, thanks) {
+  const v = S.patronViews[i];
+  if (!v) return;
+  setArms(v, 'cheer');
+  if (v.cheerTimer) v.cheerTimer.remove(false);
+  v.cheerTimer = S.time.delayedCall(FEEL.cheerSeconds * 1000, () => setArms(v, 'down'));
+  if (!reduceMotion) {
+    S.tweens.killTweensOf(v); v.y = horizonY + 2;   // restart from her spot so overlapping hops never drift
+    S.tweens.add({ targets:v, y:v.y - 6, duration:110, yoyo:true, repeat:2 });
+  }
+  if (thanks) floatText(clamp(v.x, 75, W - 75), horizonY - 54, pick(THANKS), '#FF4F9A');
+}
+
 function koBadge(x, y, s) {
   const b = S.add.container(x, y).setDepth(9000);
   const g = S.add.graphics(), r = 18 * s + 6, pts = [];
@@ -206,6 +240,7 @@ function hurt(msg) {
   const why = { 'Drink spiked.':'spiked', 'He followed you.':'followed', 'Grabbed.':'grabbed', 'That was a bystander.':'bystander' }[msg];
   if (why) game.events.push(why);
   buzz('hurt');
+  sfx('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
   if (!reduceMotion) S.cameras.main.shake(300, 0.008, true);
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
@@ -247,8 +282,8 @@ function useGlitter() {
     if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander') continue;
     if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { flag(c); glitterBomb(c); n++; }
   }
-  if (n) buzz('tag');
-  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTERED x' + n : 'GLITTERED \u2014 good luck washing that off') : 'Swung at air', '#FF4F9A', n > 0);
+  if (n) { buzz('tag'); sfx('tag'); }
+  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTER BOMBED x' + n : 'GLITTER BOMBED') : 'Nobody here', '#FF4F9A', n > 0);
 }
 // He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
 // stuck wiping his face for a moment.
@@ -297,6 +332,7 @@ function writeCreep(c) {
   t.x = -t.width / 2;
   v.add(t); v.creep = t;
   buzz('tag');
+  sfx('tag');
   if (reduceMotion) return;
   const tube = S.add.text(t.x, -80, '💄', { fontSize:'13px', resolution:TEXT_RES * 3 }).setOrigin(0.2, 0.9).setAngle(30);
   v.add(tube);
@@ -319,6 +355,7 @@ function fakeCall() {
   if (game.cool.call > 0) { toast('You just made that call. Give her a sec.'); return; }
   game.cool.call = w.cooldown;
   buzz('call');
+  sfx('call');
   phoneFx(pick(CALL_LINES));
   let bailed = 0, frozen = 0;
   for (const c of game.chars) {
@@ -328,7 +365,7 @@ function fakeCall() {
     if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
     const save = c.kind === 'spiker';
     const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
-    game.score += pts; if (save) game.saves++;
+    game.score += pts; if (save) { game.saves++; if (c.drink != null) cheerPatron(c.drink, true); }
     c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
     S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
     floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER ' : 'Scattered. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
@@ -350,7 +387,7 @@ function phoneFx(line) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); sfx('unlock'); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
@@ -365,7 +402,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), freeze:0, t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
@@ -574,7 +611,7 @@ class BarScene extends Phaser.Scene {
     this.neon.setAlpha(flick);
     drawDrinks();
     if (game) {
-      if (state === 'play') { step(dt); updateHUD(); }
+      if (state === 'play') { if (game.freeze > 0) game.freeze -= dt; else step(dt); updateHUD(); }
       syncViews();
     }
     drawFx();
