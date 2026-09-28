@@ -42,6 +42,11 @@ const HAPTICS = {
   minGap: 0.09            // seconds between buzzes of the same kind
 };
 
+// Sound: every effect is synthesized in src/audio.js, so there are no audio files to load.
+// volume is 0 to 1. minGap stops the same effect stacking into a buzz when hits land back to back.
+// Players can mute from the speaker button; that choice is saved in the browser.
+const SOUND = { volume: 0.8, minGap: 0.06 };
+
 const CAUSE = {
   issue: 'The Spiker is fiction. Spiking isn\u2019t.',
   blurb: 'Back stronger drink-spiking laws. (Replace this with your petition copy.)',

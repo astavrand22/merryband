@@ -10,10 +10,11 @@ Open `index.html` in any browser. It works on phones and desktops, with no insta
 
 ## Edit
 
-The game runs on [Phaser](https://phaser.io), a free JavaScript game library loaded from a CDN, so there's still no build step. The code is split three ways:
+The game runs on [Phaser](https://phaser.io), a free JavaScript game library loaded from a CDN, so there's still no build step. The code is split four ways:
 
 - `src/data.js`: everything you'd tune (below)
 - `src/game.js`: the Phaser scene, meaning the bar, characters, weapons and scoring
+- `src/audio.js`: sound effects, synthesized in the browser (no audio files), with a speaker button to mute
 - `src/ui.js`: the start and end screens, HUD, weapon bar, best score, score sharing and donation panel
 
 Tuning in `src/data.js`:
@@ -22,6 +23,7 @@ Tuning in `src/data.js`:
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 - `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages
+- `SOUND`: master volume and the minimum gap between repeats of one effect
 - `SHARE`: the end-screen "Share your score" buttons. Threads opens a prefilled post; Instagram shares a story-sized score card through the phone's share sheet (desktop downloads it). Set `url` to the live game link once it has one
 
 ## Donations
