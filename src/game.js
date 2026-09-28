@@ -173,10 +173,12 @@ function applyHit(c, dmg) {
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
   if (c.hp <= 0) ko(c); else { buzz('hit'); sfx('hit'); }
 }
+// Tally who you stopped this run (knockouts and Fake Call bails). The end screen turns it into the rap sheet.
+function noteStopped(c) { game.stopped[c.kind] = (game.stopped[c.kind] || 0) + 1; }
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
-  c.state = 'ko'; game.kos++; game.combo++;
+  c.state = 'ko'; game.kos++; game.combo++; noteStopped(c);
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -354,7 +356,7 @@ function fakeCall() {
     const save = c.kind === 'spiker';
     const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
     game.score += pts; if (save) { game.saves++; if (c.drink != null) cheerPatron(c.drink, true); }
-    c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
+    c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40; noteStopped(c);
     S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
     floatText(c.x, c.y - 100 * s, (save ? 'Save! ' : 'Bye. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
     bailed++;
@@ -390,7 +392,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), freeze:0, t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), stopped:{}, freeze:0, t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }

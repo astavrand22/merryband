@@ -48,6 +48,11 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .stat.best b{color:var(--neon)}
 #bestStart{font-weight:600;color:var(--amber);margin:-8px 0 14px;min-height:0}
 #bestStart:empty{display:none}
+.rap{margin-bottom:18px;background:var(--plum);border-radius:12px;padding:12px 14px}
+.rap[hidden]{display:none}
+.rap ul{list-style:none;display:grid;gap:8px}
+.rap li b{display:block;font-size:14px;color:var(--amber)}
+.rap li span{display:block;font-size:13px;line-height:1.4;opacity:.85}
 .newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .cause{border:2px solid var(--flag);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(224,48,43,.08)}
 .cause h3{font-size:18px;margin-bottom:6px}
@@ -120,6 +125,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
       <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
       <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
+    </div>
+    <div class="rap" id="rapSheet" hidden>
+      <div class="label">Tonight's rap sheet</div>
+      <ul id="rapList"></ul>
     </div>
     <div class="share">
       <div class="label">Share your score</div>
