@@ -19,6 +19,20 @@ const WEAPONS = [
   { id:'glitter', name:'Glitter', icon:'✨', mode:'area', cooldown:5,             unlock:1200, hint:'Tap to tag creeps. Tagged take double damage.' }
 ];
 
+// Haptics: a short buzz when you land a hit. Patterns are milliseconds (on, off, on...).
+// Android browsers support this. iPhone Safari has no vibration API, so iPhones get
+// the system "switch" tick instead (iOS 18+, taps only). minGap stops held weapons
+// (hatpins, pepper) from buzzing continuously.
+const HAPTICS = {
+  enabled: true,
+  hit:    12,             // any damage to a flagged creep
+  ko:     [18, 40, 30],   // knockout: double thump
+  save:   [18, 30, 18, 30, 40], // KO'd a Spiker before he spiked a drink
+  tag:    8,              // glitter tagged at least one creep
+  hurt:   [70, 50, 70],   // you lost a heart
+  minGap: 0.09            // seconds between buzzes of the same kind
+};
+
 const CAUSE = {
   issue: 'The Spiker is fiction. Spiking isn\u2019t.',
   blurb: 'Back stronger drink-spiking laws. (Replace this with your petition copy.)',
