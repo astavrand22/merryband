@@ -21,7 +21,7 @@ const TEXT_RES = DPR;
 let S = null;                       // the running scene
 let W, H, horizonY, playerY, counterTop;
 const drinks = [0,1,2].map(i => ({ i, x:0, spiked:false, resetT:0 }));
-const patrons = drinks.map(() => ({ outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), longHair:true }));
+const patrons = drinks.map(() => ({ outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), male:false }));
 const bottles = Array.from({length:22}, () => ({ x:Math.random(), h:rand(14,26), c:pick([0x3f7d4f,0x8a3b2a,0xc9a15b,0x4a6b8a,0xd8d0c0]), row:Math.random() < 0.5 ? 0 : 1 }));
 
 const sc = y => 0.55 + 0.75 * clamp((y - horizonY) / (playerY - horizonY), 0, 1);
@@ -40,13 +40,21 @@ function makePersonView(p, back) {
   g.fillStyle(0x1c1420, 1).fillRect(-9, -26, 7, 26).fillRect(2, -26, 7, 26);
   const arms = S.add.graphics();
   const body = S.add.graphics();
-  body.fillStyle(p.outfit, 1).fillRoundedRect(-13, -62, 26, 38, 8);
+  // Men: broader, squarer torso, short hair, sometimes a beard. Women: narrower torso, long hair.
+  if (p.male) body.fillStyle(p.outfit, 1).fillRoundedRect(-15, -62, 30, 38, 5);
+  else body.fillStyle(p.outfit, 1).fillRoundedRect(-12, -62, 24, 38, 9);
   body.fillStyle(p.skin, 1).fillCircle(0, -72, 10);
   body.fillStyle(p.hair, 1);
-  if (back) { body.fillCircle(0, -72, 10.5).fillRect(-10, -72, 20, 14); }
-  else {
-    body.beginPath(); body.arc(0, -74, 10.5, Math.PI, 0); body.closePath(); body.fillPath();
-    if (p.longHair) body.fillRect(-10.5, -74, 4, 16).fillRect(6.5, -74, 4, 16);
+  if (back) {
+    if (p.male) { body.beginPath(); body.arc(0, -73, 10.5, Math.PI * 0.95, Math.PI * 0.05); body.closePath(); body.fillPath(); }
+    else body.fillCircle(0, -72, 11.5).fillRoundedRect(-11.5, -72, 23, 22, 4);
+  } else if (p.male) {
+    body.beginPath(); body.arc(0, -77, 10, Math.PI * 1.05, -Math.PI * 0.05); body.closePath(); body.fillPath();
+    if (p.beard) { body.beginPath(); body.arc(0, -72, 10, Math.PI * 0.18, Math.PI * 0.82); body.closePath(); body.fillPath(); }
+    body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
+  } else {
+    body.beginPath(); body.arc(0, -73, 11.5, Math.PI, 0); body.closePath(); body.fillPath();
+    body.fillRoundedRect(-12.5, -76, 6, 27, 3).fillRoundedRect(6.5, -76, 6, 27, 3);
     body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
   }
   v.add([g, arms, body]);
@@ -70,9 +78,11 @@ function setArms(v, pose) {
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
   const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
-    outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), longHair:Math.random() < 0.45,
+    outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
     state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
+  c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
+  c.beard = c.male && Math.random() < LOOKS.beardChance;
   if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); }
 
   const view = makePersonView(c, false);
@@ -162,12 +172,13 @@ function buzz(kind) {
 function applyHit(c, dmg) {
   if (c.state === 'ko' || c.state === 'bail') return;
   const s = sc(c.y);
-  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That was a bystander.'); return; }
+  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That\u2019s just a girl trying to leave.'); return; }
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
     sfx('miss');
     floatText(c.x, c.y - 96 * s, 'Wait for the flag  -50', '#FFF1E0'); return;
+    floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
@@ -179,6 +190,7 @@ function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
   c.state = 'ko'; game.kos++; game.combo++; noteStopped(c);
+  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind);
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -191,6 +203,7 @@ function ko(c) {
   const cheerers = game.combo % 3 === 0 ? [0, 1, 2] : (save && c.drink != null ? [c.drink] : []);
   cheerers.forEach(i => cheerPatron(i, save && i === c.drink));
   floatText(c.x, c.y - 100 * s, (save ? 'Save! +' : 'KO +') + pts, save ? '#FF4F9A' : '#F4B942');
+  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -229,6 +242,8 @@ function koBadge(x, y, s) {
 function hurt(msg) {
   if (state !== 'play') return;
   game.hearts--; game.combo = 0;
+  const why = { 'Drink spiked.':'spiked', 'He followed you.':'followed', 'Grabbed.':'grabbed', 'That was a bystander.':'bystander' }[msg];
+  if (why) game.events.push(why);
   buzz('hurt');
   sfx('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
@@ -262,7 +277,7 @@ function sprayTick(dt) {
 }
 function useGlitter() {
   const w = WPN('glitter');
-  if (game.cool.glitter > 0) { toast('Glitter is recharging.'); return; }
+  if (game.cool.glitter > 0) { toast('Glitter\u2019s reloading. Hang on.'); return; }
   game.cool.glitter = w.cooldown;
   const R = clamp(W * 0.18, 70, 120);
   let n = 0;
@@ -274,6 +289,8 @@ function useGlitter() {
   }
   if (n) { buzz('tag'); sfx('tag'); }
   floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTER BOMBED x' + n : 'GLITTER BOMBED') : 'Nobody here', '#FF4F9A', n > 0);
+  if (n) buzz('tag');
+  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTERED x' + n : 'GLITTERED \u2014 good luck washing that off') : 'Swung at air', '#FF4F9A', n > 0);
 }
 // He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
 // stuck wiping his face for a moment.
@@ -342,7 +359,7 @@ const CALL_LINES = [
 ];
 function fakeCall() {
   const w = WPN('call');
-  if (game.cool.call > 0) { toast('Your friend just called. Give it a sec.'); return; }
+  if (game.cool.call > 0) { toast('You just made that call. Give her a sec.'); return; }
   game.cool.call = w.cooldown;
   buzz('call');
   sfx('call');
@@ -351,17 +368,17 @@ function fakeCall() {
   for (const c of game.chars) {
     if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander' || !c.flagged) continue;
     const s = sc(c.y), v = VILLAINS[c.kind];
-    if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Witness.', '#FFF1E0'); continue; }
+    if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Somebody\u2019s watching now.', '#FFF1E0'); continue; }
     if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
     const save = c.kind === 'spiker';
     const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
     game.score += pts; if (save) { game.saves++; if (c.drink != null) cheerPatron(c.drink, true); }
     c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40; noteStopped(c);
     S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
-    floatText(c.x, c.y - 100 * s, (save ? 'Save! ' : 'Bye. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
+    floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER ' : 'Scattered. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
     bailed++;
   }
-  if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to scare off', '#FFF1E0');
+  if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to spook', '#FFF1E0');
   checkUnlocks();
 }
 function phoneFx(line) {
@@ -393,6 +410,7 @@ function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), stopped:{}, freeze:0, t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
@@ -430,15 +448,15 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('Grabbed.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
-        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('Drink spiked.'); }
+        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
       else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
@@ -586,6 +604,7 @@ class BarScene extends Phaser.Scene {
       if (state !== 'play') return;
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
+      game.used.add(w.id);
       if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
