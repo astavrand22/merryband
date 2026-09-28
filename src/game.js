@@ -118,6 +118,35 @@ function charAt(px, py) {
   }
   return null;
 }
+/* ---------- haptics ---------- */
+// navigator.vibrate on Android. iOS Safari has no vibration API, but toggling a hidden
+// <input type="checkbox" switch> plays the system haptic tick (iOS 18+), so we use that
+// as a fallback. It only fires inside a user gesture, so on iPhone held weapons stay quiet.
+const canVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+let iosTick = null;
+if (!canVibrate && /iP(hone|ad|od)/.test(navigator.userAgent)) {
+  const label = document.createElement('label'), input = document.createElement('input');
+  input.type = 'checkbox'; input.setAttribute('switch', '');
+  label.appendChild(input);
+  label.setAttribute('aria-hidden', 'true');
+  label.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(label);
+  iosTick = label;
+}
+const lastBuzz = {};
+function buzz(kind) {
+  if (!HAPTICS.enabled) return;
+  const pattern = HAPTICS[kind];
+  if (pattern == null) return;
+  const now = performance.now() / 1000;
+  if (now - (lastBuzz[kind] || 0) < HAPTICS.minGap) return;
+  lastBuzz[kind] = now;
+  try {
+    if (canVibrate) navigator.vibrate(pattern);
+    else if (iosTick) iosTick.click();
+  } catch (e) { /* haptics are a nice-to-have; never break the game over them */ }
+}
+
 function applyHit(c, dmg) {
   if (c.state === 'ko') return;
   const s = sc(c.y);
@@ -129,7 +158,7 @@ function applyHit(c, dmg) {
   }
   c.hp -= dmg * (c.tagged ? 2 : 1);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
-  if (c.hp <= 0) ko(c);
+  if (c.hp <= 0) ko(c); else buzz('hit');
 }
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
@@ -139,6 +168,7 @@ function ko(c) {
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
+  buzz(save ? 'save' : 'ko');
   floatText(c.x, c.y - 100 * s, (save ? 'Save! +' : 'KO +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
@@ -159,6 +189,7 @@ function koBadge(x, y, s) {
 function hurt(msg) {
   if (state !== 'play') return;
   game.hearts--; game.combo = 0;
+  buzz('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
   if (!reduceMotion) S.cameras.main.shake(300, 0.008, true);
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
@@ -191,7 +222,7 @@ function sprayTick(dt) {
     if (Math.abs(da) > half + 14 / Math.max(d, 1)) continue;
     if (c.kind === 'bystander') applyHit(c, 0);
     else if (!c.flagged) c.stun = Math.max(c.stun, 0.3);
-    else { c.stun = 0.5; c.hp -= w.dps * dt * (c.tagged ? 2 : 1); if (c.hp <= 0) ko(c); }
+    else { c.stun = 0.5; c.hp -= w.dps * dt * (c.tagged ? 2 : 1); if (c.hp <= 0) ko(c); else buzz('hit'); }
   }
 }
 function useGlitter() {
@@ -205,6 +236,7 @@ function useGlitter() {
     if (c.state === 'ko' || c.kind === 'bystander') continue;
     if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { c.tagged = true; flag(c); n++; }
   }
+  if (n) buzz('tag');
   floatText(pointer.x, pointer.y - 30, n ? ('Tagged ' + n) : 'Nobody here', '#FF4F9A');
 }
 function checkUnlocks() {
