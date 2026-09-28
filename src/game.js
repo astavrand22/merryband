@@ -21,7 +21,7 @@ const TEXT_RES = DPR;
 let S = null;                       // the running scene
 let W, H, horizonY, playerY, counterTop;
 const drinks = [0,1,2].map(i => ({ i, x:0, spiked:false, resetT:0 }));
-const patrons = drinks.map(() => ({ outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), longHair:true }));
+const patrons = drinks.map(() => ({ outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), male:false }));
 const bottles = Array.from({length:22}, () => ({ x:Math.random(), h:rand(14,26), c:pick([0x3f7d4f,0x8a3b2a,0xc9a15b,0x4a6b8a,0xd8d0c0]), row:Math.random() < 0.5 ? 0 : 1 }));
 
 const sc = y => 0.55 + 0.75 * clamp((y - horizonY) / (playerY - horizonY), 0, 1);
@@ -40,13 +40,21 @@ function makePersonView(p, back) {
   g.fillStyle(0x1c1420, 1).fillRect(-9, -26, 7, 26).fillRect(2, -26, 7, 26);
   const arms = S.add.graphics();
   const body = S.add.graphics();
-  body.fillStyle(p.outfit, 1).fillRoundedRect(-13, -62, 26, 38, 8);
+  // Men: broader, squarer torso, short hair, sometimes a beard. Women: narrower torso, long hair.
+  if (p.male) body.fillStyle(p.outfit, 1).fillRoundedRect(-15, -62, 30, 38, 5);
+  else body.fillStyle(p.outfit, 1).fillRoundedRect(-12, -62, 24, 38, 9);
   body.fillStyle(p.skin, 1).fillCircle(0, -72, 10);
   body.fillStyle(p.hair, 1);
-  if (back) { body.fillCircle(0, -72, 10.5).fillRect(-10, -72, 20, 14); }
-  else {
-    body.beginPath(); body.arc(0, -74, 10.5, Math.PI, 0); body.closePath(); body.fillPath();
-    if (p.longHair) body.fillRect(-10.5, -74, 4, 16).fillRect(6.5, -74, 4, 16);
+  if (back) {
+    if (p.male) { body.beginPath(); body.arc(0, -73, 10.5, Math.PI * 0.95, Math.PI * 0.05); body.closePath(); body.fillPath(); }
+    else body.fillCircle(0, -72, 11.5).fillRoundedRect(-11.5, -72, 23, 22, 4);
+  } else if (p.male) {
+    body.beginPath(); body.arc(0, -77, 10, Math.PI * 1.05, -Math.PI * 0.05); body.closePath(); body.fillPath();
+    if (p.beard) { body.beginPath(); body.arc(0, -72, 10, Math.PI * 0.18, Math.PI * 0.82); body.closePath(); body.fillPath(); }
+    body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
+  } else {
+    body.beginPath(); body.arc(0, -73, 11.5, Math.PI, 0); body.closePath(); body.fillPath();
+    body.fillRoundedRect(-12.5, -76, 6, 27, 3).fillRoundedRect(6.5, -76, 6, 27, 3);
     body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
   }
   v.add([g, arms, body]);
@@ -69,9 +77,11 @@ function setArms(v, pose) {
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
   const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
-    outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), longHair:Math.random() < 0.45,
+    outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
     state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
+  c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
+  c.beard = c.male && Math.random() < LOOKS.beardChance;
   if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); }
 
   const view = makePersonView(c, false);
@@ -167,7 +177,7 @@ function applyHit(c, dmg) {
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
-  c.state = 'ko'; game.kos++; game.combo++;
+  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind);
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -193,6 +203,8 @@ function koBadge(x, y, s) {
 function hurt(msg) {
   if (state !== 'play') return;
   game.hearts--; game.combo = 0;
+  const why = { 'Drink spiked.':'spiked', 'He followed you.':'followed', 'Grabbed.':'grabbed', 'That was a bystander.':'bystander' }[msg];
+  if (why) game.events.push(why);
   buzz('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
   if (!reduceMotion) S.cameras.main.shake(300, 0.008, true);
@@ -353,7 +365,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
@@ -547,6 +559,7 @@ class BarScene extends Phaser.Scene {
       if (state !== 'play') return;
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
+      game.used.add(w.id);
       if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });

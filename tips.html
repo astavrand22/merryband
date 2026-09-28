@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keys Out: Real-life tips</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1A0E1D;--plum:#2A1830;--amber:#F4B942;--neon:#FF4F9A;--flag:#E0302B;--cream:#FFF1E0;--line:#5a3a60}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--cream);font-family:Rubik,system-ui,sans-serif}
+main{max-width:520px;margin:0 auto;padding:28px 16px 48px}
+h1{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:40px;line-height:.95;color:var(--neon);text-shadow:3px 3px 0 var(--flag);margin-bottom:8px}
+.sub{font-size:16px;opacity:.85;margin-bottom:18px;line-height:1.45}
+.warn{border:2px solid var(--flag);border-radius:14px;padding:12px 14px;margin-bottom:22px;background:rgba(224,48,43,.08);font-size:14px;line-height:1.45}
+.warn a,.note a{color:var(--amber)}
+h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:20px;color:var(--amber);margin:26px 0 10px}
+.tip{background:var(--plum);border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.tip b{display:block;font-size:16px;margin-bottom:4px}
+.tip p{font-size:15px;line-height:1.5;opacity:.9;margin-bottom:6px}
+.tip a{font-size:13px;color:var(--amber)}
+.back{display:inline-block;margin-bottom:18px;color:var(--amber);font-size:14px;text-decoration:none}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;font:800 17px Rubik,system-ui,sans-serif;background:var(--neon);color:var(--ink);text-align:center;text-decoration:none;margin-top:28px}
+a:focus-visible,.btn:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.note{font-size:13px;line-height:1.45;opacity:.75;margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Back to the game</a>
+  <h1>Off the screen</h1>
+  <p class="sub">The game is a cartoon. These aren't. Short, practical things that help in real life, each with a source you can read.</p>
+  <div class="warn">
+    If you're in danger right now, call <b>911</b>. These are general tips, not training. An in-person self-defense class is the best way to learn any of this.
+  </div>
+  <div id="groups"></div>
+  <a class="btn" href="index.html">Back to the game</a>
+  <p class="note">If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
+  <p class="note">Know a tip we should add? <a href="feedback.html">Tell us</a>. It needs a source we can link to.</p>
+</main>
+<script src="src/data.js"></script>
+<script>
+const root = document.getElementById('groups');
+for (const g of TIP_GROUPS) {
+  const tips = TIPS.filter(t => t.group === g.id);
+  if (!tips.length) continue;
+  const h = document.createElement('h2'); h.textContent = g.title; root.appendChild(h);
+  for (const t of tips) {
+    const d = document.createElement('div'); d.className = 'tip';
+    const b = document.createElement('b'); b.textContent = t.title;
+    const p = document.createElement('p'); p.textContent = t.text;
+    const a = document.createElement('a'); a.href = t.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Source: ' + t.source;
+    d.append(b, p, a); root.appendChild(d);
+  }
+}
+</script>
+</body>
+</html>
