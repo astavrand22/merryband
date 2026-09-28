@@ -32,6 +32,8 @@ Gifts go through [Every.org](https://www.every.org), a 501(c)(3), directly to th
 
 [docs/LEVELS.md](docs/LEVELS.md) documents Level 1 as built, how it should evolve, the designs for Levels 2–5, the build order and open questions.
 
+A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). Open `crew-test.html` to try it.
+
 ## Feedback and contributing
 
 - Players can send ideas from `feedback.html`, linked on the start and end screens. It opens a pre-filled GitHub issue. To also offer a private email option, set `FEEDBACK_EMAIL` at the top of its script.
