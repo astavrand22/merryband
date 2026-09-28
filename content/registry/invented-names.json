@@ -1,0 +1,10 @@
+{
+  "note": "Every character name used anywhere in game content must be listed here and must be invented. The validator fails on any name in scenario content that is absent from this registry. Before adding a name, search it against this subject matter; if it returns a real person associated with sexual violence litigation or advocacy, pick another.",
+  "checked_on": "2026-09-28",
+  "names": [
+    { "name": "Wendell Sharp", "scenario": "sc-001-the-dispatch-floor", "role": "predator", "checked": true },
+    { "name": "Roy Malbec", "scenario": "sc-002-the-good-reference", "role": "predator", "checked": true },
+    { "name": "Alton Pryce", "scenario": "sc-003-the-box", "role": "predator", "checked": true }
+  ],
+  "denylist_note": "content/registry/org-denylist.json holds real organisation names that must never appear in scenario content. Seed it with the institutions most associated with published abuse litigation, then check scenario text against it on every build."
+}
