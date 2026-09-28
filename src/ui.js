@@ -115,10 +115,16 @@ function gameLink(){ return SHARE.url || (/^https?:/.test(location.protocol)?loc
 const plural=(n,one,many)=>n+' '+(n===1?one:many);
 function shareText(withLink){
   const r=lastRun, pts=r.score.toLocaleString('en-US');
-  const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
-  let t=r.win?'Walked home through Last Call':'Last Call got rough';
-  if(bits.length) t+=' \u2014 '+bits.join(', ');
-  t+=`. ${pts} points in Keys Out. Your turn.`;
+  let t;
+  if(r.win){
+    const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
+    bits.push(pts+' points');
+    t='Cleared Last Call. '+bits.join(', ')+'. Beat it.';
+  } else {
+    let m='Last Call: 1, me: '+plural(r.kos,'creep','creeps');
+    if(r.saves) m+=', '+plural(r.saves,'drink','drinks')+' saved';
+    t=m+'. '+pts+' points. Beat it.';
+  }
   const link=gameLink();
   if(withLink&&link) t+='\n'+link;
   if(SHARE.tag) t+=(withLink&&link?' ':'\n')+'#'+SHARE.tag;

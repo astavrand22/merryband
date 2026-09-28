@@ -403,15 +403,15 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He caught up.'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He got too close.'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
-        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.'); }
+        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got to the drink first.'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
       else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
