@@ -8,10 +8,17 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 
 // behavior: 'target-drink' | 'approach' | 'lunge'
 // tell: seconds [min,max] before the red flag goes up. speed is relative to room size.
+// tellText: a few words shown by the flag the first time this villain flags in a run, so new players
+//   learn what the flag means. Describe the intent, never the act.
+// epilogue: one cartoonish line about what happens to him afterward, shown on the end screen.
+//   Keep it under about 45 characters so it also fits on the share card.
 const VILLAINS = {
-  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100 },
-  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100 },
-  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120 }
+  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
+              tellText:'Going for a drink', epilogue:'Banned from every bar in town.' },
+  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
+              tellText:'Following her', epilogue:'Got lost in a corn maze. Still in there.' },
+  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
+              tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.' }
 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 
@@ -39,6 +46,16 @@ const HAPTICS = {
   minGap: 0.09            // seconds between buzzes of the same kind
 };
 
+// Sound: every effect is synthesized in src/audio.js, so there are no audio files to load.
+// volume is 0 to 1. minGap stops the same effect stacking into a buzz when hits land back to back.
+// Players can mute from the speaker button; that choice is saved in the browser.
+const SOUND = { volume: 0.8, minGap: 0.06 };
+
+// Feel: small beats that make a knockout land. Hit-stop briefly pauses the action (seconds),
+// the shake is milliseconds and strength, and the women at the counter cheer for cheerSeconds
+// on a save or every third knockout in a row. Hit-stop, shake and hopping are skipped when the
+// player has reduced motion turned on.
+const FEEL = { hitStopKo: 0.06, hitStopSave: 0.1, koShakeMs: 80, koShakeAmt: 0.002, cheerSeconds: 1.3 };
 // Real-life tips. Shown on the start screen, on the end screen (picked by what happened in
 // the run), and all together on tips.html. Every tip needs a source a reader can check.
 // tags: what makes a tip relevant after a run.

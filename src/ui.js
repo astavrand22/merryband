@@ -85,12 +85,31 @@ function showEndTips(){
 showStartTip();
 
 function startGame(){
+  audioUnlock(); // browsers only allow sound after a tap, and this is that tap
   newGame(); state='play';
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
+/* ---------- rap sheet: who you stopped tonight, with what became of them ---------- */
+// Fills the end-screen list from game.stopped and returns the villain type you stopped most
+// (ties go to the first in VILLAINS), or null if you stopped nobody. That one also goes on the share card.
+function renderRap(){
+  const list=$('rapList'); list.innerHTML='';
+  const kinds=Object.keys(VILLAINS).filter(k=>(game.stopped[k]||0)>0);
+  kinds.forEach(k=>{
+    const v=VILLAINS[k], li=document.createElement('li'), b=document.createElement('b'), s=document.createElement('span');
+    b.textContent=v.name+(game.stopped[k]>1?' ×'+game.stopped[k]:'');
+    s.textContent=v.epilogue||'';
+    li.append(b,s); list.appendChild(li);
+  });
+  $('rapSheet').hidden=!kinds.length;
+  return kinds.reduce((best,k)=>(!best||game.stopped[k]>game.stopped[best])?k:best,null);
+}
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false;
+  if(win) sfx('win');
+  $('endTitle').textContent=win?'You made it home.':'Rough night.';
+  $('endSub').textContent=win?'You survived last call.':'Out of hearts. The bar\u2019s still open.';
   $('endTitle').textContent=win?'Made it home.':'Rough night.';
   $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
@@ -98,11 +117,18 @@ function endGame(win){
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
   showBestStart(); showStartTip(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
-  lastRun={win,score:game.score,kos:game.kos,saves:game.saves}; $('shareNote').textContent=''; prepCard();
+  lastRun={win,score:game.score,kos:game.kos,saves:game.saves,top:renderRap()}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
 }
 $('startBtn').onclick=startGame;
 $('againBtn').onclick=startGame;
+/* ---------- sound on/off (saved in this browser only, no login) ---------- */
+function renderMute(){
+  const b=$('muteBtn'); b.textContent=muted?'🔇':'🔊';
+  b.setAttribute('aria-pressed',String(!muted)); // pressed = sound on
+}
+$('muteBtn').onclick=()=>{ setMuted(!muted); audioUnlock(); renderMute() };
+renderMute();
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;
@@ -151,10 +177,17 @@ function drawCard(){
     x.font=`110px ${BG}`; x.fillStyle='#F4B942'; x.fillText(String(n),tx+180,1360);
     x.font=`800 32px ${RB}`; x.fillStyle='rgba(255,241,224,.8)'; x.fillText(label,tx+180,1415);
   });
+  // the villain you stopped most, and what became of him (shrinks to fit the card)
+  if(r.top&&VILLAINS[r.top]&&VILLAINS[r.top].epilogue){
+    const line=VILLAINS[r.top].name.toUpperCase()+': '+VILLAINS[r.top].epilogue;
+    let fs=30; x.font=`800 ${fs}px ${RB}`;
+    while(x.measureText(line).width>900&&fs>20){ fs-=2; x.font=`800 ${fs}px ${RB}`; }
+    x.fillStyle='rgba(255,241,224,.7)'; x.fillText(line,cx,1502);
+  }
   // call to action
-  x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1580);
+  x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1604);
   const link=gameLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
-  x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'KeysOut')),cx,1650);
+  x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'KeysOut')),cx,1674);
   return c;
 }
 function toBlobSync(canvas){
