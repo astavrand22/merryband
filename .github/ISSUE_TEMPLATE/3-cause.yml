@@ -1,0 +1,23 @@
+name: Cause or petition
+description: Suggest a real petition or organization to feature on the end screen
+title: "[Cause] "
+labels: ["cause"]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: Link
+      description: The petition, campaign or organization page.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What it does and who runs it
+    validations:
+      required: true
+  - type: input
+    id: villain
+    attributes:
+      label: Which villain does it pair with?
+      placeholder: The Spiker → drink-spiking laws

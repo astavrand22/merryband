@@ -16,6 +16,11 @@ Everything you'd tune is in the `CONFIG` block at the top of the script in `inde
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 
+## Feedback and contributing
+
+- Players can send ideas from `feedback.html`, linked on the start and end screens. It opens a pre-filled GitHub issue. To also offer a private email option, set `FEEDBACK_EMAIL` at the top of its script.
+- Developers can propose changes by pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the steps, content guidelines and contribution terms.
+
 ## Support
 
 If this subject brings something up, RAINN is there 24/7: [rainn.org](https://rainn.org) or 800-656-4673.

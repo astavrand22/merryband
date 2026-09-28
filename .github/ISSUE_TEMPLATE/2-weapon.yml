@@ -1,0 +1,29 @@
+name: New weapon
+description: Pitch an everyday object to fight back with
+title: "[Weapon] "
+labels: ["weapon-idea"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Weapon
+      placeholder: Umbrella
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How it's used
+      options:
+        - Tap (single hit, like keys)
+        - Hold (rapid fire, like hatpins)
+        - Aim a cone (like pepper spray)
+        - Area effect (like glitter)
+        - Something new
+  - type: textarea
+    id: details
+    attributes:
+      label: What it does
+      description: Damage, cooldown, side effects, anything that makes it fun.
+    validations:
+      required: true
