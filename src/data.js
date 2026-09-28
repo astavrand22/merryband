@@ -4,10 +4,17 @@ const CONFIG = { levelSeconds: 60, hearts: 3 };
 
 // behavior: 'target-drink' | 'approach' | 'lunge'
 // tell: seconds [min,max] before the red flag goes up. speed is relative to room size.
+// tellText: a few words shown by the flag the first time this villain flags in a run, so new players
+//   learn what the flag means. Describe the intent, never the act.
+// epilogue: one cartoonish line about what happens to him afterward, shown on the end screen.
+//   Keep it under about 45 characters so it also fits on the share card.
 const VILLAINS = {
-  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100 },
-  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100 },
-  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120 }
+  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
+              tellText:'Going for a drink', epilogue:'Banned from every bar in town.' },
+  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
+              tellText:'Following her', epilogue:'Got lost in a corn maze. Still in there.' },
+  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
+              tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.' }
 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 

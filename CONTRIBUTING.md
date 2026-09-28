@@ -10,7 +10,7 @@ No code needed. Use the in-game [feedback page](feedback.html) or [open an issue
 
 1. **Fork** this repo and create a branch (`villain-fake-caller`, `fix-spray-hitbox`, etc.).
 2. **Make your change.** The game uses Phaser, loaded from a CDN, with no build step. Most tuning lives in `src/data.js`; game logic is in `src/game.js` and screens in `src/ui.js`:
-   - `VILLAINS` and `SPAWN_WEIGHTS`: new villains need an entry here plus behavior in `step()` in `src/game.js` if they don't reuse `target-drink`, `approach` or `lunge`
+   - `VILLAINS` and `SPAWN_WEIGHTS`: new villains need an entry here (with a `tellText` and an `epilogue`) plus behavior in `step()` in `src/game.js` if they don't reuse `target-drink`, `approach` or `lunge`
    - `WEAPONS`: new weapons need an entry here plus a handler if they don't reuse `tap`, `hold`, `cone` or `area`
    - `CAUSE`: the end-screen petition
 3. **Test it** by opening `index.html` in a phone browser and a desktop browser. Play a full 60-second round.

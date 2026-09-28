@@ -18,7 +18,7 @@ The game runs on [Phaser](https://phaser.io), a free JavaScript game library loa
 
 Tuning in `src/data.js`:
 
-- `VILLAINS`: add a villain by adding an entry
+- `VILLAINS`: add a villain by adding an entry. Give each one a `tellText` (a few words shown by the flag) and an `epilogue` (one cartoonish line for the end screen)
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 - `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages

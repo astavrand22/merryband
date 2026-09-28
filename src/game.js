@@ -104,6 +104,12 @@ function flag(c) {
   c.flagged = true;
   c.view.flag.setVisible(true);
   if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
+  // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
+  const tellText = VILLAINS[c.kind].tellText;
+  if (tellText && !game.seenTells.has(c.kind)) {
+    game.seenTells.add(c.kind);
+    floatText(c.x, c.y - 128 * sc(c.y), tellText, '#FF8A80');
+  }
   if (c.kind === 'grabber') { c.state = 'windup'; c.windup = VILLAINS.grabber.windup; }
   else if (c.kind === 'spiker') {
     const taken = game.chars.filter(o => o !== c && o.kind === 'spiker' && o.flagged && o.state !== 'ko').map(o => o.drink);
@@ -353,7 +359,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
