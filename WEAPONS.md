@@ -28,18 +28,21 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 | # | Weapon | `id` | Unlock | `mode` | Stats | Behavior |
 |---|---|---|---|---|---|---|
 | 1 | 🔑 Keys | `keys` | 0 | `tap` | `dmg:1`, `cooldown:0.22` | Hits the character under the pointer. |
-| 2 | 📌 Hatpins | `hatpin` | 300 | `hold` | `dmg:0.5`, `rate:0.11` | Auto-fires at the pointer while held. Single target. |
-| 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Cone from the player, ~0.52 rad wide. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
-| 4 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | No damage. Tags every villain in a radius and **force-flags** them. |
+| 2 | 💄 Lipstick | `lipstick` | 300 | `mark` | `dmg:1`, `cooldown:0.5`, `slow:0.65` | Tap a flagged creep: CREEP is written across his forehead, letter by letter, with the lipstick moving along it. Marked creeps take double damage and move at 65% speed for the rest of their life. The mark stays on him through the KO. |
+| 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Hold and aim a cone from the player. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
+| 4 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | Glitter bomb. Every villain in the radius gets a shower from above, ends up covered in glitter that stays on him, and spends 0.7s rubbing his eyes (stunned). Bombed creeps take double damage and are **force-flagged**. Bystanders are skipped. |
+| 5 | 📱 Fake Call | `call` | 1700 | `call` | `cooldown:15`, `freeze:1.5` | Your friend calls ("OMG I'm literally right outside."). Every flagged Follower and Spiker gives up and walks off for half points; a Spiker who bails counts as a save. Flagged Grabbers freeze for 1.5s. Unflagged villains and bystanders aren't affected. |
 
-**Gold Hatpins:** pressing the petition button on the end screen sets `goldPin`, which turns hatpin streaks gold. Cosmetic only.
+Hatpins were removed on Sep 28. **Gold lipstick** replaces gold hatpins: pressing the petition button on the end screen makes the next run's CREEP marks gold.
+
+Double damage doesn't stack: a creep who is both glitter-bombed and lipstick-marked still takes 2×.
 
 ### Known issues / balance notes
 
-- **Hatpins outdamage everything.** Held, they do ~4.5 dmg/sec vs Pepper's 1.8. Pepper only wins when creeps cluster.
-- **Glitter force-flags.** An unflagged Grabber you glitter starts his lunge immediately and a Spiker heads for a drink. Good risk/reward, but the hint text doesn't say so.
-- **No defensive options.** Every weapon is offense; the only answer to a Grabber lunge is killing him first.
-- **Adding a 5th weapon needs code.** Number hotkeys are hardcoded to 1–4 (`keydown` handler in `src/ui.js`), and each `mode` has its own handler function (`useKeys`, `firePin`, `sprayTick`, `useGlitter`).
+- **Pepper is now the only held weapon** and the only one that can hit bystanders by accident.
+- **Glitter force-flags.** An unflagged Grabber you glitter starts his windup immediately and a Spiker heads for a drink. The 0.7s stun softens it.
+- **Fake Call can trivialize a crowded screen.** The 15s cooldown and 1,700-point unlock keep it to about one or two uses a run. Watch this in playtesting.
+- **Bar is 5 wide.** Number keys now go 1 to the number of weapons. Six buttons will get tight on small phones.
 
 ## Proposed weapons
 
@@ -61,22 +64,11 @@ Status for all of these: **idea**. Each notes the closest existing `mode` and wh
 - **Why:** The only weapon built around detection instead of damage. Strongest against Spikers.
 - **New code:** global "no early-hit penalty" timer checked in `applyHit`.
 
-### 📞 Fake Boyfriend Call
-- **Mode:** `tap`, 15s cooldown
-- **Behavior:** "Oh hey babe, I'm almost at the bar." Every Follower on screen loses interest and leaves. Half points. Toast: *"He respected the imaginary man."*
-- **New code:** villain-type filter; "give up and leave" state for Followers.
-
 ### ☂️ Umbrella
 - **Mode:** new `block` (hold)
 - **Behavior:** Hold it open and a Grabber's lunge bounces off, stunning him for 2 seconds. You can't attack while it's open. Tapping it closed jabs for 1 damage.
 - **Why:** First defensive weapon.
 - **New code:** `block` mode; intercept the Grabber's `hurt('Grabbed.')` path.
-
-### 💄 Lipstick
-- **Mode:** `tap`
-- **Behavior:** Writes CREEP across his forehead. He's permanently tagged, and bystanders near him boo and slow him down.
-- **Why:** Turns the crowd into a mechanic.
-- **New code:** label rendering on the character; proximity slow from bystanders.
 
 ### 🩴 Flying Flip-Flop
 - **Mode:** `tap`, boomerang
@@ -174,13 +166,14 @@ Landing a hit buzzes the phone. Tuning lives in `HAPTICS` in `src/data.js`; the 
 | Damage to a flagged creep | `hit` | 12 | `applyHit()`, `sprayTick()` |
 | Knockout | `ko` | 18 on, 40 off, 30 on | `ko()` |
 | Save (KO'd a Spiker before he spiked) | `save` | 18, 30, 18, 30, 40 | `ko()` |
-| Glitter tagged someone | `tag` | 8 | `useGlitter()` |
+| Glitter bomb or lipstick mark | `tag` | 8 | `useGlitter()`, `writeCreep()` |
+| Fake call rings | `call` | 40, 60, 40, 60, 40 | `fakeCall()` |
 | You lost a heart | `hurt` | 70, 50, 70 | `hurt()` |
 
-- **Held weapons** (hatpins, pepper) would buzz nonstop, so each kind is throttled by `minGap` (0.09s).
+- **Held weapons** (pepper) would buzz nonstop, so each kind is throttled by `minGap` (0.09s).
 - **Early hits** (before the flag) don't buzz. The silence is part of the "wait for the flag" feedback.
 - **Android** uses the Vibration API (`navigator.vibrate`).
-- **iPhone** Safari has no vibration API. The fallback toggles a hidden iOS 18 "switch" checkbox, which plays the system haptic tick. It only works inside a tap, so on iPhone the keys, glitter and anything that lands on a tap get a tick, while held weapons stay silent. Patterns all collapse to one tick on iPhone.
+- **iPhone** Safari has no vibration API. The fallback toggles a hidden iOS 18 "switch" checkbox, which plays the system haptic tick. It only works inside a tap, so on iPhone the keys, lipstick, glitter, call and anything that lands on a tap get a tick, while held weapons stay silent. Patterns all collapse to one tick on iPhone.
 - **Off switch:** set `HAPTICS.enabled = false`. There's no in-game toggle yet; one belongs on the start screen if players ask.
 - **New weapons:** call `buzz('hit')` wherever damage lands. A new kind (e.g. `whistle`) only needs a new key in `HAPTICS`.
 
@@ -188,7 +181,7 @@ Landing a hit buzzes the phone. Tuning lives in `HAPTICS` in `src/data.js`; the 
 
 1. **Umbrella**, **Group Chat**, **Coaster Shield**: add new mechanics (defense, detection, protection).
 2. **Bag Swing** and **Knee Strike**: they add the two range classes (`radius`, `close`), so building them also builds the `range` field the other close-range moves need.
-3. **Fake Boyfriend Call**, **Water Bottle**, **Alarm Whistle**: the ones people will screenshot.
+3. **Water Bottle**, **Alarm Whistle**: the ones people will screenshot.
 4. Everything else.
 
 ## Adding a weapon

@@ -26,6 +26,9 @@ const bottles = Array.from({length:22}, () => ({ x:Math.random(), h:rand(14,26),
 
 const sc = y => 0.55 + 0.75 * clamp((y - horizonY) / (playerY - horizonY), 0, 1);
 const origin = () => ({ x:W / 2, y:playerY + 14 });
+const WPN = id => WEAPONS.find(w => w.id === id);
+const dmgMult = c => (c.tagged || c.marked) ? 2 : 1;   // glitter-bombed or lipstick-marked
+const slowMult = c => c.marked ? WPN('lipstick').slow : 1;
 
 /* ---------- characters ---------- */
 
@@ -58,6 +61,7 @@ function setArms(v, pose) {
   a.clear().lineStyle(6, p.outfit, 1);
   const arm = (x1, y1, x2, y2) => { a.lineBetween(x1, y1, x2, y2); a.fillStyle(p.skin, 1).fillCircle(x2, y2, 3.4); };
   if (pose === 'grab') { arm(-11,-56,-24,-48); arm(11,-56,24,-48); }
+  else if (pose === 'wipe') { arm(-11,-56,-6,-72); arm(11,-56,6,-72); }
   else if (pose === 'vial') { arm(-11,-56,-14,-32); arm(11,-56,20,-64); a.fillStyle(COLORS.spiked, 1).fillRect(18, -74, 4, 9); }
   else { arm(-11,-56,-14,-32); arm(11,-56,14,-32); }
 }
@@ -148,7 +152,7 @@ function buzz(kind) {
 }
 
 function applyHit(c, dmg) {
-  if (c.state === 'ko') return;
+  if (c.state === 'ko' || c.state === 'bail') return;
   const s = sc(c.y);
   if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That was a bystander.'); return; }
   if (!c.flagged) {
@@ -156,7 +160,7 @@ function applyHit(c, dmg) {
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
     floatText(c.x, c.y - 96 * s, 'Wait for the flag  -50', '#FFF1E0'); return;
   }
-  c.hp -= dmg * (c.tagged ? 2 : 1);
+  c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
   if (c.hp <= 0) ko(c); else buzz('hit');
 }
@@ -196,49 +200,142 @@ function hurt(msg) {
   if (game.hearts <= 0) endGame(false);
 }
 function useKeys() {
-  const w = WEAPONS[0];
+  const w = WPN('keys');
   if (game.cool.keys > 0) return;
   game.cool.keys = w.cooldown;
   const c = charAt(pointer.x, pointer.y);
   game.streaks.push({ star:true, x2:pointer.x, y2:pointer.y, life:0.15, color:COLORS.cream });
   if (c) applyHit(c, w.dmg);
 }
-function firePin() {
-  const w = WEAPONS[1], o = origin();
-  game.streaks.push({ x1:o.x, y1:o.y, x2:pointer.x, y2:pointer.y, life:0.12, color:goldPin ? COLORS.amber : 0xDDE3EA });
-  const c = charAt(pointer.x, pointer.y);
-  if (c) applyHit(c, w.dmg);
-}
 function sprayTick(dt) {
-  const w = WEAPONS[2], o = origin(), ang = Math.atan2(pointer.y - o.y, pointer.x - o.x);
+  const w = WPN('spray'), o = origin(), ang = Math.atan2(pointer.y - o.y, pointer.x - o.x);
   const range = (playerY - horizonY) * 0.75 + 40, half = 0.26;
   game.sprayAng = ang; game.spraying = 0.1;
   if (Math.random() < 0.7) S.fx.spray.emitParticleAt(o.x, o.y, 1);
   for (const c of game.chars) {
-    if (c.state === 'ko') continue;
+    if (c.state === 'ko' || c.state === 'bail') continue;
     const cx = c.x, cy = c.y - 45 * sc(c.y), dx = cx - o.x, dy = cy - o.y, d = Math.hypot(dx, dy);
     if (d > range) continue;
     let da = Math.atan2(dy, dx) - ang; da = Math.atan2(Math.sin(da), Math.cos(da));
     if (Math.abs(da) > half + 14 / Math.max(d, 1)) continue;
     if (c.kind === 'bystander') applyHit(c, 0);
     else if (!c.flagged) c.stun = Math.max(c.stun, 0.3);
-    else { c.stun = 0.5; c.hp -= w.dps * dt * (c.tagged ? 2 : 1); if (c.hp <= 0) ko(c); else buzz('hit'); }
+    else { c.stun = 0.5; c.hp -= w.dps * dt * dmgMult(c); if (c.hp <= 0) ko(c); else buzz('hit'); }
   }
 }
 function useGlitter() {
-  const w = WEAPONS[3];
+  const w = WPN('glitter');
   if (game.cool.glitter > 0) { toast('Glitter is recharging.'); return; }
   game.cool.glitter = w.cooldown;
   const R = clamp(W * 0.18, 70, 120);
   let n = 0;
   S.fx.glitter.explode(40, pointer.x, pointer.y);
+  ringFx(pointer.x, pointer.y, R, COLORS.neon);
   for (const c of game.chars) {
-    if (c.state === 'ko' || c.kind === 'bystander') continue;
-    if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { c.tagged = true; flag(c); n++; }
+    if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander') continue;
+    if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { flag(c); glitterBomb(c); n++; }
   }
   if (n) buzz('tag');
-  floatText(pointer.x, pointer.y - 30, n ? ('Tagged ' + n) : 'Nobody here', '#FF4F9A');
+  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTER BOMBED x' + n : 'GLITTER BOMBED') : 'Nobody here', '#FF4F9A', n > 0);
 }
+// He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
+// stuck wiping his face for a moment.
+function glitterBomb(c) {
+  const s = sc(c.y), v = c.view, first = !c.tagged;
+  c.tagged = true;
+  c.stun = Math.max(c.stun, 0.7); c.bombT = 0.7;
+  for (let k = 0; k < 6; k++) S.fx.glitterRain.explode(7, c.x + rand(-16, 16) * s, c.y - rand(105, 125) * s);
+  const puff = S.add.circle(0, -60, 18, COLORS.neon, 0.45);
+  v.add(puff);
+  S.tweens.add({ targets:puff, scale:2.2, alpha:0, duration:500, onComplete:() => puff.destroy() });
+  if (first) {
+    const cols = [COLORS.neon, COLORS.amber, COLORS.cream, 0xB478FF, 0x6BE4FF];
+    v.specks = [];
+    for (let i = 0; i < 22; i++) {
+      const onHead = i < 8;
+      const d = S.add.circle(onHead ? rand(-9, 9) : rand(-12, 12), onHead ? rand(-82, -64) : rand(-60, -26), rand(0.9, 1.7), pick(cols)).setScale(0);
+      v.add(d); v.specks.push(d);
+      S.tweens.add({ targets:d, scale:1, delay:120 + i * 18, duration:120 });
+    }
+  }
+}
+function ringFx(x, y, r, color) {
+  const g = S.add.graphics().setDepth(8600);
+  const o = { t:0 };
+  S.tweens.add({ targets:o, t:1, duration:350, onUpdate:() => { g.clear().lineStyle(3, color, 1 - o.t).strokeCircle(x, y, r * (0.3 + 0.7 * o.t)); }, onComplete:() => g.destroy() });
+}
+
+/* ---------- lipstick ---------- */
+function useLipstick() {
+  const w = WPN('lipstick');
+  if (game.cool.lipstick > 0) return;
+  game.cool.lipstick = w.cooldown;
+  const c = charAt(pointer.x, pointer.y);
+  game.streaks.push({ star:true, x2:pointer.x, y2:pointer.y, life:0.15, color:0xE0115F });
+  if (!c) return;
+  if (c.kind !== 'bystander' && c.flagged && c.state !== 'bail' && !c.marked) writeCreep(c);
+  applyHit(c, w.dmg);
+}
+// Writes CREEP across his forehead, left to right, with the lipstick moving along the letters.
+function writeCreep(c) {
+  c.marked = true;
+  const v = c.view, color = goldPin ? '#F4B942' : '#E0115F';
+  const t = S.add.text(0, -77, 'CREEP', { fontFamily:"Bungee, 'Arial Black', Impact, sans-serif", fontSize:'11px', color,
+    stroke:'#1A0E1D', strokeThickness:2, resolution:TEXT_RES * 3 }).setOrigin(0, 0.5).setAngle(-6);
+  t.x = -t.width / 2;
+  v.add(t); v.creep = t;
+  buzz('tag');
+  if (reduceMotion) return;
+  const tube = S.add.text(t.x, -80, '💄', { fontSize:'13px', resolution:TEXT_RES * 3 }).setOrigin(0.2, 0.9).setAngle(30);
+  v.add(tube);
+  t.setScale(0, 1);
+  S.tweens.add({ targets:t, scaleX:1, duration:420, ease:'Linear',
+    onUpdate:() => { tube.x = t.x + t.width * t.scaleX; } ,
+    onComplete:() => S.tweens.add({ targets:tube, alpha:0, y:-92, duration:200, onComplete:() => tube.destroy() }) });
+}
+
+/* ---------- fake call from your friend ---------- */
+const CALL_LINES = [
+  'OMG I\u2019m literally right outside.',
+  'Where are you?? I\u2019m by the door.',
+  'I see you. Coming over right now.',
+  'Stay there, we\u2019re walking in.',
+  'Babe your Uber\u2019s here. And so am I.'
+];
+function fakeCall() {
+  const w = WPN('call');
+  if (game.cool.call > 0) { toast('Your friend just called. Give it a sec.'); return; }
+  game.cool.call = w.cooldown;
+  buzz('call');
+  phoneFx(pick(CALL_LINES));
+  let bailed = 0, frozen = 0;
+  for (const c of game.chars) {
+    if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander' || !c.flagged) continue;
+    const s = sc(c.y), v = VILLAINS[c.kind];
+    if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Witness.', '#FFF1E0'); continue; }
+    if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
+    const save = c.kind === 'spiker';
+    const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
+    game.score += pts; if (save) game.saves++;
+    c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
+    S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
+    floatText(c.x, c.y - 100 * s, (save ? 'Save! ' : 'Bye. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
+    bailed++;
+  }
+  if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to scare off', '#FFF1E0');
+  checkUnlocks();
+}
+function phoneFx(line) {
+  const x = W / 2, y = playerY - 40;
+  const phone = S.add.text(x, y, '📱', { fontSize:'34px', resolution:TEXT_RES }).setOrigin(0.5).setDepth(9600);
+  const bubble = S.add.text(x, y - 44, line, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px', color:'#1A0E1D',
+    backgroundColor:'#FFF1E0', padding:{ x:10, y:6 }, align:'center', wordWrap:{ width:Math.min(260, W - 40) }, resolution:TEXT_RES })
+    .setOrigin(0.5, 1).setDepth(9600).setAlpha(0);
+  if (!reduceMotion) S.tweens.add({ targets:phone, angle:{ from:-14, to:14 }, duration:70, yoyo:true, repeat:5 });
+  S.tweens.add({ targets:bubble, alpha:1, delay:450, duration:150 });
+  S.tweens.add({ targets:[phone, bubble], alpha:0, delay:2000, duration:350, onComplete:() => { phone.destroy(); bubble.destroy(); } });
+}
+
 function checkUnlocks() {
   for (const w of WEAPONS) {
     if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
@@ -256,7 +353,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), fireT:0, t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
@@ -274,6 +371,7 @@ function step(dt) {
   for (const c of g.chars) {
     if (state !== 'play') break;
     c.hitCool = Math.max(0, c.hitCool - dt);
+    if (c.bombT > 0) c.bombT -= dt;
     if (c.state === 'ko') continue;
     if (c.stun > 0) { c.stun -= dt; continue; }
     if (c.kind === 'bystander') {
@@ -284,6 +382,7 @@ function step(dt) {
       } else if (moveToward(c, c.tx, c.ty, 0.07 * W, dt)) { c.tx = rand(0.1, 0.9) * W; c.ty = horizonY + rand(0.06, 0.55) * depth; }
       continue;
     }
+    if (c.state === 'bail') { if (moveToward(c, c.tx, c.y, 0.3 * W, dt)) c.gone = true; continue; }
     const v = VILLAINS[c.kind];
     if (!c.flagged) {
       c.tellT -= dt;
@@ -292,17 +391,17 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * depth, dt)) { c.gone = true; hurt('He followed you.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you.'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * depth, dt)) { c.gone = true; hurt('Grabbed.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('Grabbed.'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
         if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('Drink spiked.'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
-      else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
+      else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
   }
   for (const c of g.chars) if (c.gone && c.view.active) c.view.destroy();
@@ -310,7 +409,6 @@ function step(dt) {
 
   const w = WEAPONS[selected];
   if (pointer.down && state === 'play') {
-    if (w.mode === 'hold') { g.fireT -= dt; if (g.fireT <= 0) { g.fireT = w.rate; firePin(); } }
     if (w.mode === 'cone') sprayTick(dt);
   }
   for (const k in g.cool) g.cool[k] = Math.max(0, g.cool[k] - dt);
@@ -323,7 +421,7 @@ function syncViews() {
     const s = sc(c.y), v = c.view;
     const shake = c.state === 'windup' && !reduceMotion ? Math.sin(game.t * 60) * 2.2 : 0;
     v.setPosition(c.x + shake, c.y).setScale(s).setDepth(c.y);
-    setArms(v, c.state === 'lunge' ? 'grab' : (c.kind === 'spiker' && c.flagged && (c.state === 'act' || c.state === 'spiking')) ? 'vial' : 'down');
+    setArms(v, c.bombT > 0 ? 'wipe' : c.state === 'lunge' ? 'grab' : (c.kind === 'spiker' && c.flagged && (c.state === 'act' || c.state === 'spiking')) ? 'vial' : 'down');
     v.stunFx.setVisible(c.stun > 0);
     if (c.tagged) v.sparkles.forEach((p, i) => { const a = game.t * 3 + i * 1.26; p.setVisible(true).setPosition(Math.cos(a) * 20, -50 + Math.sin(a) * 28); });
   }
@@ -433,6 +531,8 @@ class BarScene extends Phaser.Scene {
       gold: this.add.particles(0, 0, 'dot', { ...base, tint:COLORS.amber }).setDepth(8500),
       glitter: this.add.particles(0, 0, 'dot', { lifespan:{ min:600, max:1100 }, speed:{ min:60, max:260 }, gravityY:380,
         scale:{ start:0.5, end:0.2 }, tint:[COLORS.neon, COLORS.amber, COLORS.cream, 0xB478FF], emitting:false }).setDepth(8500),
+      glitterRain: this.add.particles(0, 0, 'dot', { lifespan:{ min:500, max:900 }, speed:{ min:20, max:110 }, angle:{ min:60, max:120 },
+        gravityY:420, scale:{ start:0.4, end:0.15 }, tint:[COLORS.neon, COLORS.amber, COLORS.cream, 0xB478FF, 0x6BE4FF], emitting:false }).setDepth(8500),
       spray: this.add.particles(0, 0, 'dot', { lifespan:400, speed:{ min:320, max:520 },
         angle:{ onEmit:() => Phaser.Math.RadToDeg(game ? game.sprayAng : 0) + rand(-15, 15) },
         scale:{ start:1.5, end:0.8 }, alpha:{ start:0.5, end:0 }, tint:COLORS.pepper, emitting:false }).setDepth(8400)
@@ -447,7 +547,7 @@ class BarScene extends Phaser.Scene {
       if (state !== 'play') return;
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
-      if (w.mode === 'tap') useKeys(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'hold') game.fireT = 0;
+      if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
     this.input.on('pointerup', () => pointer.down = false);
