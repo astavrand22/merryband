@@ -47,6 +47,12 @@ const HAPTICS = {
 // Players can mute from the speaker button; that choice is saved in the browser.
 const SOUND = { volume: 0.8, minGap: 0.06 };
 
+// Feel: small beats that make a knockout land. Hit-stop briefly pauses the action (seconds),
+// the shake is milliseconds and strength, and the women at the counter cheer for cheerSeconds
+// on a save or every third knockout in a row. Hit-stop, shake and hopping are skipped when the
+// player has reduced motion turned on.
+const FEEL = { hitStopKo: 0.06, hitStopSave: 0.1, koShakeMs: 80, koShakeAmt: 0.002, cheerSeconds: 1.3 };
+
 const CAUSE = {
   issue: 'The Spiker is fiction. Spiking isn\u2019t.',
   blurb: 'Back stronger drink-spiking laws. (Replace this with your petition copy.)',

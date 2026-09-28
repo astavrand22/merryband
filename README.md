@@ -23,6 +23,7 @@ Tuning in `src/data.js`:
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 - `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages
+- `FEEL`: hit-stop, knockout shake and how long the women at the counter cheer (all skipped when the player has reduced motion on)
 - `SOUND`: master volume and the minimum gap between repeats of one effect
 - `SHARE`: the end-screen "Share your score" buttons. Threads opens a prefilled post; Instagram shares a story-sized score card through the phone's share sheet (desktop downloads it). Set `url` to the live game link once it has one
 
