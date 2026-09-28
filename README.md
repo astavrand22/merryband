@@ -22,6 +22,8 @@ Tuning in `src/data.js`:
 - `VILLAINS`: add a villain by adding an entry. Give each one a `tellText` (a few words shown by the flag) and an `epilogue` (one cartoonish line for the end screen)
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
+- `TIPS`: real-life safety tips. One shows on the start screen, two on the end screen (picked by what happened in the run), and all of them on `tips.html`. Each tip needs a source link
+- `LOOKS`: how often villains are women (1 in 100) and bystanders are men (1 in 2)
 - `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages
 - `SOUND`: master volume and the minimum gap between repeats of one effect
 - `SHARE`: the end-screen "Share your score" buttons. Threads opens a prefilled post; Instagram shares a story-sized score card through the phone's share sheet (desktop downloads it). Set `url` to the live game link once it has one
@@ -33,6 +35,8 @@ Gifts go through [Every.org](https://www.every.org), a 501(c)(3), directly to th
 ## Roadmap
 
 [docs/LEVELS.md](docs/LEVELS.md) documents Level 1 as built, how it should evolve, the designs for Levels 2–5, the build order and open questions.
+
+A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). Open `crew-test.html` to try it.
 
 ## Feedback and contributing
 

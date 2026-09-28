@@ -4,3 +4,5 @@ docs
 *.md
 wrangler.jsonc
 .assetsignore
+crew-test.html
+src/crew-test.js

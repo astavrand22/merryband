@@ -1,0 +1,40 @@
+name: Validate content
+
+# The legal content in content/ expires. A closed lookback window shown as open
+# is harmful misinformation, not a stale fact — so this check fails rather than
+# letting it ship. It also runs on a schedule, because content can expire with
+# nobody touching the repo.
+
+on:
+  push:
+    paths:
+      - "content/**"
+      - "tools/validate.mjs"
+      - ".github/workflows/validate-content.yml"
+  pull_request:
+    paths:
+      - "content/**"
+      - "tools/validate.mjs"
+  schedule:
+    # Mondays 09:00 UTC. Catches expiry with no commit behind it.
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate content
+        run: node tools/validate.mjs
+
+      - name: Check expiry 90 days out
+        if: always()
+        run: |
+          echo "Looking ahead — what breaks in the next 90 days:"
+          VALIDATE_AS_OF=$(date -u -d "+90 days" +%Y-%m-%d) node tools/validate.mjs || true

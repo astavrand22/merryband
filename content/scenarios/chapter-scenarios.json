@@ -1,0 +1,235 @@
+{
+  "$schema": "../schema/scenario.schema.json",
+  "version": "0.1.0",
+  "note": "Three hand-written composites, built dimension by dimension through docs/FICTIONALIZATION.md. Written by hand before any generator exists, on purpose: the generator's dimension vocabulary should be derived from these, not guessed at in advance.",
+  "scenarios": [
+    {
+      "id": "sc-001-the-dispatch-floor",
+      "title": "The Dispatch Floor",
+      "chapter": 1,
+      "predator": {
+        "name": "Wendell Sharp",
+        "role": "night dispatch supervisor",
+        "note": "Invented. Registered in content/registry/invented-names.json."
+      },
+      "institution": {
+        "archetype": "a mid-sized regional logistics firm",
+        "note": "Archetype only. No real company is referenced, renamed, or gestured at."
+      },
+      "setting": {
+        "region": "an inland state",
+        "time": "the present"
+      },
+      "dimensions": {
+        "access_vector": "supervisory-control-over-schedule",
+        "institutional_posture": "complaints-received-and-closed-without-investigation",
+        "silencing_mechanism": "predispute-nda-and-arbitration-clause",
+        "legal_obstacle": "arbitration-diversion",
+        "resolution_pattern": "institution-liable-individual-departs"
+      },
+      "opening": "She is not in the room where it happened and the game never goes there. She is in a break room at 04:40, holding a printout of the shift roster, working out that the three women who left in the last eighteen months all worked the same nights she does.",
+      "armor_stack": [
+        "the_one_voice",
+        "the_predispute_nda",
+        "the_side_door",
+        "the_institution",
+        "the_countersuit",
+        "the_transfer"
+      ],
+      "beats": [
+        "The roster is the first voice-finder. Each name she matches raises the_one_voice counter and drops his chip resistance.",
+        "The NDA wall goes up the moment she tries to talk to anyone still employed there. It breaks — Speak Out Act. This should feel like a genuine win and arrive early, because the player needs one.",
+        "At 60% he takes the side door. The arena shrinks, the audience vanishes, the arbiter sprite is unreachable. She nails it shut. EFAA.",
+        "The House turns out to have a complaint file. Three prior reports, all closed same-day. Discovery opens it.",
+        "The House falls. He does not. He walks out with a reference and the chapter-end card shows where he went.",
+        "Action beat, mandatory: what the Speak Out Act does not cover, and the state-level bills that would close settlement NDAs."
+      ],
+      "teaches": ["speak-out-act", "efaa", "institutional-liability", "civil-vs-criminal", "discovery"],
+      "provenance": {
+        "pattern_sources": [
+          {
+            "pattern": "pre-dispute arbitration clauses diverting harassment and assault claims out of court; the federal response",
+            "source_type": "legislative-and-legal-analysis",
+            "ref": "EFAA enactment and subsequent scope litigation, per practitioner analyses"
+          },
+          {
+            "pattern": "onboarding NDAs used to prevent workers discovering shared experience; the federal response",
+            "source_type": "legislative-and-legal-analysis",
+            "ref": "Speak Out Act enactment and pre-dispute/post-dispute distinction"
+          },
+          {
+            "pattern": "internal complaints received and closed without investigation; departure clustering as the surfacing signal",
+            "source_type": "consent-decrees",
+            "ref": "EEOC consent decree pattern in harassment cases, generally"
+          },
+          {
+            "pattern": "individual departs with a neutral reference while the employer resolves exposure",
+            "source_type": "consent-decrees",
+            "ref": "settlement structure pattern, generally"
+          }
+        ],
+        "distinct_matters": 4
+      },
+      "review": {
+        "distance_check": "pass",
+        "distance_check_notes": "Industry moved from a named-brand-adjacent sector to generic regional logistics. No headcount, no dollar figure, no city. Departure count kept vague at 'three in eighteen months' — common enough not to narrow.",
+        "depiction_check": "pass — opens after, no flashback, no act depicted",
+        "action_beat_present": true,
+        "reviewed_by": "",
+        "reviewed_on": "",
+        "legal_review": "pending"
+      }
+    },
+    {
+      "id": "sc-002-the-good-reference",
+      "title": "The Good Reference",
+      "chapter": 3,
+      "predator": {
+        "name": "Roy Malbec",
+        "role": "assistant coach, regional youth club",
+        "note": "Invented. Registered."
+      },
+      "institution": {
+        "archetype": "a regional youth sports club and its parent association",
+        "note": "Archetype only."
+      },
+      "setting": {
+        "region": "a mid-Atlantic state",
+        "time": "the present, concerning events eleven and nineteen years earlier"
+      },
+      "dimensions": {
+        "access_vector": "coaching-authority-over-minors",
+        "institutional_posture": "quiet-transfer-with-neutral-reference",
+        "silencing_mechanism": "reputational-and-community-pressure",
+        "legal_obstacle": "expired-statute-of-limitations",
+        "resolution_pattern": "revival-window-enables-institutional-claim"
+      },
+      "opening": "A woman in her thirties reads a club newsletter and recognises a name in a coaching credit. The game opens on the newsletter, not on the past. Per SAFETY.md the conduct is never depicted; what the player works with is the paperwork trail he left behind him.",
+      "armor_stack": [
+        "the_one_voice",
+        "the_clock",
+        "the_transfer",
+        "the_institution",
+        "the_immunity"
+      ],
+      "beats": [
+        "the_clock is already at zero when the level opens. The player cannot win. This is deliberate and must be handled carefully — the fail copy names the statute, never her, and the level does not end on it.",
+        "The lookback window opens the EXPIRED door. One reset. The timer is short and visible, which is accurate and creates real urgency.",
+        "the_transfer is the chapter's spine: he appears at three institutions across the campaign, each time with a clean reference. The player assembles the trail from association records.",
+        "the_one_voice fills from the other clubs, not from this one. The aggregation is across institutions and across decades.",
+        "the_immunity caps the payout. The House is liable and the ceiling is low. This is the bleakest beat in the game.",
+        "Action beat, mandatory and heavier than usual: the state's current SOL reform effort, the window's actual closing date, and the orgs working it. This level cannot ship without it."
+      ],
+      "teaches": ["what-is-an-sol", "lookback-windows", "institutional-liability", "pattern-evidence"],
+      "provenance": {
+        "pattern_sources": [
+          {
+            "pattern": "quiet reassignment of an accused adult with a neutral reference, enabling access at a successor institution",
+            "source_type": "grand-jury-and-ig-reports",
+            "ref": "institutional abuse investigation pattern, multiple sectors"
+          },
+          {
+            "pattern": "delayed disclosure in childhood abuse colliding with short civil deadlines",
+            "source_type": "peer-reviewed-and-legislative",
+            "ref": "SOL reform bill analyses and disclosure-timing research"
+          },
+          {
+            "pattern": "revival windows producing filings against institutions rather than individuals",
+            "source_type": "legislative-and-press",
+            "ref": "state lookback window enactments, multiple states"
+          },
+          {
+            "pattern": "charitable and governmental immunity, and damages caps, limiting institutional recovery",
+            "source_type": "case-law",
+            "ref": "immunity doctrine, generally"
+          }
+        ],
+        "distinct_matters": 4
+      },
+      "review": {
+        "distance_check": "REVISED-THEN-PASS",
+        "distance_check_notes": "First draft used a named-sport national governing body and a specific number of survivors. Both failed check 2 — the combination narrowed to a small set of real matters. Changed to a generic regional club with a parent association, dropped the count, moved the region. Pattern preserved, specificity removed.",
+        "depiction_check": "pass — minors involved; per SAFETY.md §7 the scenario stays entirely at the institutional level",
+        "action_beat_present": true,
+        "reviewed_by": "",
+        "reviewed_on": "",
+        "legal_review": "pending"
+      }
+    },
+    {
+      "id": "sc-003-the-box",
+      "title": "The Box",
+      "chapter": 5,
+      "predator": {
+        "name": "Alton Pryce",
+        "role": "clinician, private practice",
+        "note": "Invented. Registered."
+      },
+      "institution": {
+        "archetype": "a private multi-practitioner clinic",
+        "note": "Archetype only."
+      },
+      "setting": {
+        "region": "a state whose code is built around force",
+        "time": "the present"
+      },
+      "dimensions": {
+        "access_vector": "clinical-authority-and-sedation",
+        "institutional_posture": "no-reporting-channel-and-credential-protection",
+        "silencing_mechanism": "credibility-asymmetry",
+        "legal_obstacle": "statutory-gap-plus-unsubmitted-evidence",
+        "resolution_pattern": "criminal-declined-civil-proceeds"
+      },
+      "opening": "She has a case number and a voicemail from four months ago that was never returned. The kit exists. She knows its number. The level opens in the corridor outside an evidence room.",
+      "armor_stack": [
+        "the_one_voice",
+        "the_statute_gap",
+        "the_locker",
+        "the_institution",
+        "the_side_door"
+      ],
+      "beats": [
+        "First clean hit reads NO OFFENSE IN THIS JURISDICTION. No sound. Let it sit. This is the game's hardest moment and it should not be softened.",
+        "the_locker is visible from the opening shot — numbered, forty feet away, behind a door. The obstruction is a person's decision, not a budget line. The boss of this room is the officer who did not submit it.",
+        "Submitting the kit produces a CODIS hit, which produces two more voices, which is the only route through the_one_voice here.",
+        "The criminal route dead-ends explicitly. The player watches the prosecutor decline. Then the civil route against the clinic opens — the asymmetry lands hardest when the player has just been told no.",
+        "Action beat, mandatory: the consent-definition reform effort in that state profile, and the kit-tracking and submission-mandate bills. Donate unit ($1,000 tests one kit) appears here as a side action, never as the win condition."
+      ],
+      "teaches": ["consent-definitions", "kit-backlog", "kit-backlog-economics", "civil-vs-criminal", "burden-of-proof"],
+      "provenance": {
+        "pattern_sources": [
+          {
+            "pattern": "state codes built on force rather than absence of consent failing to reach incapacity",
+            "source_type": "statutory-analysis",
+            "ref": "state code comparison; RAINN state law database"
+          },
+          {
+            "pattern": "kits collected and never submitted by law enforcement; submission as a discretionary decision",
+            "source_type": "federal-research",
+            "ref": "CRS backlog summary; DOJ-funded unsubmitted-kit studies"
+          },
+          {
+            "pattern": "CODIS linkage across separate reports revealing serial offending",
+            "source_type": "federal-research",
+            "ref": "NIJ-supported backlog testing outcomes"
+          },
+          {
+            "pattern": "declination of criminal charges alongside a viable civil claim against the employing institution",
+            "source_type": "case-law-and-reporting",
+            "ref": "attrition research and institutional liability pattern"
+          }
+        ],
+        "distinct_matters": 4
+      },
+      "review": {
+        "distance_check": "pass",
+        "distance_check_notes": "Specialty deliberately unspecified — naming one narrowed toward real matters. No patient count, no institution size, no state named. Region described by its statutory character rather than its name, which is also how the jurisdiction profile works mechanically.",
+        "depiction_check": "pass — opens after; sedation referenced as a statutory category, never as a scene",
+        "action_beat_present": true,
+        "reviewed_by": "",
+        "reviewed_on": "",
+        "legal_review": "pending"
+      }
+    }
+  ]
+}

@@ -26,6 +26,7 @@ This game is about fighting back, not about showing harm.
 - No depictions of assault. Villains are stopped *before* they act; the red flag is the tell.
 - Violence stays cartoonish: knockouts, stars, glitter. No blood or gore.
 - Causes and petitions must be real, verifiable, and focused on survivors, prevention or legal reform.
+- Real-life tips must link to a credible source (a safety org, police department, health site or major news outlet). Keep them practical and never blame the person it happened to.
 - Keep the RAINN support line on any screen that deals with the subject.
 
 ## Contribution terms
