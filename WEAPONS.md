@@ -1,6 +1,6 @@
 # Weapons
 
-Reference for the current arsenal and a backlog of proposed weapons. The live definitions are in the `WEAPONS` array in the `CONFIG` block of `index.html`.
+Reference for the current arsenal and a backlog of proposed weapons. The live definitions are in the `WEAPONS` array in `src/data.js`.
 
 ## Shared rules
 
@@ -107,7 +107,7 @@ Status for all of these: **idea**. Each notes the closest existing `mode` and wh
 
 ## Adding a weapon
 
-1. Add an entry to `WEAPONS` in `CONFIG` (`id`, `name`, `icon`, `mode`, stats, `unlock`, `hint`).
-2. If it uses a new `mode`, add a handler and wire it into the pointer handlers and `update()`.
+1. Add an entry to `WEAPONS` in `src/data.js` (`id`, `name`, `icon`, `mode`, stats, `unlock`, `hint`).
+2. If it uses a new `mode`, add a handler and wire it into the pointer handlers in `BarScene.create()` and `step()` in `src/game.js`.
 3. Extend the number-key handler past 4 if the bar grows.
 4. Update this file.

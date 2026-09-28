@@ -10,7 +10,13 @@ Open `index.html` in any browser. It works on phones and desktops, with no insta
 
 ## Edit
 
-Everything you'd tune is in the `CONFIG` block at the top of the script in `index.html`:
+The game runs on [Phaser](https://phaser.io), a free JavaScript game library loaded from a CDN, so there's still no build step. The code is split three ways:
+
+- `src/data.js`: everything you'd tune (below)
+- `src/game.js`: the Phaser scene, meaning the bar, characters, weapons and scoring
+- `src/ui.js`: the start and end screens, HUD, weapon bar, best score, score sharing and donation panel
+
+Tuning in `src/data.js`:
 
 - `VILLAINS`: add a villain by adding an entry
 - `WEAPONS`: add or adjust weapons

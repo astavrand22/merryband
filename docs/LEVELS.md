@@ -23,7 +23,7 @@ Every level follows the same rules:
 
 ## Level 1: Last Call, as built today
 
-A 60-second survival round in a bar at closing time, three hearts, in a single `index.html` with no framework, no image assets and no saved state. You survive the minute to win; you lose at zero hearts.
+A 60-second survival round in a bar at closing time, three hearts, built on Phaser with no image assets and no saved state. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose at zero hearts.
 
 **The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 
@@ -192,6 +192,6 @@ Polish Level 1 before building Level 2; a strong first minute matters more than 
 
 - [ ] Separate 60-to-90-second levels, or one continuous night where finishing the bar drops you onto the street?
 - [ ] Do weapon unlocks carry across levels, or does each level restart at Keys?
-- [ ] Stay with plain canvas code, or move to Phaser before Level 3? Plain canvas is fine through Level 2; the garage's cover and scrolling are where a framework starts paying off.
+- [x] Move to Phaser. Done 2026-09-28.
 - [ ] Which partner org backs each level's cause card, and have they seen the game?
 - [ ] Final game name. "Keys Out" is still the placeholder.
