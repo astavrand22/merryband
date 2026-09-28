@@ -15,7 +15,7 @@ Every level follows the same rules:
 
 | # | Level | Setting | New villain | New weapon | Cause card | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Last Call | Bar at closing | Spiker, Follower, Grabber | Keys, Hatpins, Pepper, Glitter | Drink-spiking laws | Built |
+| 1 | Last Call | Bar at closing | Spiker, Follower, Grabber | Keys, Lipstick, Pepper, Glitter, Fake Call | Drink-spiking laws | Built |
 | 2 | The Walk Home | Street at night | The Wolf | Stiletto boomerang | Stalking protections | Design |
 | 3 | The Garage | Parking garage | The Lurker | Paper trail | Rape kit backlog | Design |
 | 4 | The Office | Workplace, boss fight | The Mogul (boss) | The Receipts | NDA reform | Design |
@@ -37,24 +37,25 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 | The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward you | He reaches you | 100 |
 | The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast | He reaches you | 120 |
 
-**Weapons.** Keys are free; the rest unlock by score within a run and reset on the next run. Keys 1–4 switch weapons on a keyboard.
+**Weapons.** Keys are free; the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
 
 | Weapon | Input | Effect | Unlocks at |
 | --- | --- | --- | --- |
 | Keys | Tap | 1 damage, 0.22 s cooldown | Start |
-| Hatpins | Hold | Rapid fire, 0.5 damage per pin | 300 |
+| Lipstick | Tap | 1 damage and writes CREEP on his forehead. Marked villains take double damage and move at 65% speed | 300 |
 | Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and costs a heart if it hits a bystander | 700 |
-| Glitter bomb | Tap | Area blast, 5 s recharge. Tagged villains flag immediately and take double damage | 1,200 |
+| Glitter bomb | Tap | Area blast, 5 s recharge. Villains in it are covered in glitter, stunned for 0.7 s, flag immediately and take double damage | 1,200 |
+| Fake Call | Tap | Your friend calls, 15 s recharge. Flagged Followers and Spikers walk off for half points (a Spiker counts as a save); flagged Grabbers freeze for 1.5 s | 1,700 |
 
 **Scoring.** Hitting a villain before his flag costs 50 points and resets the combo. Every 3 knockouts in a row add 1 to the multiplier, up to 4x. Stopping a Spiker before he finishes counts as a save.
 
-**End screen.** Score, creeps down and saves, then the cause card: "The Spiker is fiction. Spiking isn't." The petition link is still blank, and the copy is placeholder. Tapping the button unlocks gold hatpins for the next run in that browser tab. The start and end screens both link to RAINN.
+**End screen.** Score, creeps down and saves, then the cause card: "The Spiker is fiction. Spiking isn't." The petition link is still blank, and the copy is placeholder. Tapping the button unlocks gold lipstick for the next run in that browser tab. The start and end screens both link to RAINN.
 
 **Gaps in what's built**
 
 - No petition URL or final cause copy.
 - No sound or haptics.
-- Nothing persists: best score, gold hatpins and unlocks are lost on reload.
+- Nothing persists: best score, gold lipstick and unlocks are lost on reload.
 - Villains and weapons are config objects inside the HTML, not the separate data files the original design called for.
 - Characters are drawn from shapes, so villains and bystanders differ only by the flag. That's intentional for fairness but gives each villain little personality.
 - No onboarding. A first-time player learns the "wait for the flag" rule by losing points.
@@ -69,7 +70,7 @@ Level 1 is the tutorial and the thing people share, so it needs to be the most p
 - Real petition link and cause copy in `CAUSE`, checked against the partner org's own wording.
 - A 10-second guided opening: one Spiker, a prompt to wait for the flag, a prompt to strike. Normal spawning starts after the first knockout.
 - Sound: a key jingle on hit, a KO sting, a glass clink when a drink is saved, a low hum when a flag goes up. Short vibration on phones when you lose a heart.
-- Save best score and the gold hatpins in the browser so they survive a reload.
+- Save best score and the gold lipstick in the browser so they survive a reload.
 
 **Make the bar feel alive**
 

@@ -69,7 +69,7 @@ $('againBtn').onclick=startGame;
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;
-  $('signNote').textContent=CAUSE.url?'Thanks. Gold hatpins unlocked for your next run.':'No petition link yet. Add it to CAUSE.url. Gold hatpins unlocked anyway.';
+  $('signNote').textContent=CAUSE.url?'Thanks. Gold lipstick unlocked for your next run.':'No petition link yet. Add it to CAUSE.url. Gold lipstick unlocked anyway.';
 };
 
 /* ---------- share your score ---------- */
@@ -209,6 +209,6 @@ $('sgSend').onclick=()=>{
 })();
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('giveScreen').classList.contains('hidden')) closeGive() });
 
-addEventListener('keydown',e=>{ if(state==='play'&&e.key>='1'&&e.key<='4') selectWeapon(+e.key-1) });
+addEventListener('keydown',e=>{ if(state==='play'&&e.key>='1'&&e.key<=String(WEAPONS.length)) selectWeapon(+e.key-1) });
 
 renderBar();

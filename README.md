@@ -2,7 +2,7 @@
 
 A short arcade game for the browser. You walk home through the city at night and take out fictional predators with everyday objects before they make their move.
 
-Level 1, *Last Call*, is a 60-second night at a bar with three villains (the Spiker, the Follower and the Grabber), four weapons, and a petition card on the end screen.
+Level 1, *Last Call*, is a 60-second night at a bar with three villains (the Spiker, the Follower and the Grabber), five weapons (Keys, Lipstick, Pepper, Glitter and a Fake Call), and a petition card on the end screen.
 
 ## Play
 

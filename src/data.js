@@ -11,24 +11,26 @@ const VILLAINS = {
 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 
-// mode: 'tap' | 'hold' | 'cone' | 'area'. unlock = score needed.
+// mode: 'tap' | 'cone' | 'area' | 'mark' | 'call'. unlock = score needed.
 const WEAPONS = [
-  { id:'keys',    name:'Keys',    icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing.' },
-  { id:'hatpin',  name:'Hatpins', icon:'📌', mode:'hold', dmg:0.5, rate:0.11,     unlock:300,  hint:'Hold to fire.' },
-  { id:'spray',   name:'Pepper',  icon:'🌶️', mode:'cone', dps:1.8,               unlock:700,  hint:'Hold and aim. Bystanders feel it too.' },
-  { id:'glitter', name:'Glitter', icon:'✨', mode:'area', cooldown:5,             unlock:1200, hint:'Tap to tag creeps. Tagged take double damage.' }
+  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing.' },
+  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  hint:'Tap a creep to write CREEP on his forehead. Marked creeps take double damage and slow down.', slow:0.65 },
+  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  hint:'Hold and aim. Bystanders feel it too.' },
+  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, hint:'Tap to glitter-bomb creeps. Bombed creeps take double damage.' },
+  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Your friend calls. Followers and Spikers bail, Grabbers freeze.', freeze:1.5 }
 ];
 
 // Haptics: a short buzz when you land a hit. Patterns are milliseconds (on, off, on...).
 // Android browsers support this. iPhone Safari has no vibration API, so iPhones get
 // the system "switch" tick instead (iOS 18+, taps only). minGap stops held weapons
-// (hatpins, pepper) from buzzing continuously.
+// (pepper) from buzzing continuously.
 const HAPTICS = {
   enabled: true,
   hit:    12,             // any damage to a flagged creep
   ko:     [18, 40, 30],   // knockout: double thump
   save:   [18, 30, 18, 30, 40], // KO'd a Spiker before he spiked a drink
-  tag:    8,              // glitter tagged at least one creep
+  tag:    8,              // glitter bomb or lipstick mark
+  call:   [40, 60, 40, 60, 40], // fake call: phone ringing
   hurt:   [70, 50, 70],   // you lost a heart
   minGap: 0.09            // seconds between buzzes of the same kind
 };
