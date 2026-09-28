@@ -69,6 +69,12 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .suggest .btn{margin-top:10px;font-size:15px;padding:11px}
 .fine{font-size:12px;line-height:1.45;opacity:.65;margin-top:10px}
 #suggestNote{font-size:13px;margin-top:8px;color:var(--amber);min-height:18px}
+.share{margin-bottom:18px}
+.shareRow{display:flex;gap:8px}
+.sbtn{flex:1;border:2px solid var(--neon);background:transparent;color:var(--cream);border-radius:12px;padding:11px 6px;font:800 15px Rubik,system-ui,sans-serif;cursor:pointer}
+.sbtn:active{background:rgba(255,79,154,.15)}
+.sbtn:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+#shareNote{min-height:0;color:var(--amber);opacity:1}
 </style>
 </head>
 <body>
@@ -109,6 +115,14 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
       <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
       <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
+    </div>
+    <div class="share">
+      <div class="label">Share your score</div>
+      <div class="shareRow">
+        <button class="sbtn" id="shareThreads">Threads</button>
+        <button class="sbtn" id="shareInsta">Instagram</button>
+      </div>
+      <div id="shareNote" class="fine" aria-live="polite"></div>
     </div>
     <div class="cause">
       <h3 id="causeTitle"></h3>
@@ -193,6 +207,14 @@ const DONATE = {
   amounts: [10, 25, 50, 100],
   defaultAmount: 25,
   suggestEmail: ''   // where "suggest a recipient" messages go, e.g. 'hello@yourdomain.com'
+};
+
+// "Share your score" on the end screen. Threads opens a prefilled post;
+// Instagram gets a story-sized score card (1080x1920) through the phone's share sheet,
+// or a download on desktop.
+const SHARE = {
+  url: '',        // live game link for posts and the card. Blank = the page's own web address
+  tag: 'KeysOut'  // hashtag added to the Threads post and copied caption (no #). '' for none
 };
 /* ========================================================================== */
 
@@ -600,6 +622,7 @@ function endGame(win){
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
   showBestStart();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
+  lastRun={win,score:game.score,kos:game.kos,saves:game.saves}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
 }
 $('startBtn').onclick=startGame;
@@ -608,6 +631,85 @@ $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;
   $('signNote').textContent=CAUSE.url?'Thanks. Gold hatpins unlocked for your next run.':'No petition link yet. Add it to CAUSE.url. Gold hatpins unlocked anyway.';
+};
+
+/* ---------- share your score ---------- */
+let lastRun=null, card=null;
+function gameLink(){ return SHARE.url || (/^https?:/.test(location.protocol)?location.origin+location.pathname:'') }
+const plural=(n,one,many)=>n+' '+(n===1?one:many);
+function shareText(withLink){
+  const r=lastRun, pts=r.score.toLocaleString('en-US');
+  let t=r.win?`I made it home from Last Call in Keys Out with ${pts} points`:`I scored ${pts} in Keys Out before the night got rough`;
+  const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
+  if(bits.length) t+=': '+bits.join(', ');
+  t+='. Your turn.';
+  const link=gameLink();
+  if(withLink&&link) t+='\n'+link;
+  if(SHARE.tag) t+=(withLink&&link?' ':'\n')+'#'+SHARE.tag;
+  return t;
+}
+function drawCard(){
+  const r=lastRun, c=document.createElement('canvas'); c.width=1080; c.height=1920;
+  const x=c.getContext('2d'), cx=540, BG="Bungee, 'Arial Black', Impact, sans-serif", RB='Rubik, system-ui, sans-serif';
+  let g=x.createLinearGradient(0,0,0,1920); g.addColorStop(0,'#3F2446'); g.addColorStop(0.55,'#1F1024'); g.addColorStop(1,'#120914');
+  x.fillStyle=g; x.fillRect(0,0,1080,1920);
+  const glow=x.createRadialGradient(cx,420,20,cx,420,700); glow.addColorStop(0,'rgba(255,79,154,.22)'); glow.addColorStop(1,'rgba(255,79,154,0)');
+  x.fillStyle=glow; x.fillRect(0,0,1080,1100);
+  x.textAlign='center'; x.textBaseline='alphabetic';
+  // title
+  x.font=`150px ${BG}`; x.fillStyle='#E0302B'; x.fillText('KEYS OUT',cx+8,408);
+  x.save(); x.shadowColor='#FF4F9A'; x.shadowBlur=30; x.fillStyle='#FF4F9A'; x.fillText('KEYS OUT',cx,400); x.restore();
+  x.font=`800 44px ${RB}`; x.fillStyle='#F4B942'; x.fillText('LEVEL 1  ·  LAST CALL',cx,480);
+  // red flag
+  x.strokeStyle='#FFF1E0'; x.lineWidth=8; x.lineCap='round'; x.beginPath(); x.moveTo(cx-40,720); x.lineTo(cx-40,590); x.stroke();
+  x.fillStyle='#E0302B'; x.beginPath(); x.moveTo(cx-40,590); x.lineTo(cx+60,618); x.lineTo(cx-40,648); x.closePath(); x.fill();
+  // result + score
+  x.font=`64px ${BG}`; x.fillStyle='#FFF1E0'; x.fillText(r.win?'I MADE IT HOME.':'ROUGH NIGHT.',cx,830);
+  const pts=r.score.toLocaleString('en-US');
+  x.font=`${pts.length>5?210:260}px ${BG}`; x.fillStyle='#F4B942'; x.fillText(pts,cx,1090);
+  x.font=`800 40px ${RB}`; x.fillStyle='rgba(255,241,224,.75)'; x.fillText('POINTS',cx,1150);
+  // stat tiles
+  [[r.kos,r.kos===1?'CREEP DOWN':'CREEPS DOWN',150],[r.saves,r.saves===1?'DRINK SAVED':'DRINKS SAVED',570]].forEach(([n,label,tx])=>{
+    x.fillStyle='#2A1830'; x.beginPath(); x.roundRect(tx,1230,360,220,32); x.fill();
+    x.strokeStyle='#5a3a60'; x.lineWidth=4; x.stroke();
+    x.font=`110px ${BG}`; x.fillStyle='#F4B942'; x.fillText(String(n),tx+180,1360);
+    x.font=`800 32px ${RB}`; x.fillStyle='rgba(255,241,224,.8)'; x.fillText(label,tx+180,1415);
+  });
+  // call to action
+  x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1580);
+  const link=gameLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'KeysOut')),cx,1650);
+  return c;
+}
+function toBlobSync(canvas){
+  const [head,b64]=canvas.toDataURL('image/png').split(','), bin=atob(b64), a=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i);
+  return new Blob([a],{type:head.split(':')[1].split(';')[0]});
+}
+// Build the card before the end screen shows, so the share tap still counts as a user tap on iOS.
+function prepCard(){
+  card=null; const run=lastRun;
+  const go=()=>{ if(lastRun!==run) return; drawCard().toBlob(b=>{ if(lastRun===run) card=b },'image/png') };
+  (document.fonts&&document.fonts.load)?Promise.all([document.fonts.load("150px Bungee"),document.fonts.load("800 40px Rubik")]).then(go,go):go();
+}
+function shareNote(msg){ $('shareNote').textContent=msg }
+$('shareThreads').onclick=()=>{
+  if(!lastRun) return;
+  window.open('https://www.threads.net/intent/post?text='+encodeURIComponent(shareText(true)),'_blank','noopener');
+  shareNote('Opened Threads with your post ready.');
+};
+$('shareInsta').onclick=async()=>{
+  if(!lastRun) return;
+  const file=new File([card||toBlobSync(drawCard())],'keys-out-score.png',{type:'image/png'});
+  const caption=shareText(true);
+  try{ navigator.clipboard&&navigator.clipboard.writeText(caption).catch(()=>{}) }catch(_){}
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file]}); shareNote('Pick Instagram, then Story or Post. Caption’s copied if you want it.'); return }
+    catch(e){ if(e&&e.name==='AbortError') return }
+  }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(file); a.download=file.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  shareNote('Score card saved. Post it to your Instagram story from your phone. Caption’s copied.');
 };
 
 /* ---------- donations ---------- */

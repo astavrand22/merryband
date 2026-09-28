@@ -16,6 +16,7 @@ Everything you'd tune is in the `CONFIG` block at the top of the script in `inde
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 - `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages
+- `SHARE`: the end-screen "Share your score" buttons. Threads opens a prefilled post; Instagram shares a story-sized score card through the phone's share sheet (desktop downloads it). Set `url` to the live game link once it has one
 
 ## Donations
 
