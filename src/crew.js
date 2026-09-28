@@ -31,10 +31,13 @@ const ROLE_WEAKNESS = Object.freeze({
 });
 const WEAKNESS_MULTIPLIER = 1.6;
 
-// ms each phase takes if nobody interferes.
+// ms each phase takes if nobody interferes, at planPace 1.
 const PHASE_DURATION = Object.freeze({
   [Phase.APPROACH]: 8000, [Phase.SEPARATE]: 10000, [Phase.ISOLATE]: 10000, [Phase.EXIT]: 6000
 });
+// The one dial for difficulty. 1 = the durations above; 0.4 runs the plan 2.5x slower.
+// A fully linked crew still runs up to 1.5x faster than this, and exposure slows it.
+const CREW_TUNING = { planPace: 0.4 };
 const NEXT_PHASE = Object.freeze({
   [Phase.APPROACH]: Phase.SEPARATE, [Phase.SEPARATE]: Phase.ISOLATE,
   [Phase.ISOLATE]: Phase.EXIT, [Phase.EXIT]: Phase.SUCCEEDED
@@ -128,8 +131,8 @@ class Crew {
     this._drawTether();
   }
 
-  /** A stronger link speeds the plan up; exposure slows it down. */
-  _pacing() { return this.linkBonus * (1 - this.exposure * 0.6); }
+  /** A stronger link speeds the plan up; exposure slows it down. CREW_TUNING.planPace scales it all. */
+  _pacing() { return CREW_TUNING.planPace * this.linkBonus * (1 - this.exposure * 0.6); }
 
   _checkBroken() {
     if (!this.isActive || (this.cohesion > 0 && this.exposure < 1)) return;

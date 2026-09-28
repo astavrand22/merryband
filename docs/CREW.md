@@ -45,7 +45,9 @@ Willingness isn't fixed:
 
 ## Tuning
 
-Everything is a constant at the top of each file: `ABILITY_CONFIG` and `BYSTANDER_TUNING` in `bystander.js`; `ROLE_WEAKNESS`, `PHASE_DURATION` and `WEAKNESS_MULTIPLIER` in `crew.js`. All numbers are first-pass guesses.
+Everything is a constant at the top of each file: `ABILITY_CONFIG` and `BYSTANDER_TUNING` in `bystander.js`; `ROLE_WEAKNESS`, `PHASE_DURATION`, `WEAKNESS_MULTIPLIER` and `CREW_TUNING` in `crew.js`. All numbers are first-pass guesses.
+
+The one dial for difficulty is `CREW_TUNING.planPace` in `crew.js`. It scales how fast the plan runs. It starts at 0.4 (a fully linked crew finishes in about a minute); raise it toward 1 for a harder round, lower it for an easier one.
 
 ## Content rules still apply
 
