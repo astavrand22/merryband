@@ -134,7 +134,12 @@ const DONATE = {
   ],
   amounts: [10, 25, 50, 100],
   defaultAmount: 25,
-  suggestEmail: ''   // where "suggest a recipient" messages go, e.g. 'hello@yourdomain.com'
+  suggestEmail: '',  // where "suggest a recipient" messages go, e.g. 'hello@yourdomain.com'
+  // From every.org/developer > your webhook. Blank = donations work but aren't tracked.
+  // It's designed to sit in public pages; the webhook URL's secret is what keeps tracking safe.
+  webhookToken: '',
+  showTotal: true,   // show "Players have raised $X" once tracking has recorded a gift
+  everyHost: 'www.every.org'  // 'staging.every.org' to test with card 4242 4242 4242 4242
 };
 
 // "Share your score" on the end screen. Threads opens a prefilled post;

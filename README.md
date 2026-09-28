@@ -41,6 +41,18 @@ A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). 
 - Players can send ideas from `feedback.html`, linked on the start and end screens. It opens a pre-filled GitHub issue. To also offer a private email option, set `FEEDBACK_EMAIL` at the top of its script.
 - Developers can propose changes by pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the steps, content guidelines and contribution terms.
 
+## Donation tracking
+
+Every donation link carries your Every.org webhook token. After each completed gift, Every.org notifies the site and a small Worker (`worker/index.js`) records the amount, recipient and date. No donor names or emails are stored. The game then shows "Players have raised $X" in the donate panel.
+
+One-time setup:
+
+1. **Cloudflare secrets.** In the Worker's Settings > Variables and Secrets, add two secrets with long random values: `WEBHOOK_SECRET` and `ADMIN_KEY`. The donations database is created automatically on the next deploy.
+2. **Every.org webhook.** At [every.org/developer](https://www.every.org/developer), create a webhook with the URL `https://<your-site>/api/everyorg-webhook/<WEBHOOK_SECRET>`. Copy the webhook token it gives you into `DONATE.webhookToken` in `src/data.js`.
+3. **See the numbers.** Totals: `https://<your-site>/api/donations/summary`. Full list as a spreadsheet: `https://<your-site>/api/donations.csv?key=<ADMIN_KEY>`.
+
+To test without real money, set `DONATE.everyHost` to `'staging.every.org'`, set up the same webhook at staging.every.org/developer, and pay with card 4242 4242 4242 4242.
+
 ## Support
 
 If this subject brings something up, RAINN is there 24/7: [rainn.org](https://rainn.org) or 800-656-4673.

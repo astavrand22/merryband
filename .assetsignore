@@ -6,3 +6,4 @@ wrangler.jsonc
 .assetsignore
 crew-test.html
 src/crew-test.js
+worker

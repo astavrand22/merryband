@@ -215,8 +215,25 @@ function donateUrl(r,amt){
     q.set('success_url',back+'?thanks='+encodeURIComponent(r.id));
     q.set('exit_url',back);
   }
-  return 'https://www.every.org/'+encodeURIComponent(r.id)+'?'+q.toString()+'#donate';
+  if(DONATE.webhookToken){
+    q.set('webhook_token',DONATE.webhookToken);
+    const pid=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+    q.set('partner_donation_id','ko-'+pid);
+    q.set('partner_metadata',btoa(JSON.stringify({game:'keys-out',screen:giveFrom&&giveFrom.id==='startScreen'?'start':'end'})));
+  }
+  return 'https://'+DONATE.everyHost+'/'+encodeURIComponent(r.id)+'?'+q.toString()+'#donate';
 }
+let raisedText='';
+function loadRaised(){
+  if(!DONATE.showTotal||!DONATE.webhookToken||!/^https?:/.test(location.protocol)) return;
+  fetch('/api/donations/summary').then(r=>r.ok?r.json():null).then(s=>{
+    if(!s||!s.totalCents) return;
+    const usd='$'+Math.floor(s.totalCents/100).toLocaleString('en-US');
+    raisedText='Players have raised '+usd+' for survivors\u2019 legal help'+(s.count>1?' across '+s.count+' gifts':'')+'.';
+    document.querySelectorAll('.raised').forEach(el=>{el.textContent=raisedText; el.hidden=false});
+  }).catch(()=>{});
+}
+loadRaised();
 function openGive(from){
   giveFrom=from; renderGive(); $('donateNote').textContent='';
   from.classList.add('hidden'); $('giveScreen').classList.remove('hidden'); $('giveClose').focus();
