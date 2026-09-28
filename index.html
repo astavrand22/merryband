@@ -45,6 +45,26 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .cause p{font-size:14px;line-height:1.45;margin-bottom:12px;opacity:.9}
 .cause .btn{background:var(--flag);color:var(--cream)}
 #signNote{font-size:13px;margin-top:8px;color:var(--amber);min-height:18px}
+.give{border:2px solid var(--amber);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(244,185,66,.07)}
+.give h3{font-size:18px;margin-bottom:6px}
+.give p{font-size:14px;line-height:1.45;opacity:.9;margin-bottom:12px}
+.give .btn{background:var(--amber);color:var(--ink)}
+.orgs{display:grid;gap:8px;margin-bottom:14px}
+.org{display:block;text-align:left;width:100%;border:2px solid var(--line);background:var(--plum);color:var(--cream);border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit}
+.org b{display:block;font-size:15px;margin-bottom:2px}
+.org span{display:block;font-size:13px;line-height:1.4;opacity:.8}
+.org.sel{border-color:var(--amber);background:#4a2a3a}
+.amts{display:flex;gap:6px;margin-bottom:14px}
+.amt{flex:1;border:2px solid var(--line);background:var(--plum);color:var(--cream);border-radius:10px;padding:10px 0;font:800 15px Rubik,system-ui,sans-serif;cursor:pointer}
+.amt.sel{border-color:var(--amber);color:var(--amber)}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.7;margin-bottom:8px}
+.suggest{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.suggest summary{cursor:pointer;font-size:14px;color:var(--amber);font-weight:600}
+.suggest input,.suggest textarea{width:100%;margin-top:8px;border:2px solid var(--line);background:var(--plum);color:var(--cream);border-radius:10px;padding:10px;font:15px Rubik,system-ui,sans-serif;-webkit-user-select:text;user-select:text}
+.suggest textarea{min-height:70px;resize:vertical}
+.suggest .btn{margin-top:10px;font-size:15px;padding:11px}
+.fine{font-size:12px;line-height:1.45;opacity:.65;margin-top:10px}
+#suggestNote{font-size:13px;margin-top:8px;color:var(--amber);min-height:18px}
 </style>
 </head>
 <body>
@@ -69,6 +89,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <li><span>🔑</span>Tap to swing your keys. More weapons unlock as you score.</li>
     </ul>
     <button class="btn" id="startBtn">Start the night</button>
+    <button class="btn alt" id="giveBtnStart">Donate to survivors' legal help</button>
     <p class="note">Cartoon violence against fictional predators. No assaults are shown.<br>If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
     <p class="note">Got an idea for a villain or weapon? <a href="feedback.html">Tell us</a>.</p>
   </div>
@@ -89,9 +110,36 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <button class="btn" id="signBtn"></button>
       <div id="signNote"></div>
     </div>
+    <div class="give">
+      <h3>Fund real legal help</h3>
+      <p>Pay for lawyers for survivors. Your money goes to the nonprofit through Every.org. We never touch it.</p>
+      <button class="btn" id="giveBtn">Donate</button>
+    </div>
     <button class="btn alt" id="againBtn">Play again</button>
     <a class="btn alt" href="feedback.html" style="text-align:center;text-decoration:none">Suggest an idea</a>
     <p class="note">Need to talk to someone? <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
+  </div>
+</div>
+
+<div class="overlay hidden" id="giveScreen" role="dialog" aria-modal="true" aria-labelledby="giveTitle">
+  <div class="card">
+    <h2 id="giveTitle">Fund legal help</h2>
+    <p class="sub">Pick where it goes. You'll finish on Every.org, a nonprofit that passes your gift on and emails you a tax receipt.</p>
+    <div class="label">Recipient</div>
+    <div class="orgs" id="orgs"></div>
+    <div class="label">Amount</div>
+    <div class="amts" id="amts"></div>
+    <button class="btn" id="donateBtn">Donate</button>
+    <div id="donateNote" class="fine"></div>
+    <details class="suggest" id="suggest">
+      <summary>Know a group we should add?</summary>
+      <input id="sgName" placeholder="Nonprofit name" maxlength="120">
+      <input id="sgLink" placeholder="Website (optional)" maxlength="200">
+      <textarea id="sgWhy" placeholder="What do they do? (optional)" maxlength="600"></textarea>
+      <button class="btn" id="sgSend">Send suggestion</button>
+      <div id="suggestNote"></div>
+    </details>
+    <button class="btn alt" id="giveClose">Back</button>
   </div>
 </div>
 
@@ -121,6 +169,24 @@ const CAUSE = {
   blurb: 'Back stronger drink-spiking laws. (Replace this with your petition copy.)',
   cta: 'Sign the petition',
   url: '' // paste the live petition link here
+};
+
+// Donations go through Every.org straight to the nonprofit; the game never touches money.
+// id = Every.org slug or EIN. designation = earmark note (a recommendation, not binding).
+// To add a recipient, add an entry. Max 4 looks best on phones.
+const DONATE = {
+  recipients: [
+    { id:'02-0588944', name:'Victim Rights Law Center',
+      blurb:'Free lawyers for sexual assault survivors: housing, school, work, privacy.' },
+    { id:'52-1213010', name:'TIME\u2019S UP Legal Defense Fund',
+      blurb:'Funds lawyers for people facing sexual harassment at work. Run by the National Women\u2019s Law Center.',
+      designation:'TIME\u2019S UP Legal Defense Fund' },
+    { id:'23-7085442', name:'Legal Momentum',
+      blurb:'The oldest women\u2019s legal defense fund in the US. Litigates for survivors and against gender violence.' }
+  ],
+  amounts: [10, 25, 50, 100],
+  defaultAmount: 25,
+  suggestEmail: ''   // where "suggest a recipient" messages go, e.g. 'hello@yourdomain.com'
 };
 /* ========================================================================== */
 
@@ -516,6 +582,65 @@ $('signBtn').onclick=()=>{
   goldPin=true;
   $('signNote').textContent=CAUSE.url?'Thanks. Gold hatpins unlocked for your next run.':'No petition link yet. Add it to CAUSE.url. Gold hatpins unlocked anyway.';
 };
+
+/* ---------- donations ---------- */
+let giveOrg=0, giveAmt=DONATE.defaultAmount, giveFrom=null;
+function renderGive(){
+  $('orgs').innerHTML=''; $('amts').innerHTML='';
+  DONATE.recipients.forEach((r,i)=>{
+    const b=document.createElement('button');
+    b.className='org'+(i===giveOrg?' sel':''); b.setAttribute('aria-pressed',i===giveOrg);
+    b.innerHTML='<b></b><span></span>'; b.querySelector('b').textContent=r.name; b.querySelector('span').textContent=r.blurb;
+    b.onclick=()=>{giveOrg=i; renderGive()};
+    $('orgs').appendChild(b);
+  });
+  DONATE.amounts.forEach(a=>{
+    const b=document.createElement('button');
+    b.className='amt'+(a===giveAmt?' sel':''); b.setAttribute('aria-pressed',a===giveAmt); b.textContent='$'+a;
+    b.onclick=()=>{giveAmt=a; renderGive()};
+    $('amts').appendChild(b);
+  });
+  $('donateBtn').textContent='Donate $'+giveAmt+' to '+DONATE.recipients[giveOrg].name.split(' (')[0];
+}
+function donateUrl(r,amt){
+  const q=new URLSearchParams({amount:amt, suggestedAmounts:DONATE.amounts.join(','), frequency:'ONCE', theme_color:'F4B942'});
+  if(r.designation) q.set('designation',r.designation);
+  if(/^https?:/.test(location.protocol)){
+    const back=location.origin+location.pathname;
+    q.set('success_url',back+'?thanks='+encodeURIComponent(r.id));
+    q.set('exit_url',back);
+  }
+  return 'https://www.every.org/'+encodeURIComponent(r.id)+'?'+q.toString()+'#donate';
+}
+function openGive(from){
+  giveFrom=from; renderGive(); $('donateNote').textContent='';
+  from.classList.add('hidden'); $('giveScreen').classList.remove('hidden'); $('giveClose').focus();
+}
+function closeGive(){ $('giveScreen').classList.add('hidden'); if(giveFrom) giveFrom.classList.remove('hidden') }
+$('giveBtn').onclick=()=>openGive($('endScreen'));
+$('giveBtnStart').onclick=()=>openGive($('startScreen'));
+$('giveClose').onclick=closeGive;
+$('donateBtn').onclick=()=>{
+  const r=DONATE.recipients[giveOrg];
+  window.open(donateUrl(r,giveAmt),'_blank','noopener');
+  $('donateNote').textContent='Opened Every.org in a new tab. Thank you.';
+};
+$('sgSend').onclick=()=>{
+  const name=$('sgName').value.trim(), link=$('sgLink').value.trim(), why=$('sgWhy').value.trim();
+  if(!name){ $('suggestNote').textContent='Add the nonprofit\u2019s name first.'; $('sgName').focus(); return }
+  if(!DONATE.suggestEmail){ $('suggestNote').textContent='Suggestions aren\u2019t set up yet. Add an address to DONATE.suggestEmail.'; return }
+  const body='Nonprofit: '+name+'\nWebsite: '+(link||'-')+'\n\nWhat they do:\n'+(why||'-');
+  location.href='mailto:'+DONATE.suggestEmail+'?subject='+encodeURIComponent('Keys Out recipient suggestion: '+name)+'&body='+encodeURIComponent(body);
+  $('suggestNote').textContent='Your email app should open with the message ready to send.';
+};
+(function thanksFromDonation(){
+  const id=new URLSearchParams(location.search).get('thanks'); if(!id) return;
+  const r=DONATE.recipients.find(x=>x.id===id);
+  history.replaceState(null,'',location.pathname);
+  setTimeout(()=>toast('Thank you'+(r?' for backing '+r.name:'')+'. Receipt\u2019s in your inbox.'),400);
+})();
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('giveScreen').classList.contains('hidden')) closeGive() });
+
 addEventListener('keydown',e=>{ if(state==='play'&&e.key>='1'&&e.key<='4') selectWeapon(+e.key-1) });
 
 cvs.addEventListener('pointerdown',e=>{

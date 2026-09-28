@@ -15,6 +15,11 @@ Everything you'd tune is in the `CONFIG` block at the top of the script in `inde
 - `VILLAINS`: add a villain by adding an entry
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
+- `DONATE`: the donation panel (on the start and end screens). Each recipient is an Every.org slug or EIN; add or remove entries to change who players can give to. Set `suggestEmail` to the address that should receive "suggest a recipient" messages
+
+## Donations
+
+Gifts go through [Every.org](https://www.every.org), a 501(c)(3), directly to the chosen nonprofit. The game never handles money, and donors get a tax receipt from Every.org. When the game is hosted on a web address, donors land back in the game with a thank-you after giving. Test the flow without real money by changing `www.every.org` to `staging.every.org` in `donateUrl` and paying with card 4242 4242 4242 4242.
 
 ## Roadmap
 
