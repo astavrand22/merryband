@@ -23,7 +23,7 @@ function renderBar(){
 }
 function selectWeapon(i){
   if(!game||!game.unlocked.has(WEAPONS[i].id)) return;
-  selected=i; pointer.down=false; renderBar(); toast(WEAPONS[i].name+'. '+WEAPONS[i].hint);
+  selected=i; pointer.down=false; renderBar(); toast(WEAPONS[i].name+'. '+WEAPONS[i].hint); narrate(WEAPONS[i].name+': '+(WEAPONS[i].how||WEAPONS[i].hint),6500);
 }
 function updateHUD(){
   const g=game; if(!g) return;

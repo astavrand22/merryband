@@ -36,12 +36,12 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
-  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing. Aim low.' },
-  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  hint:'Brand CREEP on his forehead. Marked men move slow and bruise easy.', slow:0.65 },
-  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  hint:'Hold and aim. She\u2019ll catch it too.' },
-  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, hint:'Glitter-bomb them. Never comes off. Double damage.' },
-  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 },
-  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    hint:'Tap a bystander to ask for help. Tap a crew member first to aim it.' }
+  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    how:'Tap a creep after he flags to hit him. Tap low, at his feet and body.', hint:'Tap to swing. Aim low.' },
+  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  how:'Tap a flagged creep to brand him. He slows down and takes double damage.', hint:'Brand CREEP on his forehead. Marked men move slow and bruise easy.', slow:0.65 },
+  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  how:'Hold and drag to aim a cone of spray. It hurts anyone in it, bystanders too.', hint:'Hold and aim. She\u2019ll catch it too.' },
+  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area. Every creep inside is forced to show his flag, freezes for a moment, and takes double damage from then on. Bystanders are safe. Reloads in 5 seconds.', hint:'Tap an area to glitter-bomb.' },
+  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Your phone rings. Followers and Spikers back off, and Grabbers freeze for a moment.', hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 },
+  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to ask them for help. Tap a crew member first to aim the help at him.', hint:'Tap a bystander to ask for help. Tap a crew member first to aim it.' }
 ];
 
 // Crews: two or more villains working together. While they're linked none of them flags, so your

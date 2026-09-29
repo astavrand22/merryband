@@ -596,7 +596,7 @@ function drawCrewHud(f) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
