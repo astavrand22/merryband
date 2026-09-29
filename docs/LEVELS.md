@@ -28,6 +28,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 **The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 
 **Crowd.** A new person arrives roughly every second, and the pace nearly doubles by the final seconds. At most 9 people are on the floor and at most 2 Spikers at once. The mix is 50% bystanders, 20% Spikers, 15% Followers, 15% Grabbers.
+**Creep pace.** Flagged creeps close in at 65% of their listed speed at the start of the night and ramp up to 135% by the last second (`PACE` in `src/data.js`).
 
 **Villains.** Each one wanders like a bystander until his tell timer runs out, then a red flag appears on his clothing and he acts. How obvious the flag is varies per spawn (a `subtlety` range per villain in `src/data.js`): the Grabber wears an obvious one, the Spiker often a subtle one. A first-time text callout above him still names the tell.
 

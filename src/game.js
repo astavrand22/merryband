@@ -609,6 +609,7 @@ function step(dt) {
   g.t += dt; g.time -= dt;
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
+  const pace = PACE.start + (PACE.end - PACE.start) * prog;   // creeps start slow and speed up as the night goes on
   g.spawnT -= dt;
   const crewDue = CREW.enabled && !g.crew && g.crewsMade < CREW.maxPerRun && g.t >= g.nextCrewAt && g.time >= CREW.minTimeLeft;
   if (g.spawnT <= 0 && !crewDue) { spawn(); g.spawnT = rand(0.8, 1.2) * (1.7 - 0.95 * prog); }
@@ -651,17 +652,17 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
         if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
-      else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
+      else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * pace * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
   }
   for (const c of g.chars) if (c.gone && c.view.active) c.view.destroy();

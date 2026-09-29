@@ -24,6 +24,9 @@ const VILLAINS = {
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
+// PACE: how fast flagged creeps close in, as a multiplier on their speed below. Starts gentle and
+// ramps linearly to `end` by the last second. 1 = the speed written on the villain.
+const PACE = { start: 0.65, end: 1.35 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 
 // The red flag shows ON the villain's clothing when he makes his move, not above his head.
