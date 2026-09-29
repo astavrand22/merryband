@@ -35,7 +35,11 @@ const drinks = [0,1,2].map(i => ({ i, x:0, spiked:false, resetT:0 }));
 const patrons = drinks.map(() => ({ outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS), male:false }));
 const bottles = Array.from({length:22}, () => ({ x:Math.random(), h:rand(14,26), c:pick([0x3f7d4f,0x8a3b2a,0xc9a15b,0x4a6b8a,0xd8d0c0]), row:Math.random() < 0.5 ? 0 : 1 }));
 
-const sc = y => 0.55 + 0.75 * clamp((y - horizonY) / (playerY - horizonY), 0, 1);
+const sc = y => VIEW.minScale + (VIEW.maxScale - VIEW.minScale) * clamp((y - horizonY) / (playerY - horizonY), 0, 1);
+// How much bigger the bar is drawn than the original half-size layout (people at the counter were 0.5).
+const barK = () => sc(horizonY) / 0.5;
+// Top of a friend's head at the counter, in screen y. Her bar, label and speech bubble stack above it.
+const friendHeadY = () => horizonY - 82 * sc(horizonY);
 const origin = () => ({ x:W / 2, y:playerY + 14 });
 const WPN = id => WEAPONS.find(w => w.id === id);
 const dmgMult = c => (c.tagged || c.marked) ? 2 : 1;   // glitter-bombed or lipstick-marked
@@ -283,7 +287,7 @@ const makeFriends = () => {
   const ids = Object.keys(FRIEND_TRAITS).sort(() => Math.random() - 0.5);
   return drinks.map(d => ({ i:d.i, wellbeing:100, out:false, flashT:0, trait:FRIEND_TRAITS[ids[d.i % ids.length]] }));
 };
-const friendSpot = i => ({ x:drinks[i].x - 20, y:horizonY + 18 });
+const friendSpot = i => ({ x:drinks[i].x - 20, y:horizonY + Math.round(18 * barK()) });
 // The friend who's had the worst night so far. Creeps go for her.
 function weakestFriend() {
   const live = game.friends.filter(f => !f.out);
@@ -311,7 +315,7 @@ function hurtFriend(f, amount, msg, why) {
 // A short speech bubble over a friend's head.
 function friendSays(f, text) {
   const x = drinks[f.i].x - 20;
-  const t = S.add.text(x, horizonY - 84, text, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'12px', color:'#1A0E1D',
+  const t = S.add.text(x, friendHeadY() - 34, text, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'12px', color:'#1A0E1D',
     backgroundColor:'#F4B942', padding:{ x:6, y:3 }, align:'center', wordWrap:{ width:150 }, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9400);
   t.x = clamp(x, t.width / 2 + 6, W - t.width / 2 - 6);
   S.tweens.add({ targets:t, alpha:0, delay:1300, duration:300, onComplete:() => t.destroy() });
@@ -360,7 +364,7 @@ function friendAt(px, py) {
   for (const f of game.friends) {
     if (f.out) continue;
     const cx = drinks[f.i].x - 20, dx = Math.abs(px - cx);
-    if (dx < 36 && py > horizonY - 70 && py < horizonY + 22 && dx < bd) { bd = dx; best = f; }
+    if (dx < 36 * barK() && py > friendHeadY() - 24 && py < horizonY + 22 * barK() && dx < bd) { bd = dx; best = f; }
   }
   return best;
 }
@@ -368,12 +372,12 @@ function friendAt(px, py) {
 function useCheckIn() {
   const w = WPN('checkin'), f = friendAt(pointer.x, pointer.y);
   if (!f) { toast('Tap one of your friends at the bar.'); return; }
-  const x = drinks[f.i].x - 20, y = horizonY - 40;
+  const x = drinks[f.i].x - 20, y = friendHeadY() - 20;
   if (game.cool.checkin > 0) { floatText(x, y, 'Give her a sec.', '#FFF1E0'); return; }
   if (f.wellbeing >= 100) { floatText(x, y, 'She\u2019s good.', '#FFF1E0'); return; }
   game.cool.checkin = w.cooldown;
   f.wellbeing = Math.min(100, f.wellbeing + w.heal);
-  ringFx(x, horizonY - 20, 34, COLORS.spiked);
+  ringFx(x, horizonY - 40 * barK(), 34 * barK(), COLORS.spiked);
   buzz('tag');
   floatText(x, y - 24, 'You okay? \u2665', '#7CFF6B');
 }
@@ -384,7 +388,7 @@ function drawFriendBars(f) {
   if (!S.friendLabels) S.friendLabels = drinks.map(() => S.add.text(0, 0, '', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'700', fontSize:'9px',
     color:'#EAF7FF', resolution:TEXT_RES * 2 }).setOrigin(0.5, 1).setDepth(8001).setAlpha(0.75));
   for (const fr of game.friends) {
-    const cx = drinks[fr.i].x - 20, y = horizonY - 56, w = 42, k = clamp(fr.wellbeing / 100, 0, 1);
+    const cx = drinks[fr.i].x - 20, y = friendHeadY() - 16, w = Math.round(29 * barK()), k = clamp(fr.wellbeing / 100, 0, 1);
     S.friendLabels[fr.i].setText(fr.trait.label).setPosition(cx, y - 3);
     const col = k > 0.5 ? lerpHex(COLORS.amber, COLORS.spiked, (k - 0.5) * 2) : lerpHex(COLORS.flag, COLORS.amber, k * 2);
     if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000;
@@ -757,7 +761,7 @@ function drawCrewHud(f) {
   crewShirts(k);
   if (!k.target.out) {   // a red ring under the friend they're after
     const fx = drinks[k.target.i].x - 20, pulse = 0.55 + 0.35 * Math.sin(S.time.now / 220);
-    f.lineStyle(2, COLORS.flag, pulse).strokeEllipse(fx, horizonY + 8, 40, 12);
+    f.lineStyle(2, COLORS.flag, pulse).strokeEllipse(fx, horizonY + 8 * barK(), 40 * barK(), 12 * barK());
   }
   const t = game.focus;
   if (t && t.crew === k && liveMembers(k).includes(t)) {
@@ -973,27 +977,28 @@ function drawRoom() {
   r.fillStyle(COLORS.neon, 1).fillRect(-10, counterTop, W + 20, 3);          // bright edge
   r.fillStyle(0x000000, 0.18);
   for (let x = 0; x < W; x += 48) r.fillRect(x, counterTop + 9, 2, horizonY - counterTop - 9);
-  drinks.forEach((d, i) => r.fillStyle(0x3a2020, 1).fillRect(d.x - 26, horizonY - 8, 12, 10));
+  const bk = barK();
+  drinks.forEach((d, i) => r.fillStyle(0x3a2020, 1).fillRect(d.x - 26 * bk, horizonY - 8 * bk, 12 * bk, 10 * bk));
 
   S.glows.forEach((gl, i) => gl.setPosition(W * [0.2, 0.5, 0.8][i], horizonY * 0.1).setDisplaySize(W * 0.5, W * 0.5));
   S.neon.setPosition(W / 2, horizonY * 0.3).setFontSize(Math.round(clamp(W * 0.075, 22, 44)) + 'px');
-  S.patronViews.forEach((v, i) => v.setPosition(drinks[i].x - 20, horizonY + 2).setScale(0.5));
+  S.patronViews.forEach((v, i) => v.setPosition(drinks[i].x - 20, horizonY + 2).setScale(sc(horizonY)));
 }
 function drawDrinks() {
-  const g = S.drinkLayer, t = S.time.now / 1000;
+  const g = S.drinkLayer, t = S.time.now / 1000, k = barK();
   g.clear();
   drinks.forEach(d => {
-    const gx = d.x + 8, gy = counterTop;
-    g.fillStyle(COLORS.cream, 0.55).fillPoints([{x:gx-7,y:gy-18},{x:gx+7,y:gy-18},{x:gx+4,y:gy},{x:gx-4,y:gy}], true);
-    g.fillStyle(d.spiked ? COLORS.spiked : COLORS.amber, 1).fillPoints([{x:gx-5.5,y:gy-12},{x:gx+5.5,y:gy-12},{x:gx+3.5,y:gy-1},{x:gx-3.5,y:gy-1}], true);
-    if (d.spiked) g.fillStyle(COLORS.spiked, 1).fillCircle(gx + 2, gy - 22 - ((t * 20) % 8), 1.8);
+    const gx = d.x + 12 * k, gy = counterTop, P = (x, y) => ({ x:gx + x * k, y:gy + y * k });
+    g.fillStyle(COLORS.cream, 0.55).fillPoints([P(-7,-18), P(7,-18), P(4,0), P(-4,0)], true);
+    g.fillStyle(d.spiked ? COLORS.spiked : COLORS.amber, 1).fillPoints([P(-5.5,-12), P(5.5,-12), P(3.5,-1), P(-3.5,-1)], true);
+    if (d.spiked) g.fillStyle(COLORS.spiked, 1).fillCircle(gx + 2 * k, gy + (-22 - ((t * 20) % 8)) * k, 1.8 * k);
   });
 }
 function layout() {
   const old = W ? { W, horizonY, depth:playerY - horizonY } : null;
   W = window.innerWidth; H = window.innerHeight;
   const barH = $('bar').offsetHeight || 70;
-  horizonY = Math.round(H * 0.34); playerY = H - barH - 12; counterTop = horizonY - 46;
+  horizonY = Math.round(H * VIEW.horizon); playerY = H - barH - 12; counterTop = horizonY - Math.round(92 * sc(horizonY));
   // Keep people in the same relative spot on the floor when the screen rotates or resizes.
   if (old && game) {
     const fx = W / old.W, fy = (playerY - horizonY) / old.depth;

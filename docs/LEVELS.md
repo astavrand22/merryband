@@ -25,7 +25,7 @@ Every level follows the same rules:
 
 A 60-second survival round in a bar at closing time, built on Phaser with no image assets and no saved state. Three friends sit at the counter, each with a comfort bar and a trait (see [FRIENDS.md](FRIENDS.md)). (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose when any friend's bar hits zero.
 
-**The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
+**The room.** (Framing is set by `VIEW` in `src/data.js`: the counter sits at 46% of the screen height and people at the counter are drawn at 0.8x, so the bar, friends and their bars fill more of the screen. Raise `minScale` to zoom in further, then retune `FRIENDS.approachScale`.) A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 
 **Crowd.** A new person arrives roughly every second, and the pace nearly doubles by the final seconds. At most 9 people are on the floor and at most 2 Spikers at once. The mix is 50% bystanders, 20% Spikers, 15% Followers, 15% Grabbers.
 **Creep pace.** Flagged creeps close in at 65% of their listed speed at the start of the night and ramp up to 135% by the last second (`PACE` in `src/data.js`).
