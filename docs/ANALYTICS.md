@@ -5,7 +5,7 @@ Try it without an endpoint by opening the game with `?analytics=debug`; events p
 
 ## What is sent
 - `run_start`: no data.
-- `run_end`: `win`, `score`, `kos`, `saves`, `weakest_friend` (lowest friend comfort at the end, 0–100), `seconds`, `weapons_used`, `faced` (villain types),
+- `run_end`: `win`, `score`, `kos`, `saves`, `weakest_friend` (lowest friend comfort at the end, 0–100), `self_saves` (times a friend shut a creep down herself), `seconds`, `weapons_used`, `faced` (villain types),
   `hits_by` (`spiked` / `followed` / `grabbed` / `bystander` counts), `crews_made`, `crews_broken`.
 
 ## What is never sent

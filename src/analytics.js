@@ -25,7 +25,7 @@ function trackRunEnd(g, win) {
   const lost = {};
   for (const w of g.events) lost[w] = (lost[w] || 0) + 1;
   track('run_end', {
-    win, score:g.score, kos:g.kos, saves:g.saves, weakest_friend:Math.round(Math.min(...g.friends.map(f => f.wellbeing))),
+    win, score:g.score, kos:g.kos, saves:g.saves, self_saves:g.selfSaves, weakest_friend:Math.round(Math.min(...g.friends.map(f => f.wellbeing))),
     seconds:Math.round(CONFIG.levelSeconds - g.time),
     weapons_used:[...g.used], faced:[...g.faced], hits_by:lost,
     crews_made:g.crewsMade, crews_broken:g.crewsBroken

@@ -23,7 +23,7 @@ Every level follows the same rules:
 
 ## Level 1: Last Call, as built today
 
-A 60-second survival round in a bar at closing time, built on Phaser with no image assets and no saved state. Three friends sit at the counter, each with a comfort bar. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose when any friend's bar hits zero.
+A 60-second survival round in a bar at closing time, built on Phaser with no image assets and no saved state. Three friends sit at the counter, each with a comfort bar and a trait (see [FRIENDS.md](FRIENDS.md)). (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose when any friend's bar hits zero.
 
 **The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 

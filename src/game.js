@@ -278,7 +278,10 @@ function koBadge(x, y, s) {
 /* ---------- friends ---------- */
 // Your three friends at the counter are drinks[0..2]'s patrons. Friend i owns drink i.
 // wellbeing is her comfort bar (0-100); it is the same name Crew.applyEffect('heal') writes to.
-const makeFriends = () => drinks.map(d => ({ i:d.i, wellbeing:100, out:false, flashT:0 }));
+const makeFriends = () => {
+  const ids = Object.keys(FRIEND_TRAITS).sort(() => Math.random() - 0.5);
+  return drinks.map(d => ({ i:d.i, wellbeing:100, out:false, flashT:0, trait:FRIEND_TRAITS[ids[d.i % ids.length]] }));
+};
 const friendSpot = i => ({ x:drinks[i].x - 20, y:horizonY + 18 });
 // The friend who's had the worst night so far. Creeps go for her.
 function weakestFriend() {
@@ -291,7 +294,7 @@ const nearestFriend = x => game.friends.reduce((b, f) => Math.abs(drinks[f.i].x 
 // Nothing is shown happening: her bar drops, she flinches, and a line says who it happened to.
 function hurtFriend(f, amount, msg, why) {
   if (state !== 'play' || f.out) return;
-  f.wellbeing = Math.max(0, f.wellbeing - amount); f.flashT = 0.5; game.combo = 0;
+  f.wellbeing = Math.max(0, f.wellbeing - Math.round(amount * (f.trait ? f.trait.hitScale : 1))); f.flashT = 0.5; game.combo = 0;
   if (why) game.events.push(why);
   buzz('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
@@ -303,6 +306,44 @@ function hurtFriend(f, amount, msg, why) {
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
   narrate('Your friend ' + FRIENDS.labels[f.i] + ' is shaken. Only hit creeps who have flagged.');
+}
+// A short speech bubble over a friend's head.
+function friendSays(f, text) {
+  const x = drinks[f.i].x - 20;
+  const t = S.add.text(x, horizonY - 84, text, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'12px', color:'#1A0E1D',
+    backgroundColor:'#F4B942', padding:{ x:6, y:3 }, align:'center', wordWrap:{ width:150 }, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9400);
+  t.x = clamp(x, t.width / 2 + 6, W - t.width / 2 - 6);
+  S.tweens.add({ targets:t, alpha:0, delay:1300, duration:300, onComplete:() => t.destroy() });
+}
+// The nearest friend who pays attention spots a creep a moment before his flag and says so.
+// A hint only: he isn't flagged yet, so hitting him now still costs points.
+function noticeCheck(c) {
+  if (c.noticed) return;
+  const live = game.friends.filter(f => !f.out && f.trait.notice > 0);
+  if (!live.length) return;
+  const f = live.reduce((b, o) => Math.abs(drinks[o.i].x - c.x) < Math.abs(drinks[b.i].x - c.x) ? o : b);
+  if (c.tellT > f.trait.notice) return;
+  c.noticed = true;
+  friendSays(f, pick(f.trait.lines));
+  ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
+}
+// A nervous friend now and then points at someone harmless, in the same words. So a callout is a reason to look, never proof.
+function falseAlarm() {
+  const fs = game.friends.filter(f => !f.out && f.trait.falseAlarm);
+  const people = game.chars.filter(c => c.kind === 'bystander' && c.state === 'wander' && !c.assist && !c.gone);
+  if (!fs.length || !people.length) return;
+  const f = pick(fs), c = pick(people);
+  friendSays(f, pick(f.trait.lines));
+  ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
+}
+const friendCatches = f => Math.random() < f.trait.stepIn;
+// An assertive friend handles it herself: he backs off, she loses nothing, and you get no points for it.
+function friendShutsItDown(c, f, text) {
+  game.selfSaves++;
+  friendSays(f, 'Back off.');
+  floatText(c.x, c.y - 100 * sc(c.y), text, '#7CFF6B');
+  c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
+  S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
 }
 function healFriend(amount) {
   const live = game.friends.filter(f => !f.out && f.wellbeing < 100);
@@ -339,8 +380,11 @@ function useCheckIn() {
 // Comfort bars over each friend's head: green when fine, amber, then red as it runs out.
 function drawFriendBars(f) {
   if (!game.friends) return;
+  if (!S.friendLabels) S.friendLabels = drinks.map(() => S.add.text(0, 0, '', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'700', fontSize:'9px',
+    color:'#EAF7FF', resolution:TEXT_RES * 2 }).setOrigin(0.5, 1).setDepth(8001).setAlpha(0.75));
   for (const fr of game.friends) {
     const cx = drinks[fr.i].x - 20, y = horizonY - 56, w = 42, k = clamp(fr.wellbeing / 100, 0, 1);
+    S.friendLabels[fr.i].setText(fr.trait.label).setPosition(cx, y - 3);
     const col = k > 0.5 ? lerpHex(COLORS.amber, COLORS.spiked, (k - 0.5) * 2) : lerpHex(COLORS.flag, COLORS.amber, k * 2);
     if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000;
     f.fillStyle(0x000000, 0.55).fillRoundedRect(cx - w / 2 - 2, y - 2, w + 4, 9, 3);
@@ -726,7 +770,7 @@ function newGame() {
     for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
     if (game.crew) killCrew(game.crew);
   }
-  game = { score:0, friends:makeFriends(), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  game = { score:0, friends:makeFriends(), selfSaves:0, alarmT:rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
@@ -746,6 +790,7 @@ function step(dt) {
   const crewDue = CREW.enabled && !g.crew && g.crewsMade < CREW.maxPerRun && g.t >= g.nextCrewAt && g.time >= CREW.minTimeLeft;
   if (g.spawnT <= 0 && !crewDue) { spawn(); g.spawnT = rand(0.8, 1.2) * (1.7 - 0.95 * prog); }
   for (const d of drinks) if (d.spiked) { d.resetT -= dt; if (d.resetT <= 0) d.spiked = false; }
+  g.alarmT -= dt; if (g.alarmT <= 0) { g.alarmT = rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]); falseAlarm(); }
 
   // Crew: shows up once per run, a while in, if there's time for it to play out.
   if (crewDue) spawnCrew();   // if the room is full this waits, and ordinary spawns are paused so it clears
@@ -779,24 +824,35 @@ function step(dt) {
     if (!c.flagged) {
       if (c.crew) { groupWander(c, dt, depth); continue; }   // linked: waits with the crew, never flags alone
       c.tellT -= dt;
+      noticeCheck(c);
       if (moveToward(c, c.tx, c.ty, 0.07 * W, dt)) { c.tx = rand(0.12, 0.88) * W; c.ty = horizonY + rand(0.06, 0.4) * depth; }
       if (c.tellT <= 0) flag(c);
       continue;
     }
     if (c.kind === 'follower') {
       const spot = friendSpot(c.target.i);
-      if (moveToward(c, spot.x + (c.x < spot.x ? -34 : 34), spot.y, v.speed * pace * slowMult(c) * depth * FRIENDS.approachScale, dt)) { c.gone = true; hurtFriend(c.target, v.hit, v.reachedText, 'followed'); }
+      if (moveToward(c, spot.x + (c.x < spot.x ? -34 : 34), spot.y, v.speed * pace * slowMult(c) * depth * FRIENDS.approachScale, dt)) {
+        if (friendCatches(c.target)) friendShutsItDown(c, c.target, 'She told him to leave.');
+        else { c.gone = true; hurtFriend(c.target, v.hit, v.reachedText, 'followed'); }
+      }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
       else {
         const spot = friendSpot(c.target.i);
-        if (moveToward(c, spot.x + (c.x < spot.x ? -30 : 30), spot.y, v.speed * pace * slowMult(c) * depth * FRIENDS.approachScale, dt)) { c.gone = true; hurtFriend(c.target, v.hit, v.reachedText, 'grabbed'); }
+        if (moveToward(c, spot.x + (c.x < spot.x ? -30 : 30), spot.y, v.speed * pace * slowMult(c) * depth * FRIENDS.approachScale, dt)) {
+          if (friendCatches(c.target)) friendShutsItDown(c, c.target, 'She stepped away and shut it down.');
+          else { c.gone = true; hurtFriend(c.target, v.hit, v.reachedText, 'grabbed'); }
+        }
       }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
-        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurtFriend(game.friends[c.drink], v.hit, v.reachedText, 'spiked'); }
+        if (c.spikeT <= 0) {
+          c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40;
+          if (friendCatches(game.friends[c.drink])) { game.selfSaves++; friendSays(game.friends[c.drink], 'Hey, that\u2019s mine.'); floatText(c.x, c.y - 100 * sc(c.y), 'She caught him.', '#7CFF6B'); }
+          else { d.spiked = true; d.resetT = 4; hurtFriend(game.friends[c.drink], v.hit, v.reachedText, 'spiked'); }
+        }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
       else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * pace * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }
