@@ -93,8 +93,8 @@ function startGame(){
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false;
   if(win) sfx('win');
-  $('endTitle').textContent=win?'You made it home.':'Rough night.';
-  $('endSub').textContent=win?'You survived last call.':'Out of hearts. The bar\u2019s still open.';
+  $('endTitle').textContent=win?'Made it home.':'Rough night.';
+  $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
