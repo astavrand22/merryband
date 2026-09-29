@@ -23,6 +23,17 @@ const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, fla
 // Bystanders wear softer everyday colours; villains wear one saturated colour per type (VILLAINS[kind].outfit).
 const OUTFITS = ['#2BB59A','#7FB069','#C77DA5','#8899A6','#8C6A5D','#B07A4B','#E6E1D6','#5E8C9E','#C9C2B0','#A67C52'].map(hex);
 const SKINS = ['#F1C7A5','#D9A07A','#A86B45','#7A4A2E','#E8B894','#5C3A24'].map(hex);
+// Skin tones are dealt from a shuffled bag, one bag for villains and one for bystanders, instead of drawn at random.
+// Random draws are fair on average but a 60-second run only has about a dozen villains, so luck alone could put
+// most red flags on one tone. A bag deals every tone once before repeating, so no tone gets more than one villain
+// more than any other in a run, and villains and bystanders share the same spread. Reset at the start of each run.
+const skinBags = { villain:[], bystander:[] };
+function shuffled(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function dealSkin(role) {
+  const bag = skinBags[role];
+  if (!bag.length) bag.push(...shuffled(SKINS));
+  return bag.pop();
+}
 const HAIRS = ['#1E1410','#4A2C1A','#8B5A2B','#C9A15B','#2B2B2B','#7A2E1E','#D8D0C0'].map(hex);
 // Render at the screen's pixel density (capped at 3) so phones stay sharp. World units stay CSS pixels:
 // the canvas is DPR times larger and the camera zooms by DPR.
@@ -108,7 +119,7 @@ function setArms(v, pose) {
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
   const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
-    outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
+    outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:dealSkin(kind === 'bystander' ? 'bystander' : 'villain'), hair:pick(HAIRS),
     state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
@@ -336,7 +347,11 @@ function falseAlarm() {
   const fs = game.friends.filter(f => !f.out && f.trait.falseAlarm);
   const people = game.chars.filter(c => c.kind === 'bystander' && c.state === 'wander' && !c.assist && !c.gone);
   if (!fs.length || !people.length) return;
-  const f = pick(fs), c = pick(people);
+  // Whom she points at is balanced by skin tone too: always someone from the tone she's pointed at least, so a
+  // run of false alarms can't keep landing on one group.
+  const seen = game.alarmSkins, least = Math.min(...people.map(p => seen[p.skin] || 0));
+  const f = pick(fs), c = pick(people.filter(p => (seen[p.skin] || 0) === least));
+  seen[c.skin] = (seen[c.skin] || 0) + 1;
   maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
@@ -791,7 +806,8 @@ function newGame() {
     for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
     if (game.crew) killCrew(game.crew);
   }
-  game = { score:0, friends:makeFriends(), selfSaves:0, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  skinBags.villain.length = 0; skinBags.bystander.length = 0;
+  game = { score:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
