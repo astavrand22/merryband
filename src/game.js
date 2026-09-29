@@ -9,8 +9,9 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-const COLORS = { ink:0x1A0E1D, amber:0xF4B942, neon:0xFF4F9A, flag:0xE0302B, cream:0xFFF1E0, spiked:0x7CFF6B, pepper:0xFF8C3C };
-const OUTFITS = ['#3E7CB1','#C4553B','#5E9E6E','#8A5FB0','#D9A441','#2F8F8F','#B84C7A','#6B6B8F','#A0522D','#467A3C'].map(hex);
+const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, flag:0xFF2D4A, cream:0xEAF7FF, spiked:0x7CFF6B, pepper:0xFF8C3C };
+// Dark noir jewel tones: bodies read as rim-lit silhouettes against the neon room.
+const OUTFITS = ['#241C3A','#2A1830','#182A3A','#22182E','#1E2E2E','#301826','#1A2440','#2E2440','#231A34','#182E28'].map(hex);
 const SKINS = ['#F1C7A5','#D9A07A','#A86B45','#7A4A2E','#E8B894','#5C3A24'].map(hex);
 const HAIRS = ['#1E1410','#4A2C1A','#8B5A2B','#C9A15B','#2B2B2B','#7A2E1E','#D8D0C0'].map(hex);
 // Render at the screen's pixel density (capped at 3) so phones stay sharp. World units stay CSS pixels:
@@ -57,6 +58,10 @@ function makePersonView(p, back) {
     body.fillRoundedRect(-12.5, -76, 6, 27, 3).fillRoundedRect(6.5, -76, 6, 27, 3);
     body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
   }
+  // Neon rim light around the silhouette.
+  body.lineStyle(1.3, COLORS.cyan, 0.85);
+  if (p.male) body.strokeRoundedRect(-15, -62, 30, 38, 5); else body.strokeRoundedRect(-12, -62, 24, 38, 9);
+  body.strokeCircle(0, -72, 10);
   v.add([g, arms, body]);
   v.arms = arms; v.armPose = null; v.person = p;
   setArms(v, 'down');
@@ -469,23 +474,27 @@ function drawFx() {
 function drawRoom() {
   const r = S.room;
   r.clear();
-  r.fillGradientStyle(0x1F1024, 0x1F1024, 0x3F2446, 0x3F2446, 1).fillRect(-10, -10, W + 20, horizonY + 10);
+  r.fillGradientStyle(0x1C0E32, 0x1C0E32, 0x0A0512, 0x0A0512, 1).fillRect(-10, -10, W + 20, horizonY + 10);
   const shelves = [counterTop - horizonY * 0.34, counterTop - horizonY * 0.14];
-  r.fillStyle(0x5a3322, 1); shelves.forEach(y => r.fillRect(W * 0.06, y, W * 0.88, 4));
+  r.fillStyle(0x2A1C3A, 1); shelves.forEach(y => r.fillRect(W * 0.06, y, W * 0.88, 4));
   for (const b of bottles) {
     const x = W * 0.08 + b.x * W * 0.84, y = shelves[b.row];
-    r.fillStyle(b.c, 0.8).fillRect(x - 4, y - b.h, 8, b.h).fillRect(x - 1.5, y - b.h - 7, 3, 7);
+    const c = b.row ? COLORS.cyan : COLORS.neon;
+    r.fillStyle(c, 0.28).fillRect(x - 4, y - b.h, 8, b.h);      // glow halo
+    r.fillStyle(c, 0.95).fillRect(x - 1.5, y - b.h, 3, b.h);    // bright core
   }
   for (const lx of [0.2, 0.5, 0.8]) {
     const x = W * lx, ly = horizonY * 0.1;
     r.lineStyle(2, 0x120a14, 1).lineBetween(x, 0, x, ly);
     r.fillStyle(COLORS.amber, 1).fillCircle(x, ly + 4, 5);
   }
-  r.fillGradientStyle(0x2A1530, 0x2A1530, 0x120914, 0x120914, 1).fillRect(-10, horizonY, W + 20, H - horizonY + 10);
-  r.lineStyle(1, COLORS.cream, 0.05);
+  r.fillGradientStyle(0x16092A, 0x16092A, 0x07030E, 0x07030E, 1).fillRect(-10, horizonY, W + 20, H - horizonY + 10);
+  r.lineStyle(1, COLORS.neon, 0.18);
   for (let i = -10; i <= 10; i++) r.lineBetween(W / 2 + i * W * 0.06, horizonY, W / 2 + i * W * 0.22, H);
-  r.fillStyle(0x6B3822, 1).fillRect(-10, counterTop, W + 20, horizonY - counterTop);
-  r.fillStyle(0xA2603A, 1).fillRect(-10, counterTop, W + 20, 5);
+  for (let k = 1; k <= 7; k++) { const yy = horizonY + (k * k) * (H - horizonY) * 0.021; if (yy < H) r.lineStyle(1, COLORS.neon, Math.max(0.05, 0.2 - k * 0.02)).lineBetween(0, yy, W, yy); }
+  r.fillStyle(0x120A20, 1).fillRect(-10, counterTop, W + 20, horizonY - counterTop);
+  r.fillStyle(COLORS.neon, 0.22).fillRect(-10, counterTop - 3, W + 20, 6);   // glow
+  r.fillStyle(COLORS.neon, 1).fillRect(-10, counterTop, W + 20, 3);          // bright edge
   r.fillStyle(0x000000, 0.18);
   for (let x = 0; x < W; x += 48) r.fillRect(x, counterTop + 9, 2, horizonY - counterTop - 9);
   drinks.forEach((d, i) => r.fillStyle(0x3a2020, 1).fillRect(d.x - 26, horizonY - 8, 12, 10));
@@ -538,7 +547,7 @@ class BarScene extends Phaser.Scene {
     this.room = this.add.graphics().setDepth(-1000);
     this.glows = [0,1,2].map(() => this.add.image(0, 0, 'glow').setDepth(-990).setBlendMode(Phaser.BlendModes.ADD));
     this.neon = this.add.text(0, 0, 'LAST CALL', { fontFamily:"Bungee, 'Arial Black', Impact, sans-serif", fontSize:'32px', color:'#FF4F9A', resolution:TEXT_RES })
-      .setOrigin(0.5).setShadow(0, 0, '#FF4F9A', 20, false, true).setDepth(-980);
+      .setOrigin(0.5).setShadow(0, 0, '#FF4F9A', 30, false, true).setDepth(-980);
     this.drinkLayer = this.add.graphics().setDepth(-970);
     this.patronViews = patrons.map(p => makePersonView(p, true).setDepth(-960));
     this.fxLayer = this.add.graphics().setDepth(8000);
@@ -590,7 +599,7 @@ class BarScene extends Phaser.Scene {
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  backgroundColor: '#1A0E1D',
+  backgroundColor: '#0C0714',
   scale: { mode: Phaser.Scale.NONE, width: window.innerWidth * DPR, height: window.innerHeight * DPR, zoom: 1 / DPR },
   input: { activePointers: 1 },
   banner: false,
