@@ -28,7 +28,7 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .mute:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 /* hidden while the end or donate screen is open, where it would sit on top of scrolling content; it comes after them in the page so ~ works */
 #endScreen:not(.hidden) ~ .mute,#giveScreen:not(.hidden) ~ .mute{display:none}
-.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
+.overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
 .card{max-width:400px;width:100%;margin:auto}
 h1{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:52px;line-height:.95;color:var(--neon);text-shadow:4px 4px 0 var(--flag);margin-bottom:6px}
@@ -139,6 +139,11 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
     <div class="rap" id="rapSheet" hidden>
       <div class="label">Tonight's rap sheet</div>
       <ul id="rapList"></ul>
+    </div>
+    <div class="tips" id="tipsEnd">
+      <div class="label">Off the screen</div>
+      <div id="tipList"></div>
+      <a class="more" href="tips.html">All real-life tips</a>
     </div>
     <div class="share">
       <div class="label">Share your score</div>

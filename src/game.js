@@ -177,7 +177,6 @@ function applyHit(c, dmg) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
     sfx('miss');
-    floatText(c.x, c.y - 96 * s, 'Wait for the flag  -50', '#FFF1E0'); return;
     floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
@@ -189,8 +188,7 @@ function noteStopped(c) { game.stopped[c.kind] = (game.stopped[c.kind] || 0) + 1
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
-  c.state = 'ko'; game.kos++; game.combo++; noteStopped(c);
-  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind);
+  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind); noteStopped(c);
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -202,7 +200,6 @@ function ko(c) {
   if (!reduceMotion) S.cameras.main.shake(FEEL.koShakeMs, FEEL.koShakeAmt, true);
   const cheerers = game.combo % 3 === 0 ? [0, 1, 2] : (save && c.drink != null ? [c.drink] : []);
   cheerers.forEach(i => cheerPatron(i, save && i === c.drink));
-  floatText(c.x, c.y - 100 * s, (save ? 'Save! +' : 'KO +') + pts, save ? '#FF4F9A' : '#F4B942');
   floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
@@ -288,8 +285,6 @@ function useGlitter() {
     if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { flag(c); glitterBomb(c); n++; }
   }
   if (n) { buzz('tag'); sfx('tag'); }
-  floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTER BOMBED x' + n : 'GLITTER BOMBED') : 'Nobody here', '#FF4F9A', n > 0);
-  if (n) buzz('tag');
   floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTERED x' + n : 'GLITTERED \u2014 good luck washing that off') : 'Swung at air', '#FF4F9A', n > 0);
 }
 // He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
@@ -409,8 +404,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), stopped:{}, freeze:0, t:0, spraying:0, sprayAng:0 };
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), seenTells:new Set(), stopped:{}, freeze:0, t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }

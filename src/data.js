@@ -56,6 +56,7 @@ const SOUND = { volume: 0.8, minGap: 0.06 };
 // on a save or every third knockout in a row. Hit-stop, shake and hopping are skipped when the
 // player has reduced motion turned on.
 const FEEL = { hitStopKo: 0.06, hitStopSave: 0.1, koShakeMs: 80, koShakeAmt: 0.002, cheerSeconds: 1.3 };
+
 // Real-life tips. Shown on the start screen, on the end screen (picked by what happened in
 // the run), and all together on tips.html. Every tip needs a source a reader can check.
 // tags: what makes a tip relevant after a run.
