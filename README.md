@@ -34,6 +34,8 @@ Gifts go through [Every.org](https://www.every.org), a 501(c)(3), directly to th
 
 [docs/LEVELS.md](docs/LEVELS.md) documents Level 1 as built, how it should evolve, the designs for Levels 2–5, the build order and open questions.
 
+[docs/FRIENDS.md](docs/FRIENDS.md) explains the three friends you look out for: comfort bars, traits, call-outs and the tuning knobs.
+
 A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). Open `crew-test.html` to try it.
 
 ## Feedback and contributing

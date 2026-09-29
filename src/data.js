@@ -8,7 +8,20 @@ const CONFIG = { levelSeconds: 60 };
 // approachScale: Followers and Grabbers walk to a friend at the counter, a shorter trip than the old walk
 //   to the player, so their speed is scaled down to keep the same time from flag to contact. First-pass number.
 // bystanderHit: comfort the nearest friend loses when you hit a bystander (a scene at the bar).
-const FRIENDS = { count: 3, approachScale: 0.5, bystanderHit: 34, labels: ['on the left', 'in the middle', 'on the right'] };
+const FRIENDS = { count: 3, approachScale: 0.5, bystanderHit: 34, labels: ['on the left', 'in the middle', 'on the right'],
+  falseAlarmEvery: [8, 13] };   // seconds between a nervous friend pointing out someone harmless
+
+// The three friends aren't alike. Traits are shuffled across the counter every run.
+// notice: seconds before a creep's red flag that she spots him and says so (0 = never). It's a hint, not a
+//   flag: hitting him before the flag still costs points. hitScale: how hard contact lands on her.
+// stepIn: chance she shuts a creep down herself when he reaches her (no comfort lost, no points for you).
+// falseAlarm: she sometimes points at someone harmless, in the same words, so a callout is never proof.
+// lines: what she says. Keep them about him being worth watching, never about what he'd do.
+const FRIEND_TRAITS = {
+  nervous:   { label:'nervous',   notice:1.4, hitScale:1.3,  stepIn:0,    falseAlarm:true,  lines:['Something\u2019s off about him.', 'Who\u2019s that guy?'] },
+  oblivious: { label:'oblivious', notice:0,   hitScale:1.15, stepIn:0,    falseAlarm:false, lines:[] },
+  assertive: { label:'assertive', notice:0.6, hitScale:0.8,  stepIn:0.35, falseAlarm:false, lines:['Keep an eye on him.'] }
+};
 
 // Who the characters look like. Villains are men 99 times in 100; bystanders are a mix,
 // so looking like a man is never a reason to hit someone. Only the red flag is.
