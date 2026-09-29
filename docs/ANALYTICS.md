@@ -5,8 +5,8 @@ Try it without an endpoint by opening the game with `?analytics=debug`; events p
 
 ## What is sent
 - `run_start`: no data.
-- `run_end`: `win`, `score`, `kos`, `saves`, `hearts_left`, `seconds`, `weapons_used`, `faced` (villain types),
-  `hearts_lost_by` (`spiked` / `followed` / `grabbed` / `bystander` counts), `crews_made`, `crews_broken`.
+- `run_end`: `win`, `score`, `kos`, `saves`, `weakest_friend` (lowest friend comfort at the end, 0–100), `seconds`, `weapons_used`, `faced` (villain types),
+  `hits_by` (`spiked` / `followed` / `grabbed` / `bystander` counts), `crews_made`, `crews_broken`.
 
 ## What is never sent
 Cookies, local ids, fingerprints, free text, anything from the donation, petition or feedback flows.
@@ -18,5 +18,5 @@ receives the POST and writes it to Workers Analytics Engine (that needs a change
 Keep whatever collector is used from storing IP addresses.
 
 ## Related fix
-`hurt(msg, why)` now takes a reason code (`spiked`, `followed`, `grabbed`, `bystander`) so the end-of-run tips
-respond to what cost you hearts. Before, it matched on the message text and never matched.
+`hurtFriend(friend, amount, msg, why)` takes a reason code (`spiked`, `followed`, `grabbed`, `bystander`) so the end-of-run tips
+respond to what shook your friends. Before, it matched on the message text and never matched.
