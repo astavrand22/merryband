@@ -20,6 +20,7 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn .ic{font-size:20px;line-height:1}
 .wbtn.sel{border-color:var(--cyan);background:#241436;box-shadow:0 0 10px rgba(58,231,255,.35)}
 .wbtn.locked{opacity:.4;cursor:default}
+.bar .sep{flex:none;width:2px;align-self:stretch;margin:2px 5px;background:var(--line);border-radius:2px}
 .wbtn .cd{position:absolute;left:0;bottom:0;height:4px;background:var(--neon);width:0}
 .wbtn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .toast{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--ink);font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
@@ -121,16 +122,15 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
     <span class="level">Level 1 &middot; Last Call</span>
     <p class="sub">2 a.m. and every exit&rsquo;s got a guy in it</p>
     <ul class="rules">
-      <li><span>🙋</span>Need backup? Pick <b>Ask</b>, then tap a bystander. Each one shows a small willingness bar; once it passes the white tick, they’ll step in. Asking the same person again right away does nothing.</li>
-      <li><span>🚩</span>Wait for the red flag on his clothes &mdash; some plain, some easy to miss. Then make him regret it.</li>
-      <li><span>🎨</span>Each kind of creep has his own shirt colour: 🟣 Spiker, 🟡 Follower, 🔵 Grabber.</li>
-      <li><span>💔</span>Hit a bystander, lose a heart.</li>
-      <li><span>🍸</span>Drop the Spiker before he reaches her drink. That&rsquo;s a save.</li>
-      <li><span>🧰</span>Pick a tool from the bar. 📱 Fake Call scares them off. ✨ Glitter exposes and stuns. 🌶️ Pepper works on one creep at a time. 🦵 Knee is your hard hit. Tap a tool to see when to use it. Score more to unlock the rest.</li>
-      <li><span>🙋</span>Matching shirts = a crew, and they can&rsquo;t be hit yet. Tap one crew member to aim, then Ask a bystander to split them up before their shirts go full red.</li>
+      <li><span>🚩</span>Wait for the red flag on his clothes, then hit him. Hit too early and you lose points.</li>
+      <li><span>🎨</span>Each creep type has its own colour: 🟣 Spiker, 🟡 Follower, 🔵 Grabber.</li>
+      <li><span>💔</span>Hit a bystander and you lose a heart.</li>
+      <li><span>🍸</span>Stop the Spiker before he reaches her drink. That&rsquo;s a save.</li>
+      <li><span>🧰</span>Tools: 🦵 Knee is always ready. 📱 Call scares them off. ✨ Glitter exposes and stuns. 🌶️ Pepper works on one creep. Tap a tool to see when to use it.</li>
+      <li><span>🙋</span>Matching shirts mean a crew, and crews can&rsquo;t be hit. Pick <b>Ask</b>, tap a crew member to aim, then tap a bystander for help. Their shirts redden as their plan nears.</li>
     </ul>
     <p class="note" id="bestStart"></p>
-    <p class="note">Close this to start. Cartoon violence against fictional predators; no assaults are shown. If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
+    <p class="note">Close to start. Cartoon violence against fictional predators; no assaults are shown. Need support? RAINN, 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
   </div>
 </div>
 

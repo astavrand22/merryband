@@ -37,7 +37,7 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
-  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to ask them for help. Tap a crew member first to aim the help at him.', hint:'Tap a bystander to ask for help. Tap a crew member first to aim it.' },
+  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander for help. Use it on crews (the only way to break one) or when hurt (a Friend heals a heart). Tap a crew member first to aim, and match his \u201cweak to\u201d tag.', hint:'Tap a bystander for help.' },
   { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },

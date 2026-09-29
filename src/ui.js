@@ -19,6 +19,7 @@ function renderBar(){
     b.innerHTML=`<span class="ic">${unlocked?w.icon:'🔒'}</span><span>${unlocked?w.name:w.unlock}</span><span class="cd" id="cd-${w.id}"></span>`;
     b.onclick=()=>selectWeapon(i);
     bar.appendChild(b);
+    if(w.mode==='ask'){ const s=document.createElement('div'); s.className='sep'; s.setAttribute('aria-hidden','true'); bar.appendChild(s) }   // help | tools
   });
 }
 function selectWeapon(i){
@@ -92,7 +93,7 @@ function showEndTips(){
 $('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
 function startGame(){
-  newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch for the red flag on their clothes. That\u2019s your cue.',4500);
+  newGame(); state='play'; track('run_start'); narrate('2 a.m. Wait for the red flag on their clothes.',4000);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
