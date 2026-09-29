@@ -169,7 +169,9 @@ function charAt(px, py) {
 /* ---------- haptics ---------- */
 // navigator.vibrate on Android. iOS Safari has no vibration API, but toggling a hidden
 // <input type="checkbox" switch> plays the system haptic tick (iOS 18+), so we use that
-// as a fallback. It only fires inside a user gesture, so on iPhone held weapons stay quiet.
+// as a fallback. iOS only plays it when the click happens inside a real touch event handler.
+// Phaser handles taps a frame later (outside that window), so buzz() only marks a tick as pending
+// and the native touch/pointer-up listener below plays it when the finger lifts.
 const canVibrate = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
 let iosTick = null;
 if (!canVibrate && /iP(hone|ad|od)/.test(navigator.userAgent)) {
@@ -177,10 +179,15 @@ if (!canVibrate && /iP(hone|ad|od)/.test(navigator.userAgent)) {
   input.type = 'checkbox'; input.setAttribute('switch', '');
   label.appendChild(input);
   label.setAttribute('aria-hidden', 'true');
-  label.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  label.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(label);
   iosTick = label;
+  ['pointerup', 'touchend', 'click'].forEach(ev => window.addEventListener(ev, () => {
+    if (iosPending && performance.now() - iosPending < 500) iosTick.click();
+    iosPending = 0;
+  }, true));
 }
+let iosPending = 0;
 const lastBuzz = {};
 function buzz(kind) {
   if (!HAPTICS.enabled) return;
@@ -191,7 +198,7 @@ function buzz(kind) {
   lastBuzz[kind] = now;
   try {
     if (canVibrate) navigator.vibrate(pattern);
-    else if (iosTick) iosTick.click();
+    else if (iosTick) iosPending = performance.now();
   } catch (e) { /* haptics are a nice-to-have; never break the game over them */ }
 }
 
