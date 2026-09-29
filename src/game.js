@@ -23,6 +23,17 @@ const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, fla
 // Bystanders wear softer everyday colours; villains wear one saturated colour per type (VILLAINS[kind].outfit).
 const OUTFITS = ['#2BB59A','#7FB069','#C77DA5','#8899A6','#8C6A5D','#B07A4B','#E6E1D6','#5E8C9E','#C9C2B0','#A67C52'].map(hex);
 const SKINS = ['#F1C7A5','#D9A07A','#A86B45','#7A4A2E','#E8B894','#5C3A24'].map(hex);
+// Skin tones are dealt from a shuffled bag, one bag for villains and one for bystanders, instead of drawn at random.
+// Random draws are fair on average but a 60-second run only has about a dozen villains, so luck alone could put
+// most red flags on one tone. A bag deals every tone once before repeating, so no tone gets more than one villain
+// more than any other in a run, and villains and bystanders share the same spread. Reset at the start of each run.
+const skinBags = { villain:[], bystander:[] };
+function shuffled(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function dealSkin(role) {
+  const bag = skinBags[role];
+  if (!bag.length) bag.push(...shuffled(SKINS));
+  return bag.pop();
+}
 const HAIRS = ['#1E1410','#4A2C1A','#8B5A2B','#C9A15B','#2B2B2B','#7A2E1E','#D8D0C0'].map(hex);
 // Render at the screen's pixel density (capped at 3) so phones stay sharp. World units stay CSS pixels:
 // the canvas is DPR times larger and the camera zooms by DPR.
@@ -112,7 +123,7 @@ function setArms(v, pose) {
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
   const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
-    outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
+    outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:dealSkin(kind === 'bystander' ? 'bystander' : 'villain'), hair:pick(HAIRS),
     state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
@@ -143,7 +154,7 @@ function spawn() {
   if (kind === 'spiker' && g.chars.filter(c => c.kind === 'spiker' && c.state !== 'ko').length >= 2) kind = open('follower') ? 'follower' : 'bystander';
   g.chars.push(makeChar(kind));
   if (kind !== 'bystander') g.spawned.add(kind);
-  if (kind !== 'bystander' && INTRO.enabled && !g.introSeen.has(kind)) { g.introSeen.add(kind); showIntro(kind); }
+  if (kind !== 'bystander' && !g.introSeen.has(kind)) { g.introSeen.add(kind); maybeCard('creep-' + kind, INTRO.everyRun); }
 }
 function moveToward(c, tx, ty, sp, dt) {
   const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
@@ -167,6 +178,7 @@ function flag(c) {
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
   narrateFlag(c);
+  if (game.chars.filter(isThreat).length >= 2) maybeCard('ask');
   const fl = c.view.flag; fl.setVisible(true);
   if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
@@ -311,6 +323,7 @@ function hurtFriend(f, amount, msg, why) {
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
   narrate('Your friend ' + FRIENDS.labels[f.i] + ' is shaken. Only hit creeps who have flagged.');
+  if (f.wellbeing <= 66) maybeCard('youok');
 }
 // A short speech bubble over a friend's head.
 function friendSays(f, text) {
@@ -329,6 +342,7 @@ function noticeCheck(c) {
   const f = live.reduce((b, o) => Math.abs(drinks[o.i].x - c.x) < Math.abs(drinks[b.i].x - c.x) ? o : b);
   if (c.tellT > f.trait.notice) return;
   c.noticed = true;
+  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -337,7 +351,12 @@ function falseAlarm() {
   const fs = game.friends.filter(f => !f.out && f.trait.falseAlarm);
   const people = game.chars.filter(c => c.kind === 'bystander' && c.state === 'wander' && !c.assist && !c.gone);
   if (!fs.length || !people.length) return;
-  const f = pick(fs), c = pick(people);
+  // Whom she points at is balanced by skin tone too: always someone from the tone she's pointed at least, so a
+  // run of false alarms can't keep landing on one group.
+  const seen = game.alarmSkins, least = Math.min(...people.map(p => seen[p.skin] || 0));
+  const f = pick(fs), c = pick(people.filter(p => (seen[p.skin] || 0) === least));
+  seen[c.skin] = (seen[c.skin] || 0) + 1;
+  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -593,7 +612,7 @@ function spawnCrew() {
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
   toast('Crew after your friend ' + FRIENDS.labels[friend.i] + '. Split them up.');
-  narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
+  if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
 function killCrew(k) {
@@ -772,7 +791,7 @@ function drawCrewHud(f) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
@@ -790,7 +809,8 @@ function newGame() {
     for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
     if (game.crew) killCrew(game.crew);
   }
-  game = { score:0, friends:makeFriends(), selfSaves:0, alarmT:rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  skinBags.villain.length = 0; skinBags.bystander.length = 0;
+  game = { score:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });

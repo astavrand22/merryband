@@ -23,6 +23,7 @@ Keep PRs small and focused: one villain, one weapon or one fix per PR.
 This game is about fighting back, not about showing harm.
 
 - Villains are fictional. No real people, no identifiable groups, no stereotypes by race, religion, nationality, class or body type.
+- Skin tone is never a tell. Villains and bystanders get the same spread of tones, dealt from a shuffled bag in `dealSkin()` (`src/game.js`) so a run can't cluster red flags, or a friend's false alarms, on one tone by luck. If you add a way to pick who is a villain or who gets pointed at, keep it independent of how a character looks.
 - No depictions of assault. Villains are stopped *before* they act; the red flag is the tell.
 - Violence stays cartoonish: knockouts, stars, glitter. No blood or gore.
 - Causes and petitions must be real, verifiable, and focused on survivors, prevention or legal reform.

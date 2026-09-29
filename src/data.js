@@ -60,8 +60,16 @@ const PACE = { start: 0.65, end: 1.35 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 // Creeps arrive one type at a time: seconds into the run before each type can spawn.
 const STAGES = { spiker:0, follower:18, grabber:36 };
-// A short explainer pops up (and pauses the game) the first time each type appears in a run.
-const INTRO = { enabled:true };
+// A short explainer pops up (and pauses the game) the first time each creep, tool or situation comes up.
+// Each is shown once per browser (see ui.js); everyRun:true brings the creep cards back every run.
+const INTRO = { enabled:true, everyRun:false };
+// Pop-up cards for things that aren't a new creep or tool. Creep cards come from VILLAINS[k].intro, tool cards from WEAPONS.
+const CARDS = {
+  youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick You ok?, then tap her to restore some of it. It doesn\u2019t stop a creep, so use it in the gaps.' },
+  ask:     { label:'Tip', icon:'\uD83D\uDE4B', title:'Get backup', text:'Two creeps at once. Pick Ask, tap a creep to aim, then tap a bystander for help. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff, Friend checks in on your most shaken friend.' },
+  callout: { label:'Tip', icon:'\uD83D\uDC40', title:'Your friends notice things', text:'Some friends spot a creep just before his red flag and say so. It\u2019s a hint, not proof: still wait for the flag. Nervous friends sometimes point at someone harmless.' },
+  crew:    { label:'New', icon:'\uD83D\uDC65', title:'A crew', text:'Matching shirts mean a crew, and crews can\u2019t be hit. Pick Ask and tap a bystander for help to split them up before their shirts go red. Watch the red ring: it shows which friend they\u2019re after.' }
+};
 
 // The red flag shows ON the villain's clothing when he makes his move, not above his head.
 // subtlety = the default range when a villain has none of its own. obvious/subtle = the two ends
