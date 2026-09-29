@@ -1,4 +1,4 @@
-/* Keys Out: Level 1 (Last Call) on Phaser 4.
+/* RedFlag: Level 1 (Last Call) on Phaser 4.
    Tuning (villains, weapons, causes, donations) is in src/data.js.
    Screens, HUD and the weapon bar are in src/ui.js, which owns the shared
    `game`, `state`, `selected`, `goldPin` and `pointer` variables. */
@@ -8,9 +8,18 @@ const hex = s => parseInt(s.slice(1), 16);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// Blend two 0xRRGGBB colours, t from 0 (a) to 1 (b).
+const lerpHex = (a, b, t) => {
+  const ar = a >> 16 & 255, ag = a >> 8 & 255, ab = a & 255;
+  return (((ar + ((b >> 16 & 255) - ar) * t) | 0) << 16) | (((ag + ((b >> 8 & 255) - ag) * t) | 0) << 8) | (((ab + ((b & 255) - ab) * t) | 0));
+};
+const FLAG_OBVIOUS = hex((typeof FLAG !== 'undefined' && FLAG.obvious) || '#FF2E2A');
+const FLAG_SUBTLE = hex((typeof FLAG !== 'undefined' && FLAG.subtle) || '#9E1B1B');
+const FLAG_RANGE = (typeof FLAG !== 'undefined' && FLAG.subtlety) || [0.2, 0.85];
 
-const COLORS = { ink:0x1A0E1D, amber:0xF4B942, neon:0xFF4F9A, flag:0xE0302B, cream:0xFFF1E0, spiked:0x7CFF6B, pepper:0xFF8C3C };
-const OUTFITS = ['#3E7CB1','#C4553B','#5E9E6E','#8A5FB0','#D9A441','#2F8F8F','#B84C7A','#6B6B8F','#A0522D','#467A3C'].map(hex);
+const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, flag:0xFF2D4A, cream:0xEAF7FF, spiked:0x7CFF6B, pepper:0xFF8C3C };
+// Dark noir jewel tones: bodies read as rim-lit silhouettes against the neon room.
+const OUTFITS = ['#241C3A','#2A1830','#182A3A','#22182E','#1E2E2E','#301826','#1A2440','#2E2440','#231A34','#182E28'].map(hex);
 const SKINS = ['#F1C7A5','#D9A07A','#A86B45','#7A4A2E','#E8B894','#5C3A24'].map(hex);
 const HAIRS = ['#1E1410','#4A2C1A','#8B5A2B','#C9A15B','#2B2B2B','#7A2E1E','#D8D0C0'].map(hex);
 // Render at the screen's pixel density (capped at 3) so phones stay sharp. World units stay CSS pixels:
@@ -57,12 +66,30 @@ function makePersonView(p, back) {
     body.fillRoundedRect(-12.5, -76, 6, 27, 3).fillRoundedRect(6.5, -76, 6, 27, 3);
     body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
   }
+  // Neon rim light around the silhouette.
+  body.lineStyle(1.3, COLORS.cyan, 0.85);
+  if (p.male) body.strokeRoundedRect(-15, -62, 30, 38, 5); else body.strokeRoundedRect(-12, -62, 24, 38, 9);
+  body.strokeCircle(0, -72, 10);
   const torso = S.add.graphics();   // recoloured for crews; empty otherwise
   v.add([g, arms, body, torso]);
   v.torso = torso;
   v.arms = arms; v.armPose = null; v.person = p;
   setArms(v, 'down');
   return v;
+}
+// The red flag worn on the chest, shown when a villain makes his move. A container
+// pinned at the pole so it can flutter (scaleX) without drifting. subtlety 0..1: bigger
+// and brighter at 0, smaller and darker at 1.
+function makeFlag(subtlety) {
+  const t = clamp(subtlety, 0, 1), k = 1.2 - 0.5 * t, col = lerpHex(FLAG_OBVIOUS, FLAG_SUBTLE, t);
+  const c = S.add.container(-3, -50).setVisible(false);
+  const g = S.add.graphics();
+  g.lineStyle(2 * k, 0x2c1a12, 1).lineBetween(0, 8 * k, 0, -9 * k);       // short pole on the chest
+  g.fillStyle(col, 1).fillTriangle(0, -9 * k, 13 * k, -5 * k, 0, -1 * k); // the pennant
+  if (t < 0.4) g.lineStyle(1, COLORS.cream, 0.9).strokeTriangle(0, -9 * k, 13 * k, -5 * k, 0, -1 * k); // obvious ones get an outline
+  c.add(g);
+  c.wave = t < 0.5;
+  return c;
 }
 function setArms(v, pose) {
   if (v.armPose === pose) return;
@@ -84,15 +111,12 @@ function makeChar(kind) {
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
   c.beard = c.male && Math.random() < LOOKS.beardChance;
-  if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); }
+  if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); c.subtlety = rand(...(v.subtlety || FLAG_RANGE)); }
+  else c.subtlety = 0.5;
 
   const view = makePersonView(c, false);
   view.stunFx = S.add.circle(0, -70, 16, COLORS.pepper, 0.35).setVisible(false);
-  view.flag = S.add.container(9, 0).setVisible(false);
-  const fg = S.add.graphics();
-  fg.lineStyle(2, COLORS.cream, 1).lineBetween(0, -82, 0, -116);
-  fg.fillStyle(COLORS.flag, 1).fillTriangle(0, -116, 24, -110, 0, -102);
-  view.flag.add(fg);
+  view.flag = makeFlag(c.subtlety);
   view.sparkles = [0,1,2,3,4].map(i => S.add.circle(0, 0, 2.5, i % 2 ? COLORS.neon : COLORS.amber).setVisible(false));
   view.add([view.stunFx, view.flag, ...view.sparkles]);
   c.view = view;
@@ -116,8 +140,8 @@ function flag(c) {
   if (c.flagged) return;
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
-  c.view.flag.setVisible(true);
-  if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
+  const fl = c.view.flag; fl.setVisible(true);
+  if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
   const tellText = VILLAINS[c.kind].tellText;
   if (tellText && !game.seenTells.has(c.kind)) {
@@ -512,7 +536,8 @@ function setOutfit(c, col) {
   const v = c.view, pose = v.armPose;
   c.outfit = col;
   v.torso.clear().fillStyle(col, 1);
-  if (c.male) v.torso.fillRoundedRect(-15, -62, 30, 38, 5); else v.torso.fillRoundedRect(-12, -62, 24, 38, 9);
+  if (c.male) v.torso.fillRoundedRect(-15, -62, 30, 38, 5).lineStyle(1.3, COLORS.cyan, 0.85).strokeRoundedRect(-15, -62, 30, 38, 5);
+  else v.torso.fillRoundedRect(-12, -62, 24, 38, 9).lineStyle(1.3, COLORS.cyan, 0.85).strokeRoundedRect(-12, -62, 24, 38, 9);
   v.armPose = null; setArms(v, pose || 'down');
 }
 function drawCrewHud(f) {
@@ -695,23 +720,27 @@ function drawFx() {
 function drawRoom() {
   const r = S.room;
   r.clear();
-  r.fillGradientStyle(0x1F1024, 0x1F1024, 0x3F2446, 0x3F2446, 1).fillRect(-10, -10, W + 20, horizonY + 10);
+  r.fillGradientStyle(0x1C0E32, 0x1C0E32, 0x0A0512, 0x0A0512, 1).fillRect(-10, -10, W + 20, horizonY + 10);
   const shelves = [counterTop - horizonY * 0.34, counterTop - horizonY * 0.14];
-  r.fillStyle(0x5a3322, 1); shelves.forEach(y => r.fillRect(W * 0.06, y, W * 0.88, 4));
+  r.fillStyle(0x2A1C3A, 1); shelves.forEach(y => r.fillRect(W * 0.06, y, W * 0.88, 4));
   for (const b of bottles) {
     const x = W * 0.08 + b.x * W * 0.84, y = shelves[b.row];
-    r.fillStyle(b.c, 0.8).fillRect(x - 4, y - b.h, 8, b.h).fillRect(x - 1.5, y - b.h - 7, 3, 7);
+    const c = b.row ? COLORS.cyan : COLORS.neon;
+    r.fillStyle(c, 0.28).fillRect(x - 4, y - b.h, 8, b.h);      // glow halo
+    r.fillStyle(c, 0.95).fillRect(x - 1.5, y - b.h, 3, b.h);    // bright core
   }
   for (const lx of [0.2, 0.5, 0.8]) {
     const x = W * lx, ly = horizonY * 0.1;
     r.lineStyle(2, 0x120a14, 1).lineBetween(x, 0, x, ly);
     r.fillStyle(COLORS.amber, 1).fillCircle(x, ly + 4, 5);
   }
-  r.fillGradientStyle(0x2A1530, 0x2A1530, 0x120914, 0x120914, 1).fillRect(-10, horizonY, W + 20, H - horizonY + 10);
-  r.lineStyle(1, COLORS.cream, 0.05);
+  r.fillGradientStyle(0x16092A, 0x16092A, 0x07030E, 0x07030E, 1).fillRect(-10, horizonY, W + 20, H - horizonY + 10);
+  r.lineStyle(1, COLORS.neon, 0.18);
   for (let i = -10; i <= 10; i++) r.lineBetween(W / 2 + i * W * 0.06, horizonY, W / 2 + i * W * 0.22, H);
-  r.fillStyle(0x6B3822, 1).fillRect(-10, counterTop, W + 20, horizonY - counterTop);
-  r.fillStyle(0xA2603A, 1).fillRect(-10, counterTop, W + 20, 5);
+  for (let k = 1; k <= 7; k++) { const yy = horizonY + (k * k) * (H - horizonY) * 0.021; if (yy < H) r.lineStyle(1, COLORS.neon, Math.max(0.05, 0.2 - k * 0.02)).lineBetween(0, yy, W, yy); }
+  r.fillStyle(0x120A20, 1).fillRect(-10, counterTop, W + 20, horizonY - counterTop);
+  r.fillStyle(COLORS.neon, 0.22).fillRect(-10, counterTop - 3, W + 20, 6);   // glow
+  r.fillStyle(COLORS.neon, 1).fillRect(-10, counterTop, W + 20, 3);          // bright edge
   r.fillStyle(0x000000, 0.18);
   for (let x = 0; x < W; x += 48) r.fillRect(x, counterTop + 9, 2, horizonY - counterTop - 9);
   drinks.forEach((d, i) => r.fillStyle(0x3a2020, 1).fillRect(d.x - 26, horizonY - 8, 12, 10));
@@ -765,7 +794,7 @@ class BarScene extends Phaser.Scene {
     this.room = this.add.graphics().setDepth(-1000);
     this.glows = [0,1,2].map(() => this.add.image(0, 0, 'glow').setDepth(-990).setBlendMode(Phaser.BlendModes.ADD));
     this.neon = this.add.text(0, 0, 'LAST CALL', { fontFamily:"Bungee, 'Arial Black', Impact, sans-serif", fontSize:'32px', color:'#FF4F9A', resolution:TEXT_RES })
-      .setOrigin(0.5).setShadow(0, 0, '#FF4F9A', 20, false, true).setDepth(-980);
+      .setOrigin(0.5).setShadow(0, 0, '#FF4F9A', 30, false, true).setDepth(-980);
     this.drinkLayer = this.add.graphics().setDepth(-970);
     this.patronViews = patrons.map(p => makePersonView(p, true).setDepth(-960));
     this.fxLayer = this.add.graphics().setDepth(8000);
@@ -817,7 +846,7 @@ class BarScene extends Phaser.Scene {
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  backgroundColor: '#1A0E1D',
+  backgroundColor: '#0C0714',
   scale: { mode: Phaser.Scale.NONE, width: window.innerWidth * DPR, height: window.innerHeight * DPR, zoom: 1 / DPR },
   input: { activePointers: 1 },
   banner: false,
