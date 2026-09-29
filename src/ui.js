@@ -82,6 +82,12 @@ function startGame(){
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
+function showEpilogues(){
+  const list=$('epiList'); list.innerHTML='';
+  const seen=[...game.faced].filter(k=>VILLAINS[k]&&VILLAINS[k].epilogue);
+  seen.forEach(k=>{ const d=document.createElement('div'); d.className='epi'; const b=document.createElement('b'); b.textContent=VILLAINS[k].name; d.appendChild(b); d.appendChild(document.createTextNode(VILLAINS[k].epilogue)); list.appendChild(d) });
+  $('epiBox').classList.toggle('hidden',!seen.length);
+}
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false;
   $('endTitle').textContent=win?'Made it home.':'Rough night.';
@@ -89,9 +95,9 @@ function endGame(win){
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
-  showBestStart(); showEndTips();
+  showBestStart(); showEpilogues(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
-  lastRun={win,score:game.score,kos:game.kos,saves:game.saves}; $('shareNote').textContent=''; prepCard();
+  lastRun={win,score:game.score,kos:game.kos,saves:game.saves,epi:[...game.faced].map(k=>VILLAINS[k]&&VILLAINS[k].epilogue).filter(Boolean)}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
 }
 $('startBtn').onclick=startGame;
@@ -145,6 +151,8 @@ function drawCard(){
     x.font=`110px ${BG}`; x.fillStyle='#F4B942'; x.fillText(String(n),tx+180,1360);
     x.font=`800 32px ${RB}`; x.fillStyle='rgba(255,241,224,.8)'; x.fillText(label,tx+180,1415);
   });
+  // epilogue: one line about what happened to him
+  if(r.epi&&r.epi.length){ x.font=`600 34px ${RB}`; x.fillStyle='rgba(255,241,224,.85)'; x.fillText(r.epi[Math.floor(Math.random()*r.epi.length)],cx,1510) }
   // call to action
   x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1580);
   const link=gameLink().replace(/^https?:\/\//,'').replace(/\/$/,'');

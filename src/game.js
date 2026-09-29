@@ -223,7 +223,17 @@ function ko(c) {
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
   S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
   S.tweens.add({ targets:c.view, angle:(c.dir || 1) * 80, alpha:0, duration:900, onComplete:() => { c.view.destroy(); c.dead = true; } });
+  epilogueBeat(c, v, s);
   checkUnlocks();
+}
+function epilogueBeat(c, v, s) {
+  if (!v.epilogue || !EPILOGUE.enabled) return;
+  if (!reduceMotion) game.slowT = EPILOGUE.slowSeconds;   // brief slow-mo, the game keeps running
+  if (game.seenEpi.has(c.kind)) return;                   // caption only the first takedown of each type per run
+  game.seenEpi.add(c.kind);
+  const t = S.add.text(clamp(c.x, W * 0.3, W * 0.7), c.y - 165 * s, v.epilogue, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px',
+    color:'#FFF1E0', align:'center', wordWrap:{ width:Math.min(280, W * 0.7) }, stroke:'rgba(26,14,29,0.9)', strokeThickness:5, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9600);
+  S.tweens.add({ targets:t, alpha:0, delay:EPILOGUE.captionMs * 0.6, duration:EPILOGUE.captionMs * 0.4, onComplete:() => t.destroy() });
 }
 function koBadge(x, y, s) {
   const b = S.add.container(x, y).setDepth(9000);
@@ -580,7 +590,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
@@ -836,7 +846,7 @@ class BarScene extends Phaser.Scene {
     this.neon.setAlpha(flick);
     drawDrinks();
     if (game) {
-      if (state === 'play') { step(dt); updateHUD(); }
+      if (state === 'play') { const slow = game.slowT > 0 ? EPILOGUE.slowScale : 1; if (game.slowT > 0) game.slowT -= dt; step(dt * slow); updateHUD(); }
       syncViews();
     }
     drawFx();
