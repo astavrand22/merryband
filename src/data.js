@@ -156,6 +156,7 @@ const TIPS = [
 ];
 
 const CAUSE = {
+  enabled: false, // set true once there is a live petition; shows the petition box on the end screen
   issue: 'The Spiker is fiction. Spiking isn\u2019t.',
   blurb: 'Back stronger drink-spiking laws. (Replace this with your petition copy.)',
   cta: 'Sign the petition',
