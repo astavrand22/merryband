@@ -49,9 +49,11 @@ const INTRO = { enabled:true };
 // of the colour: a bright flag fades toward a small dark one as subtlety rises.
 const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
-// mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
+// mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask' | 'checkin'. unlock = score needed.
+// help: true puts the weapon in the left group of the bar (backup for your friends), before the divider.
 const WEAPONS = [
-  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend checks in on your most shaken friend and restores some of her bar. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
+  { id:'ask', help:true,      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend checks in on your most shaken friend and restores some of her bar. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
+  { id:'checkin', name:'You ok?', icon:'💬', mode:'checkin', cooldown:8, heal:30, unlock:0, help:true, how:'Tap a friend and ask if she\u2019s okay. Restores some of her bar, but doesn\u2019t stop a creep, so use it in the gaps. 8 s reload.', hint:'Tap a friend.' },
   { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },
@@ -163,7 +165,7 @@ const TIPS = [
     title:'Set up a code word',
     text:'Agree on a word or text with your friends that means \u201ccall me and get me out of here.\u201d It\u2019s the real version of the Fake Call.',
     source:'KPRC Click2Houston', url:'https://www.click2houston.com/news/local/2024/08/28/5-emergency-code-words-to-use-when-youre-in-danger-how-to-alert-friends-discreetly/' },
-  { id:'others-5d', group:'others', tags:['glitter','bystander','general','ask'],
+  { id:'others-5d', group:'others', tags:['glitter','bystander','general','ask','checkin'],
     title:'Use the 5Ds',
     text:'Distract (interrupt with something unrelated), Delegate (get staff or someone in charge), Document (only once they\u2019re getting help), Delay (check on them after), Direct (a short \u201cLeave them alone\u201d).',
     source:'Right To Be', url:'https://righttobe.org/guides/bystander-intervention-training/' },
