@@ -371,8 +371,7 @@ function floatText(x, y, text, color, big) {
 function newGame() {
   if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), seenTells:new Set(), t:0, spraying:0, sprayAng:0 };
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0 };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
