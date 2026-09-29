@@ -113,6 +113,7 @@ function flag(c) {
   if (c.flagged) return;
   c.flagged = true;
   c.view.flag.setVisible(true);
+  sfx('flag');
   if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
   const tellText = VILLAINS[c.kind].tellText;
@@ -174,11 +175,12 @@ function applyHit(c, dmg) {
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
+    sfx('miss');
     floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
-  if (c.hp <= 0) ko(c); else buzz('hit');
+  if (c.hp <= 0) ko(c); else { buzz('hit'); sfx('hit'); }
 }
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
@@ -189,6 +191,7 @@ function ko(c) {
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
   buzz(save ? 'save' : 'ko');
+  sfx(save ? 'save' : 'ko');
   floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
@@ -212,6 +215,7 @@ function hurt(msg) {
   const why = { 'Drink spiked.':'spiked', 'He followed you.':'followed', 'Grabbed.':'grabbed', 'That was a bystander.':'bystander' }[msg];
   if (why) game.events.push(why);
   buzz('hurt');
+  sfx('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
   if (!reduceMotion) S.cameras.main.shake(300, 0.008, true);
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
@@ -253,7 +257,7 @@ function useGlitter() {
     if (c.state === 'ko' || c.state === 'bail' || c.kind === 'bystander') continue;
     if (Math.hypot(c.x - pointer.x, (c.y - 40 * sc(c.y)) - pointer.y) < R + 20 * sc(c.y)) { flag(c); glitterBomb(c); n++; }
   }
-  if (n) buzz('tag');
+  if (n) { buzz('tag'); sfx('tag'); }
   floatText(pointer.x, pointer.y - 40, n ? (n > 1 ? 'GLITTERED x' + n : 'GLITTERED \u2014 good luck washing that off') : 'Swung at air', '#FF4F9A', n > 0);
 }
 // He gets absolutely covered: a shower from above, glitter stuck all over him, and he's
@@ -303,6 +307,7 @@ function writeCreep(c) {
   t.x = -t.width / 2;
   v.add(t); v.creep = t;
   buzz('tag');
+  sfx('tag');
   if (reduceMotion) return;
   const tube = S.add.text(t.x, -80, '💄', { fontSize:'13px', resolution:TEXT_RES * 3 }).setOrigin(0.2, 0.9).setAngle(30);
   v.add(tube);
@@ -325,6 +330,7 @@ function fakeCall() {
   if (game.cool.call > 0) { toast('You just made that call. Give her a sec.'); return; }
   game.cool.call = w.cooldown;
   buzz('call');
+  sfx('call');
   phoneFx(pick(CALL_LINES));
   let bailed = 0, frozen = 0;
   for (const c of game.chars) {
@@ -356,7 +362,7 @@ function phoneFx(line) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); sfx('unlock'); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {

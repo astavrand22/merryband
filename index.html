@@ -24,6 +24,10 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .toast{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--ink);font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
 .toast.show{opacity:1}
+.mute{position:fixed;top:40px;right:8px;width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:rgba(26,14,29,.85);color:var(--cream);font-size:18px;line-height:1;cursor:pointer;z-index:6;display:flex;align-items:center;justify-content:center}
+.mute:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+/* hidden while the end or donate screen is open, where it would sit on top of scrolling content; it comes after them in the page so ~ works */
+#endScreen:not(.hidden) ~ .mute,#giveScreen:not(.hidden) ~ .mute{display:none}
 .overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
 .card{max-width:400px;width:100%;margin:auto}
@@ -179,8 +183,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
   </div>
 </div>
 
+<button class="mute" id="muteBtn" type="button" aria-label="Sound"></button>
 <script src="https://cdn.jsdelivr.net/npm/phaser@4.2.1/dist/phaser.min.js"></script>
 <script src="src/data.js"></script>
+<script src="src/audio.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/game.js"></script>
 </body>
