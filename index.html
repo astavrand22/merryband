@@ -24,6 +24,8 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .toast{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--ink);font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
 .toast.show{opacity:1}
+.narr{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:rgba(26,14,29,.82);color:var(--cream);font-weight:600;font-size:15px;line-height:1.35;padding:8px 14px;border-radius:12px;border:1px solid var(--line);opacity:0;transition:opacity .25s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
+.narr.show{opacity:1}
 .overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
 .overlay.popup{align-items:center;background:rgba(26,14,29,.5)}
@@ -107,6 +109,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
   <div id="score">0</div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="narr" id="narr" aria-live="polite"></div>
 <div class="bar" id="bar"></div>
 
 <div class="overlay popup" id="startScreen" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">

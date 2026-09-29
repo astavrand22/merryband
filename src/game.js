@@ -136,10 +136,22 @@ function moveToward(c, tx, ty, sp, dt) {
   if (d <= sp * dt || d < 1) { c.x = tx; c.y = ty; return true; }
   c.x += dx / d * sp * dt; c.y += dy / d * sp * dt; return false;
 }
+const FLAG_LINES = {
+  spiker:   'The Spiker is heading for her drink. Get to him first.',
+  follower: 'The Follower is trailing her. Stop him before he catches up.',
+  grabber:  'The Grabber is about to lunge. Stop him now.'
+};
+function narrateFlag(c) {
+  const v = VILLAINS[c.kind], g = game;
+  if (!v || !FLAG_LINES[c.kind] || (g.narrFlagAt && g.t - g.narrFlagAt < 4)) return;
+  g.narrFlagAt = g.t;
+  narrate((v.icon ? v.icon + ' ' : '') + FLAG_LINES[c.kind]);
+}
 function flag(c) {
   if (c.flagged) return;
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
+  narrateFlag(c);
   const fl = c.view.flag; fl.setVisible(true);
   if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
@@ -225,6 +237,7 @@ function ko(c) {
   game.score += pts;
   buzz(save ? 'save' : 'ko');
   floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
+  if (save) narrate('You got to him before he got to her drink. That\u2019s a save.');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -260,6 +273,7 @@ function hurt(msg) {
   S.cameras.main.flash(350, 224, 48, 43, true);
   if (!reduceMotion) S.cameras.main.shake(300, 0.008, true);
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
+  if (game.hearts > 0) narrate('A heart gone, ' + game.hearts + ' left. Only hit someone after they flag.');
   if (game.hearts <= 0) endGame(false);
 }
 function useKeys() {
@@ -446,6 +460,7 @@ function spawnCrew() {
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
   toast('A crew: matching shirts. They turn redder as their plan nears. Ask helpers to split them up (TEAM bar).');
+  narrate('Two creeps in matching shirts are working together. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
 function killCrew(k) {
@@ -465,6 +480,7 @@ function crewBroken(k) {
   const x = live.length ? cx : W / 2, y = live.length ? cy : H * 0.4;
   buzz('save');
   floatText(x, y, 'CREW BROKEN +' + pts, '#F4B942', true);
+  narrate('The crew fell apart. They\u2019re on their own now, so they\u2019re easier to stop.');
   S.fx.gold.explode(20, x, y + 50);
   killCrew(k);
   checkUnlocks();
@@ -518,6 +534,7 @@ function useAsk() {
 function helperAct(c, effect) {
   const h = c.helper, info = HELPERS[h.ability], s = sc(c.y), k = game.crew;
   floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
+  narrate(k ? 'The ' + info.name + ' steps in. Watch the TEAM bar.' : 'The ' + info.name + ' checks in.');
   ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
   buzz('tag');
   if (effect.type === 'heal') {
@@ -598,7 +615,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
@@ -609,6 +626,8 @@ function step(dt) {
   const g = game;
   g.t += dt; g.time -= dt;
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
+  for (const [at, line] of [[40, 'Forty seconds to closing.'], [20, 'Twenty seconds. Keep her drink safe.'], [10, 'Ten seconds. Almost home.']])
+    if (g.time <= at && !g.beats[at]) { g.beats[at] = true; narrate(line, 2500); }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
   const pace = PACE.start + (PACE.end - PACE.start) * prog;   // creeps start slow and speed up as the night goes on
   g.spawnT -= dt;

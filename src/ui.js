@@ -5,6 +5,10 @@ const pointer={x:0,y:0,down:false};
 let toastT=null;
 function toast(msg){const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2000)}
 
+// A short line of narration near the bottom: what's happening and what to do about it. Replaces the last one.
+let narrT=0, narrAt=0;
+function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; t.textContent=msg; t.classList.add('show'); clearTimeout(narrT); narrT=setTimeout(()=>t.classList.remove('show'),ms)}
+
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
   WEAPONS.forEach((w,i)=>{
@@ -88,7 +92,7 @@ function showEndTips(){
 $('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
 function startGame(){
-  newGame(); state='play';
+  newGame(); state='play'; narrate('2 a.m. Watch for the red flag on their clothes. That\u2019s your cue.',4500);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
@@ -99,7 +103,7 @@ function showEpilogues(){
   $('epiBox').classList.toggle('hidden',!seen.length);
 }
 function endGame(win){
-  if(state!=='play') return; state='end'; pointer.down=false;
+  if(state!=='play') return; state='end'; pointer.down=false; $('narr').classList.remove('show');
   $('endTitle').textContent=win?'Made it home.':'Rough night.';
   $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
