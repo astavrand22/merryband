@@ -16,11 +16,11 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 //   Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
   spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
-              tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
+              icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
   follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
-              tellText:'Following her', epilogue:'Got lost in a corn maze. Still in there.', subtlety:[0.15,0.7] },
+              icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Got lost in a corn maze. Still in there.', subtlety:[0.15,0.7] },
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
-              tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
+              icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };

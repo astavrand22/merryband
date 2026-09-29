@@ -238,7 +238,7 @@ function epilogueBeat(c, v, s) {
   if (!reduceMotion) game.slowT = EPILOGUE.slowSeconds;   // brief slow-mo, the game keeps running
   if (game.seenEpi.has(c.kind)) return;                   // caption only the first takedown of each type per run
   game.seenEpi.add(c.kind);
-  const t = S.add.text(clamp(c.x, W * 0.3, W * 0.7), c.y - 165 * s, v.epilogue, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px',
+  const t = S.add.text(clamp(c.x, W * 0.3, W * 0.7), c.y - 165 * s, (v.icon ? v.icon + ' ' : '') + v.name + '\n' + v.epilogue, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px',
     color:'#FFF1E0', align:'center', wordWrap:{ width:Math.min(280, W * 0.7) }, stroke:'rgba(26,14,29,0.9)', strokeThickness:5, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9600);
   S.tweens.add({ targets:t, alpha:0, delay:EPILOGUE.captionMs * 0.6, duration:EPILOGUE.captionMs * 0.4, onComplete:() => t.destroy() });
 }

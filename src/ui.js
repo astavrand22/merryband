@@ -95,7 +95,7 @@ function startGame(){
 function showEpilogues(){
   const list=$('epiList'); list.innerHTML='';
   const seen=[...game.faced].filter(k=>VILLAINS[k]&&VILLAINS[k].epilogue);
-  seen.forEach(k=>{ const d=document.createElement('div'); d.className='epi'; const b=document.createElement('b'); b.textContent=VILLAINS[k].name; d.appendChild(b); d.appendChild(document.createTextNode(VILLAINS[k].epilogue)); list.appendChild(d) });
+  seen.forEach(k=>{ const d=document.createElement('div'); d.className='epi'; const v=VILLAINS[k]; const b=document.createElement('b'); b.textContent=(v.icon?v.icon+' ':'')+v.name+(v.who?' \u00b7 the one who '+v.who:''); d.appendChild(b); d.appendChild(document.createTextNode(VILLAINS[k].epilogue)); list.appendChild(d) });
   $('epiBox').classList.toggle('hidden',!seen.length);
 }
 function endGame(win){
