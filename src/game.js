@@ -150,7 +150,7 @@ function spawn() {
   if (kind === 'spiker' && g.chars.filter(c => c.kind === 'spiker' && c.state !== 'ko').length >= 2) kind = open('follower') ? 'follower' : 'bystander';
   g.chars.push(makeChar(kind));
   if (kind !== 'bystander') g.spawned.add(kind);
-  if (kind !== 'bystander' && INTRO.enabled && !g.introSeen.has(kind)) { g.introSeen.add(kind); showIntro(kind); }
+  if (kind !== 'bystander' && !g.introSeen.has(kind)) { g.introSeen.add(kind); maybeCard('creep-' + kind, INTRO.everyRun); }
 }
 function moveToward(c, tx, ty, sp, dt) {
   const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
@@ -174,6 +174,7 @@ function flag(c) {
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
   narrateFlag(c);
+  if (game.chars.filter(isThreat).length >= 2) maybeCard('ask');
   const fl = c.view.flag; fl.setVisible(true);
   if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
@@ -318,6 +319,7 @@ function hurtFriend(f, amount, msg, why) {
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
   narrate('Your friend ' + FRIENDS.labels[f.i] + ' is shaken. Only hit creeps who have flagged.');
+  if (f.wellbeing <= 66) maybeCard('youok');
 }
 // A short speech bubble over a friend's head.
 function friendSays(f, text) {
@@ -336,6 +338,7 @@ function noticeCheck(c) {
   const f = live.reduce((b, o) => Math.abs(drinks[o.i].x - c.x) < Math.abs(drinks[b.i].x - c.x) ? o : b);
   if (c.tellT > f.trait.notice) return;
   c.noticed = true;
+  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -349,6 +352,7 @@ function falseAlarm() {
   const seen = game.alarmSkins, least = Math.min(...people.map(p => seen[p.skin] || 0));
   const f = pick(fs), c = pick(people.filter(p => (seen[p.skin] || 0) === least));
   seen[c.skin] = (seen[c.skin] || 0) + 1;
+  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -604,7 +608,7 @@ function spawnCrew() {
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
   toast('Crew after your friend ' + FRIENDS.labels[friend.i] + '. Split them up.');
-  narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
+  if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
 function killCrew(k) {
@@ -783,7 +787,7 @@ function drawCrewHud(f) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {

@@ -6,7 +6,7 @@ Level 1, *Last Call*, is a 60-second night at a bar with three villains (the Spi
 
 ## Play
 
-Open `index.html` in any browser. It works on phones and desktops, with no install and no login.
+Open `index.html` in any browser. It works on phones and desktops, with no install and no login. Pause any time with the ⏸ button, `Esc` or `P` (see `docs/PAUSE.md`).
 
 ## Edit
 

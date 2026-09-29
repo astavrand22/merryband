@@ -84,5 +84,5 @@ Only a creep reaching her (or her drink) can end the night; the drain alone can'
 ## Level 1 status
 Crews are switched off for Level 1 (`CREW.enabled = false` in `src/data.js`) and saved for a later level.
 The Ask button stays: helpers act on single flagged creeps (see `WEAPONS.md`). Creeps also arrive by stage
-(`STAGES`: Spiker at the start, Follower at 18 s, Grabber at 36 s), with a short pop-up the first time each
-type appears (`INTRO`).
+(`STAGES`: Spiker at the start, Follower at 18 s, Grabber at 36 s), with a short pop-up card the first time each
+type appears (see `docs/PAUSE.md`).
