@@ -31,22 +31,32 @@ const ROLE_WEAKNESS = Object.freeze({
 });
 const WEAKNESS_MULTIPLIER = 1.6;
 
-// ms each phase takes if nobody interferes.
+// ms each phase takes if nobody interferes, at planPace 1.
 const PHASE_DURATION = Object.freeze({
   [Phase.APPROACH]: 8000, [Phase.SEPARATE]: 10000, [Phase.ISOLATE]: 10000, [Phase.EXIT]: 6000
 });
+// The one dial for difficulty. 1 = the durations above; 0.4 runs the plan 2.5x slower.
+// A fully linked crew still runs up to 1.5x faster than this, and exposure slows it.
+// staffBreaks: true = staff arriving ends the crew outright (the test page). false = staff take
+// staffHit off the link instead, so one call for help isn't a win on its own (the real game).
+const CREW_TUNING = { planPace: 0.4, staffBreaks: true, staffHit: 60 };
 const NEXT_PHASE = Object.freeze({
   [Phase.APPROACH]: Phase.SEPARATE, [Phase.SEPARATE]: Phase.ISOLATE,
   [Phase.ISOLATE]: Phase.EXIT, [Phase.EXIT]: Phase.SUCCEEDED
 });
+const PHASE_ORDER = [Phase.APPROACH, Phase.SEPARATE, Phase.ISOLATE, Phase.EXIT];
 
 class Crew {
   /**
    * @param {Phaser.Scene} scene
    * @param {Array<{view:{x:number,y:number}}>} creeps 2-3 creep entities; each needs a `view`
    * @param {object} target the person being targeted (any object; may carry `wellbeing`)
+   * @param {object} [opts]
+   * @param {number} [opts.depth] draw depth of the link line
+   * @param {(creep:object)=>{x:number,y:number}} [opts.anchor] where the link line meets each creep
+   * @param {number} [opts.paceScale] multiplies this crew's plan speed (1 = as tuned)
    */
-  constructor(scene, creeps, target) {
+  constructor(scene, creeps, target, opts = {}) {
     this.scene = scene;
     this.creeps = creeps;
     this.target = target;
@@ -55,7 +65,9 @@ class Crew {
     this.cohesion = 100;       // shared link strength; 0 breaks the crew
     this.exposure = 0;         // 0..1; at 1 the plan is public and collapses
     this.staffArrivesAt = null;
-    this.tether = scene.add.graphics();  // visible link between creeps, so the player can read it
+    this.paceScale = opts.paceScale ?? 1;
+    this.anchor = opts.anchor || (c => c.view);
+    this.tether = scene.add.graphics().setDepth(opts.depth ?? 0);  // visible link between creeps, so the player can read it
     this._assignRoles();
   }
 
@@ -68,6 +80,16 @@ class Crew {
 
   /** The crew is stronger only while linked: 1.0 (broken) to 1.5 (fully linked). */
   get linkBonus() { return 1 + this.cohesion / 200; }
+
+  /** How far through the plan the crew is, 0 to 1. */
+  get planProgress() {
+    if (this.phase === Phase.SUCCEEDED) return 1;
+    const i = PHASE_ORDER.indexOf(this.phase);
+    if (i < 0) return 0;
+    let done = this.phaseElapsed, total = 0;
+    PHASE_ORDER.forEach((p, j) => { total += PHASE_DURATION[p]; if (j < i) done += PHASE_DURATION[p]; });
+    return Math.min(1, done / total);
+  }
 
   /**
    * Apply an effect returned by Bystander.tryAct().
@@ -108,11 +130,12 @@ class Crew {
   update(delta) {
     if (!this.isActive) return;
 
-    // Staff arriving breaks the crew outright.
+    // Staff arriving: ends the crew outright, or takes a big bite out of the link (see CREW_TUNING).
     if (this.staffArrivesAt !== null && this.scene.time.now >= this.staffArrivesAt) {
-      this.cohesion = 0;
+      this.staffArrivesAt = null;
+      this.cohesion = CREW_TUNING.staffBreaks ? 0 : Math.max(0, this.cohesion - CREW_TUNING.staffHit);
       this._checkBroken();
-      return;
+      if (!this.isActive) return;
     }
 
     // The plan advances on its own if nobody interferes.
@@ -128,8 +151,8 @@ class Crew {
     this._drawTether();
   }
 
-  /** A stronger link speeds the plan up; exposure slows it down. */
-  _pacing() { return this.linkBonus * (1 - this.exposure * 0.6); }
+  /** A stronger link speeds the plan up; exposure slows it down. CREW_TUNING.planPace and this crew's paceScale scale it all. */
+  _pacing() { return CREW_TUNING.planPace * this.paceScale * this.linkBonus * (1 - this.exposure * 0.6); }
 
   _checkBroken() {
     if (!this.isActive || (this.cohesion > 0 && this.exposure < 1)) return;
@@ -143,7 +166,7 @@ class Crew {
     const k = this.cohesion / 100;  // fades and thins as the link weakens
     this.tether.lineStyle(2 + 3 * k, 0xFF4D4D, 0.2 + 0.8 * k);
     for (let i = 0; i < this.creeps.length - 1; i++) {
-      const a = this.creeps[i].view, b = this.creeps[i + 1].view;
+      const a = this.anchor(this.creeps[i]), b = this.anchor(this.creeps[i + 1]);
       this.tether.lineBetween(a.x, a.y, b.x, b.y);
     }
   }

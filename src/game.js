@@ -99,6 +99,7 @@ function makeChar(kind) {
   view.sparkles = [0,1,2,3,4].map(i => S.add.circle(0, 0, 2.5, i % 2 ? COLORS.neon : COLORS.amber).setVisible(false));
   view.add([view.stunFx, view.flag, ...view.sparkles]);
   c.view = view;
+  if (kind === 'bystander') c.helper = new Bystander(S, view, pickAbility());
   return c;
 }
 function spawn() {
@@ -116,6 +117,7 @@ function moveToward(c, tx, ty, sp, dt) {
 }
 function flag(c) {
   if (c.flagged) return;
+  if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
   c.view.flag.setVisible(true);
   if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
@@ -359,6 +361,164 @@ function phoneFx(line) {
   S.tweens.add({ targets:[phone, bubble], alpha:0, delay:2000, duration:350, onComplete:() => { phone.destroy(); bubble.destroy(); } });
 }
 
+/* ---------- crews and bystander helpers ---------- */
+// A crew is villains working together (CREW in data.js). While it's linked, none of them flags, so weapons
+// can't touch them. Bystanders you ask for help break the link. If the plan runs out they all flag together
+// and act as usual. If the link breaks they bolt. Nothing here shows anyone being separated or led anywhere.
+// The engine is in src/crew.js and src/bystander.js. Here we only connect it to the bar.
+CREW_TUNING.staffBreaks = false;          // in the real game, staff take a bite out of the link, not the whole thing
+CREW_TUNING.staffHit = CREW.staffHit;
+
+function pickAbility() {
+  let r = Math.random();
+  for (const k in HELPERS) { r -= HELPERS[k].weight; if (r <= 0) return k; }
+  return Ability.DISTRACT;
+}
+const liveMembers = k => k.creeps.filter(c => c.state !== 'ko' && c.state !== 'bail' && !c.gone);
+function nearestMember(k, c) {
+  let best = null, bd = Infinity;
+  for (const m of liveMembers(k)) { const d = Math.hypot(m.x - c.x, m.y - c.y); if (d < bd) { bd = d; best = m; } }
+  return best;
+}
+
+function spawnCrew() {
+  const g = game, depth = playerY - horizonY;
+  if (g.chars.filter(c => c.state !== 'ko').length > 9 - CREW.size) return false;   // room is full; try again next frame
+  const kinds = [...CREW.kinds].sort(() => Math.random() - 0.5).slice(0, CREW.size);
+  const fromLeft = Math.random() < 0.5, y0 = horizonY + rand(0.1, 0.28) * depth;
+  const members = kinds.map((kind, i) => {
+    const c = makeChar(kind);
+    c.x = fromLeft ? -24 - i * 46 : W + 24 + i * 46; c.y = y0 + (i % 2 ? 8 : -6); c.dir = fromLeft ? 1 : -1;
+    c.off = { x:(i - (kinds.length - 1) / 2) * 58, y:i % 2 ? 10 : -6 };
+    g.chars.push(c);
+    return c;
+  });
+  // Seconds a fully linked plan takes at paceScale 1, so CREW.planSeconds can say what we actually want.
+  const idle = PHASE_ORDER.reduce((a, p) => a + PHASE_DURATION[p], 0) / 1000 / (CREW_TUNING.planPace * 1.5);
+  const crew = new Crew(S, members, { wellbeing:100 }, { depth:7000, paceScale:idle / CREW.planSeconds,
+    anchor:c => ({ x:c.x, y:c.y - 55 * sc(c.y) }) });
+  crew.gx = W * 0.5; crew.gy = horizonY + 0.2 * depth;   // where the group is wandering to
+  crew.hud = S.add.text(0, 0, 'LINK\nPLAN', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
+    align:'right', lineSpacing:-2, resolution:TEXT_RES * 2 }).setOrigin(1, 0.5).setDepth(8001);
+  for (const c of members) {
+    c.crew = crew;
+    c.view.tag = S.add.text(0, -90, 'weak to: ' + HELPERS[ROLE_WEAKNESS[c.role]].name, { fontFamily:'Rubik, system-ui, sans-serif',
+      fontStyle:'800', fontSize:'11px', color:'#F4B942', stroke:'rgba(26,14,29,0.85)', strokeThickness:3, resolution:TEXT_RES * 2 }).setOrigin(0.5, 1);
+    c.view.add(c.view.tag);
+  }
+  g.crew = crew; g.crewsMade++; g.focus = null;
+  toast('A crew. Break their link before their plan finishes. Ask for help.');
+  return true;
+}
+function killCrew(k) {
+  k.destroy(); if (k.hud) k.hud.destroy();
+  for (const c of k.creeps) { c.crew = null; if (c.view && c.view.tag) { c.view.tag.destroy(); c.view.tag = null; } }
+  if (game.crew === k) { game.crew = null; game.focus = null; }
+}
+function crewBroken(k) {
+  const live = liveMembers(k);
+  let pts = CREW.breakPoints, cx = 0, cy = 0;
+  for (const c of live) {
+    pts += Math.round(VILLAINS[c.kind].points / 2);
+    cx += c.x / live.length; cy += (c.y - 100 * sc(c.y)) / live.length;
+    c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
+  }
+  game.score += pts; game.crewsBroken++;
+  const x = live.length ? cx : W / 2, y = live.length ? cy : H * 0.4;
+  buzz('save');
+  floatText(x, y, 'CREW BROKEN +' + pts, '#F4B942', true);
+  S.fx.gold.explode(20, x, y + 50);
+  killCrew(k);
+  checkUnlocks();
+}
+function crewSucceeds(k) {
+  const members = liveMembers(k);
+  let cx = 0, cy = 0;
+  for (const c of members) { cx += c.x / members.length; cy += (c.y - 110 * sc(c.y)) / members.length; }
+  killCrew(k);                                 // unlinks them, so flag() below goes through
+  for (const c of members) flag(c);            // they all flag together and act as usual
+  if (members.length) floatText(cx, cy, 'Their plan’s ready.', '#FF8A80');
+}
+function updateCrew(dt) {
+  const k = game.crew;
+  if (!k) return;
+  k.update(dt * 1000);
+  if (k.phase === Phase.SUCCEEDED) crewSucceeds(k);
+  else if (k.phase === Phase.BROKEN) crewBroken(k);
+  else if (!liveMembers(k).length) killCrew(k);
+}
+// Linked members wander as a group and never flag on their own.
+function groupWander(c, dt, depth) {
+  const k = c.crew;
+  if (moveToward(c, k.gx + c.off.x, k.gy + c.off.y, 0.07 * W, dt) && c === k.creeps[0]) {
+    k.gx = rand(0.18, 0.82) * W; k.gy = horizonY + rand(0.08, 0.4) * depth;
+  }
+}
+
+/* ---------- ask for help ---------- */
+function useAsk() {
+  const c = charAt(pointer.x, pointer.y), k = game.crew;
+  if (!c) return;
+  const s = sc(c.y);
+  if (c.kind !== 'bystander') {
+    if (k && c.crew === k) {                   // aim at this one
+      game.focus = c;
+      ringFx(c.x, c.y - 45 * s, 34 * s + 8, COLORS.amber);
+      floatText(c.x, c.y - 150 * s, 'Now ask someone', '#FFF1E0');
+    }
+    return;
+  }
+  const h = c.helper;
+  if (!h || c.assist) return;
+  if (h.ability === Ability.DELAY && game.hearts >= CONFIG.hearts) { floatText(c.x, c.y - 100 * s, 'No need yet.', '#FFF1E0'); return; }
+  if (!k && h.ability !== Ability.DELAY) { floatText(c.x, c.y - 100 * s, 'All quiet.', '#FFF1E0'); return; }
+  h.specificAsk();
+  const effect = h.tryAct(S.time.now);
+  if (!effect) { floatText(c.x, c.y - 100 * s, 'Hang on…', '#FFF1E0'); return; }
+  helperAct(c, effect);
+}
+function helperAct(c, effect) {
+  const h = c.helper, info = HELPERS[h.ability], s = sc(c.y), k = game.crew;
+  floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
+  ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
+  buzz('tag');
+  if (effect.type === 'heal') {
+    game.hearts = Math.min(CONFIG.hearts, game.hearts + 1);
+    floatText(W / 2, H * 0.5, 'A friend checked in. +1 heart', '#7CFF6B', true);
+    c.assist = { x:c.x, y:c.y, t:1.2 };
+    return;
+  }
+  if (!k || !k.isActive) return;
+  const target = game.focus && game.focus.crew === k && liveMembers(k).includes(game.focus) ? game.focus : nearestMember(k, c);
+  if (!target) return;
+  const match = ROLE_WEAKNESS[target.role] === h.ability;   // read before applyEffect, which clears roles if the crew breaks
+  k.applyEffect(effect, target.role);
+  if (effect.type === 'staff') {
+    c.assist = { x:c.x < W / 2 ? -40 : W + 40, y:c.y, t:6, leave:true };
+    floatText(W / 2, H * 0.32, 'Staff on the way', '#FFF1E0');
+  } else c.assist = { x:target.x + (c.x < target.x ? -48 : 48), y:target.y, t:2.4 };
+  if (match) floatText(target.x, target.y - 118 * sc(target.y), 'Good match', '#7CFF6B');
+}
+function drawCrewHud(f) {
+  const k = game.crew;
+  if (!k || !k.isActive) return;
+  const live = liveMembers(k);
+  if (!live.length) return;
+  let cx = 0, top = Infinity;
+  for (const c of live) { cx += c.x / live.length; top = Math.min(top, c.y - 104 * sc(c.y)); }
+  const w = 84, x = cx - w / 2 + 14, y = top - 14;
+  f.fillStyle(0x000000, 0.45).fillRoundedRect(x - 2, y - 3, w + 4, 21, 4);
+  f.fillStyle(0x3A2A40, 1).fillRect(x, y, w, 6).fillRect(x, y + 9, w, 6);
+  f.fillStyle(COLORS.flag, 1).fillRect(x, y, w * clamp(k.cohesion / 100, 0, 1), 6);
+  f.fillStyle(COLORS.cream, 1).fillRect(x, y + 9, w * k.planProgress, 6);
+  k.hud.setVisible(true).setPosition(x - 5, y + 7.5);
+  const t = game.focus;
+  if (t && t.crew === k && liveMembers(k).includes(t)) {
+    const s = sc(t.y);
+    f.lineStyle(2, COLORS.amber, 0.95).strokeEllipse(t.x, t.y + 2, 50 * s, 15 * s);
+  }
+}
+
 function checkUnlocks() {
   for (const w of WEAPONS) {
     if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked. ' + w.hint); renderBar(); }
@@ -374,9 +534,13 @@ function floatText(x, y, text, color, big) {
 
 /* ---------- run lifecycle (called from ui.js) ---------- */
 function newGame() {
-  if (game) for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
+  if (game) {
+    for (const c of game.chars) if (c.view && c.view.active) c.view.destroy();
+    if (game.crew) killCrew(game.crew);
+  }
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys']), events:[], faced:new Set(), used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0 };
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), used:new Set(), seenTells:new Set(), t:0, spraying:0, sprayAng:0,
+    crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = 0; renderBar(); updateHUD();
 }
@@ -388,8 +552,15 @@ function step(dt) {
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
   g.spawnT -= dt;
-  if (g.spawnT <= 0) { spawn(); g.spawnT = rand(0.8, 1.2) * (1.7 - 0.95 * prog); }
+  const crewDue = CREW.enabled && !g.crew && g.crewsMade < CREW.maxPerRun && g.t >= g.nextCrewAt && g.time >= CREW.minTimeLeft;
+  if (g.spawnT <= 0 && !crewDue) { spawn(); g.spawnT = rand(0.8, 1.2) * (1.7 - 0.95 * prog); }
   for (const d of drinks) if (d.spiked) { d.resetT -= dt; if (d.resetT <= 0) d.spiked = false; }
+
+  // Crew: shows up once per run, a while in, if there's time for it to play out.
+  if (crewDue) spawnCrew();   // if the room is full this waits, and ordinary spawns are paused so it clears
+  const helpers = g.chars.filter(c => c.helper && c.state !== 'ko').map(c => c.helper);
+  for (const h of helpers) h.update(dt, helpers);
+  updateCrew(dt);
 
   for (const c of g.chars) {
     if (state !== 'play') break;
@@ -398,6 +569,13 @@ function step(dt) {
     if (c.state === 'ko') continue;
     if (c.stun > 0) { c.stun -= dt; continue; }
     if (c.kind === 'bystander') {
+      if (c.assist) {                           // stepping in to help: walk over, hold, then wander again
+        const a = c.assist; a.t -= dt;
+        const arrived = moveToward(c, a.x, a.y, 0.22 * W, dt);
+        if (a.leave && arrived) c.gone = true;
+        if (a.t <= 0) { c.assist = null; c.tx = rand(0.1, 0.9) * W; c.ty = horizonY + rand(0.06, 0.55) * depth; }
+        continue;
+      }
       c.life -= dt;
       if (c.life <= 0) {
         if (c.state !== 'leave') { c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; }
@@ -408,6 +586,7 @@ function step(dt) {
     if (c.state === 'bail') { if (moveToward(c, c.tx, c.y, 0.3 * W, dt)) c.gone = true; continue; }
     const v = VILLAINS[c.kind];
     if (!c.flagged) {
+      if (c.crew) { groupWander(c, dt, depth); continue; }   // linked: waits with the crew, never flags alone
       c.tellT -= dt;
       if (moveToward(c, c.tx, c.ty, 0.07 * W, dt)) { c.tx = rand(0.12, 0.88) * W; c.ty = horizonY + rand(0.06, 0.4) * depth; }
       if (c.tellT <= 0) flag(c);
@@ -439,21 +618,47 @@ function step(dt) {
 
 // Push logic state onto the Phaser objects.
 function syncViews() {
+  const ask = WEAPONS[selected].mode === 'ask';
   for (const c of game.chars) {
     if (c.state === 'ko') continue;
     const s = sc(c.y), v = c.view;
     const shake = c.state === 'windup' && !reduceMotion ? Math.sin(game.t * 60) * 2.2 : 0;
     v.setPosition(c.x + shake, c.y).setScale(s).setDepth(c.y);
+    if (c.helper) syncHelper(c, ask);
     setArms(v, c.bombT > 0 ? 'wipe' : c.state === 'lunge' ? 'grab' : (c.kind === 'spiker' && c.flagged && (c.state === 'act' || c.state === 'spiking')) ? 'vial' : 'down');
     v.stunFx.setVisible(c.stun > 0);
     if (c.tagged) v.sparkles.forEach((p, i) => { const a = game.t * 3 + i * 1.26; p.setVisible(true).setPosition(Math.cos(a) * 20, -50 + Math.sin(a) * 28); });
   }
 }
 
+// With Ask selected, each bystander shows who they are and a small bar for how willing they are.
+// The white tick is where they'll step in; the bar goes green once they're past it.
+function syncHelper(c, ask) {
+  const v = c.view, h = c.helper;
+  if (!v.helperLabel) {
+    v.helperLabel = S.add.text(0, -108, HELPERS[h.ability].name, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'11px',
+      color:'#FFF1E0', stroke:'rgba(26,14,29,0.85)', strokeThickness:3, resolution:TEXT_RES * 2 }).setOrigin(0.5, 1);
+    v.helperBar = S.add.graphics();
+    v.add([v.helperLabel, v.helperBar]);
+  }
+  v.helperLabel.setVisible(ask); v.helperBar.setVisible(ask);
+  if (!ask) return;
+  const w = 34, ready = h.canAct(S.time.now);
+  v.helperBar.clear()
+    .fillStyle(0x000000, 0.5).fillRect(-w / 2 - 1, -106, w + 2, 7)
+    .fillStyle(0x3A2A40, 1).fillRect(-w / 2, -105, w, 5)
+    .fillStyle(ready ? COLORS.spiked : 0x9A8CC0, 1).fillRect(-w / 2, -105, w * h.willingness, 5)
+    .fillStyle(COLORS.cream, 1).fillRect(-w / 2 + w * h.config.threshold - 0.5, -107, 1.5, 9);
+}
+
 function drawFx() {
   const f = S.fxLayer, g = game;
   f.clear();
   if (!g) return;
+  if (g.crew) {
+    if (state === 'play') drawCrewHud(f);
+    else { g.crew.tether.clear(); if (g.crew.hud) g.crew.hud.setVisible(false); }   // run is over: hide the link
+  }
   const dtFade = S.game.loop.delta / 1000;
   if (g.spraying > 0) {
     const o = origin(), range = (playerY - horizonY) * 0.75 + 40, half = 0.26;
@@ -526,6 +731,7 @@ function layout() {
       c.y = horizonY + (c.y - old.horizonY) * fy;
       c.ty = horizonY + (c.ty - old.horizonY) * fy;
     }
+    if (game.crew) { game.crew.gx *= fx; game.crew.gy = horizonY + (game.crew.gy - old.horizonY) * fy; }
   }
   drinks.forEach((d, i) => d.x = W * (0.22 + 0.28 * i));
   drawRoom();
@@ -575,7 +781,7 @@ class BarScene extends Phaser.Scene {
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
       game.used.add(w.id);
-      if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall();
+      if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
     this.input.on('pointerup', () => pointer.down = false);

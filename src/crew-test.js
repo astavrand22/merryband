@@ -166,12 +166,12 @@ class CrewTestScene extends Phaser.Scene {
     };
 
     for (const c of this.creeps) {
-      let tx, ty, speed = 90;
+      let tx, ty, speed = 50;
       if (phase === Phase.BROKEN) {
         // Scatter toward the nearest side.
-        tx = c.view.x < CT.W / 2 ? -30 : CT.W + 30; ty = c.view.y; speed = 160;
+        tx = c.view.x < CT.W / 2 ? -30 : CT.W + 30; ty = c.view.y; speed = 120;
       } else if (c.separated) {
-        tx = t.x - 120; ty = 60 + this.creeps.indexOf(c) * 30; speed = 120;
+        tx = t.x - 120; ty = 60 + this.creeps.indexOf(c) * 30; speed = 70;
       } else if (phase === Phase.EXIT) {
         tx = CT_DOOR.x - 40 - (c.role === Role.ISOLATOR ? 0 : 50);
         ty = CT_DOOR.y + (angle[c.role] > 0 ? 50 : c.role === Role.DISTRACTOR ? -70 : 0);

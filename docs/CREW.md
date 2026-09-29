@@ -45,7 +45,9 @@ Willingness isn't fixed:
 
 ## Tuning
 
-Everything is a constant at the top of each file: `ABILITY_CONFIG` and `BYSTANDER_TUNING` in `bystander.js`; `ROLE_WEAKNESS`, `PHASE_DURATION` and `WEAKNESS_MULTIPLIER` in `crew.js`. All numbers are first-pass guesses.
+Everything is a constant at the top of each file: `ABILITY_CONFIG` and `BYSTANDER_TUNING` in `bystander.js`; `ROLE_WEAKNESS`, `PHASE_DURATION`, `WEAKNESS_MULTIPLIER` and `CREW_TUNING` in `crew.js`. All numbers are first-pass guesses.
+
+The one dial for difficulty is `CREW_TUNING.planPace` in `crew.js`. It scales how fast the plan runs. It starts at 0.4 (a fully linked crew finishes in about a minute); raise it toward 1 for a harder round, lower it for an easier one.
 
 ## Content rules still apply
 
@@ -56,3 +58,17 @@ Crews follow [CONTRIBUTING.md](../CONTRIBUTING.md). The plan is an abstract stat
 - Wiring crews into `game.js` (spawns via `shouldSpawnCrew(level)`, real characters instead of circles)
 - Anything that lowers the target's wellbeing, so Delay's heal currently has nothing to heal
 - Sound and haptics for a broken crew
+
+## In the game (branch `crew-in-game`)
+
+The real game now has crews and an **Ask** weapon slot (🙋, unlocked from the start).
+
+- **Ask**: select it, then tap a bystander to ask for help. Tap a crew member first to aim the help at them.
+  Bystanders show a name (Bouncer, Regular, Waiter, Friend, Phone), and a willingness bar with a tick at the point they'll act.
+  Each crew member is tagged "weak to: <Helper>". Matching the helper to the tag hits harder.
+- **Crew**: one per run (`CREW` in `src/data.js`), arriving after `firstAt` seconds. Members wander as a group and never flag while linked,
+  so weapons can't hit them (the old unflagged penalty applies). Break the link with helpers, or the plan bar runs out and they all flag together and act like normal villains.
+- **Pace**: the test page uses `CREW_TUNING.planPace` (0.4, about 57 s idle). The game gives each crew its own `paceScale` so the plan takes `CREW.planSeconds` (30 s) and fits in a 60 s level.
+- **Staff (Waiter)** take `CREW.staffHit` (60) off the link instead of ending the crew (`CREW_TUNING.staffBreaks = false` in game).
+- **Friend (Delay)** heals one heart, only when hurt.
+- Ordinary spawns pause while a crew is due, so a full room can't block it.
