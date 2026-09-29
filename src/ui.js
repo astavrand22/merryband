@@ -72,10 +72,20 @@ function pickTips(g,n=2){
   lastTipIds=out.map(t=>t.id);
   return out;
 }
-function showEndTips(){
+// One tip at a time. The first is the most relevant to this run; "Another tip" walks through
+// the rest (other relevant ones first, then everything else, shuffled) and wraps around.
+let tipQueue=[], tipIdx=0;
+function showTip(){
   const list=$('tipList'); list.innerHTML='';
-  pickTips(game).forEach(t=>list.appendChild(tipEl(t)));
+  if(tipQueue.length) list.appendChild(tipEl(tipQueue[tipIdx]));
+  $('tipNext').hidden=tipQueue.length<2;
 }
+function showEndTips(){
+  const first=pickTips(game,3);
+  const rest=TIPS.filter(t=>!first.includes(t)).sort(()=>Math.random()-0.5);
+  tipQueue=first.concat(rest); tipIdx=0; showTip();
+}
+$('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
 function startGame(){
   newGame(); state='play';
@@ -103,6 +113,7 @@ function endGame(win){
 $('startBtn').onclick=startGame;
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&state!=='play'&&!$('startScreen').classList.contains('hidden')) startGame() });
 $('againBtn').onclick=startGame;
+$('signBtn').closest('.cause').hidden=!CAUSE.enabled;
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;

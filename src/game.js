@@ -585,6 +585,7 @@ function checkUnlocks() {
 function floatText(x, y, text, color, big) {
   const t = S.add.text(x, y, text, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:(big ? 24 : 15) + 'px',
     color, stroke:'rgba(26,14,29,0.85)', strokeThickness:4, resolution:TEXT_RES }).setOrigin(0.5).setDepth(9500);
+  t.x = Phaser.Math.Clamp(x, t.width / 2 + 6, W - t.width / 2 - 6);   // stay on screen when someone walks in from the edge
   const life = big ? 1300 : 900;
   S.tweens.add({ targets:t, y:y - (big ? 26 : 36), duration:life });
   S.tweens.add({ targets:t, alpha:0, delay:life * 0.35, duration:life * 0.65, onComplete:() => t.destroy() });
@@ -701,6 +702,9 @@ function syncHelper(c, ask) {
   }
   v.helperLabel.setVisible(ask); v.helperBar.setVisible(ask);
   if (!ask) return;
+  const s = sc(c.y), half = Math.max(v.helperLabel.width, 36) * s / 2 + 4;   // keep label and bar on screen near the edges
+  const shift = (Phaser.Math.Clamp(c.x, half, W - half) - c.x) / s;
+  v.helperLabel.x = shift; v.helperBar.x = shift;
   const w = 34, ready = h.canAct(S.time.now);
   v.helperBar.clear()
     .fillStyle(0x000000, 0.5).fillRect(-w / 2 - 1, -106, w + 2, 7)
