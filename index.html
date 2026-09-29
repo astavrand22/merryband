@@ -20,6 +20,7 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn .ic{font-size:20px;line-height:1}
 .wbtn.sel{border-color:var(--cyan);background:#241436;box-shadow:0 0 10px rgba(58,231,255,.35)}
 .wbtn.locked{opacity:.4;cursor:default}
+.dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-right:.4em;vertical-align:baseline;border:2px solid var(--cream)}
 .bar .sep{flex:none;width:2px;align-self:stretch;margin:2px 5px;background:var(--line);border-radius:2px}
 .wbtn .cd{position:absolute;left:0;bottom:0;height:4px;background:var(--neon);width:0}
 .wbtn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
@@ -123,12 +124,22 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
     <p class="sub">2 a.m. and every exit&rsquo;s got a guy in it</p>
     <ul class="rules">
       <li><span>🚩</span>Creeps show a red flag before they act. Wait for it, then hit them. Hit too early and you lose points.</li>
-      <li><span>❤️</span>Stop every creep or lose a heart: 🟣 the Spiker goes for her drink, 🟡 the Follower trails you, 🔵 the Grabber lunges at you. Hit a bystander and you lose a heart too.</li>
+      <li><span>❤️</span>Stop each creep before he gets to her drink or to you. Each one who gets through costs a heart, and so does hitting a bystander. New kinds get a quick explainer when they first show up.</li>
       <li><span>🧰</span>Pick a tool from the bar. Tap it to see when to use it.</li>
       <li id="crewRule"><span>🙋</span>Matching shirts mean a crew, and crews can&rsquo;t be hit. Pick <b>Ask</b> and tap a bystander for help to split them up before their shirts go red.</li>
     </ul>
     <p class="note" id="bestStart"></p>
     <p class="note">Close to start. Cartoon violence against fictional predators; no assaults are shown. Need support? RAINN, 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
+  </div>
+</div>
+
+<div class="overlay popup hidden" id="introScreen" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+  <div class="card panel">
+    <button class="x" id="introX" aria-label="Close and keep playing">&times;</button>
+    <div class="label">New creep</div>
+    <h2 id="introTitle"></h2>
+    <p class="sub" id="introHow"></p>
+    <button class="btn" id="introOk">Got it</button>
   </div>
 </div>
 

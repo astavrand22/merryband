@@ -9,11 +9,9 @@ function toast(msg){const t=$('toast'); t.textContent=msg; t.classList.add('show
 let narrT=0, narrAt=0;
 function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; t.textContent=msg; t.classList.add('show'); clearTimeout(narrT); narrT=setTimeout(()=>t.classList.remove('show'),ms)}
 
-const weaponShown=w=>w.mode!=='ask'||CREW.enabled;   // Ask only appears when crews are on
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
   WEAPONS.forEach((w,i)=>{
-    if(!weaponShown(w)) return;
     const unlocked=!game||game.unlocked.has(w.id);
     const b=document.createElement('button');
     b.className='wbtn'+(i===selected?' sel':'')+(unlocked?'':' locked');
@@ -94,8 +92,22 @@ function showEndTips(){
 }
 $('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
+// A short explainer when a new kind of creep first shows up. Pauses the game until it's closed.
+function showIntro(kind){
+  const v=VILLAINS[kind]; if(!v||!v.intro||state!=='play') return;
+  state='intro'; pointer.down=false;
+  const t=$('introTitle'); t.innerHTML='';
+  const dot=document.createElement('span'); dot.className='dot'; dot.style.background=v.outfit||'#fff';
+  t.append(dot,document.createTextNode((v.icon?v.icon+' ':'')+v.name));
+  $('introHow').textContent=v.intro;
+  $('introScreen').classList.remove('hidden'); $('introOk').focus();
+}
+function closeIntro(){ if(state!=='intro') return; $('introScreen').classList.add('hidden'); state='play'; pointer.down=false }
+$('introOk').onclick=closeIntro; $('introX').onclick=closeIntro;
+document.addEventListener('keydown',e=>{ if(state==='intro'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')) { e.preventDefault(); closeIntro() } });
+
 function startGame(){
-  newGame(); state='play'; track('run_start'); narrate('2 a.m. Wait for the red flag on their clothes.',4000);
+  $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Wait for the red flag on their clothes.',4000);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
@@ -265,7 +277,7 @@ $('sgSend').onclick=()=>{
 })();
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('giveScreen').classList.contains('hidden')) closeGive() });
 
-addEventListener('keydown',e=>{ if(state!=='play') return; const shown=WEAPONS.map((w,i)=>i).filter(i=>weaponShown(WEAPONS[i])); const n=+e.key; if(n>=1&&n<=shown.length) selectWeapon(shown[n-1]) });
+addEventListener('keydown',e=>{ if(state!=='play') return; const n=+e.key; if(n>=1&&n<=WEAPONS.length) selectWeapon(n-1) });
 
 renderBar();
-if(!CREW.enabled){ const r=$('crewRule'); if(r) r.remove() }
+if(!CREW.enabled){ const r=$('crewRule'); if(r) r.innerHTML='<span>🙋</span>Need backup? Pick <b>Ask</b>, tap a creep to aim, then tap a bystander to help stop him.' }

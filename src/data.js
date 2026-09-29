@@ -17,11 +17,11 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 //   Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
   spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
-              outfit:'#A070FF', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
+              outfit:'#A070FF', intro:'He heads for a drink at the bar. Wait for his red flag, then hit him before he reaches it. Two hits, or one Knee.', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
   follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
-              outfit:'#F2B233', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
+              outfit:'#F2B233', intro:'He trails you and keeps coming. Wait for his red flag, then stop him before he catches up. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
-              outfit:'#38B6FF', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
+              outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges at you. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
@@ -29,6 +29,10 @@ const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200
 // ramps linearly to `end` by the last second. 1 = the speed written on the villain.
 const PACE = { start: 0.65, end: 1.35 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
+// Creeps arrive one type at a time: seconds into the run before each type can spawn.
+const STAGES = { spiker:0, follower:18, grabber:36 };
+// A short explainer pops up (and pauses the game) the first time each type appears in a run.
+const INTRO = { enabled:true };
 
 // The red flag shows ON the villain's clothing when he makes his move, not above his head.
 // subtlety = the default range when a villain has none of its own. obvious/subtle = the two ends
@@ -37,7 +41,7 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
-  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander for help. Use it on crews (the only way to break one) or when hurt (a Friend heals a heart). Tap a crew member first to aim, and match his \u201cweak to\u201d tag.', hint:'Tap a bystander for help.' },
+  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend heals a heart. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
   { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },

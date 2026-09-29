@@ -125,11 +125,20 @@ function makeChar(kind) {
   return c;
 }
 function spawn() {
-  if (game.chars.filter(c => c.state !== 'ko').length >= 9) return;
-  let r = Math.random(), kind = 'bystander';
-  for (const k in SPAWN_WEIGHTS) { r -= SPAWN_WEIGHTS[k]; if (r <= 0) { kind = k; break; } }
-  if (kind === 'spiker' && game.chars.filter(c => c.kind === 'spiker' && c.state !== 'ko').length >= 2) kind = 'follower';
-  game.chars.push(makeChar(kind));
+  const g = game;
+  const stageAt = k => (typeof STAGES !== 'undefined' && STAGES[k]) || 0;
+  const open = k => k === 'bystander' || g.t >= stageAt(k);   // not before its stage
+  // Each type is due a couple of seconds after its stage starts, so the pacing doesn't depend on luck or a crowded room.
+  const due = Object.keys(STAGES || {}).find(k => !g.introSeen.has(k) && !g.spawned.has(k) && g.t >= stageAt(k) + 2);
+  if (!due && g.chars.filter(c => c.state !== 'ko').length >= 9) return;
+  const pool = Object.keys(SPAWN_WEIGHTS).filter(open);
+  let r = Math.random() * pool.reduce((s, k) => s + SPAWN_WEIGHTS[k], 0), kind = 'bystander';
+  for (const k of pool) { r -= SPAWN_WEIGHTS[k]; if (r <= 0) { kind = k; break; } }
+  if (due) kind = due;
+  if (kind === 'spiker' && g.chars.filter(c => c.kind === 'spiker' && c.state !== 'ko').length >= 2) kind = open('follower') ? 'follower' : 'bystander';
+  g.chars.push(makeChar(kind));
+  if (kind !== 'bystander') g.spawned.add(kind);
+  if (kind !== 'bystander' && INTRO.enabled && !g.introSeen.has(kind)) { g.introSeen.add(kind); showIntro(kind); }
 }
 function moveToward(c, tx, ty, sp, dt) {
   const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
@@ -383,6 +392,17 @@ const CALL_LINES = [
   'Stay there, we\u2019re walking in.',
   'Babe your Uber\u2019s here. And so am I.'
 ];
+// A flagged creep gives up and walks off for half points (a Spiker who bails counts as a save).
+function scareOff(c) {
+  const s = sc(c.y), v = VILLAINS[c.kind];
+  const save = c.kind === 'spiker';
+  const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
+  game.score += pts; if (save) game.saves++;
+  c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
+  S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
+  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER ' : 'Scattered. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
+  checkUnlocks();
+}
 function fakeCall() {
   const w = WPN('call');
   if (game.cool.call > 0) { toast('You just made that call. Give her a sec.'); return; }
@@ -395,12 +415,7 @@ function fakeCall() {
     const s = sc(c.y), v = VILLAINS[c.kind];
     if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Somebody\u2019s watching now.', '#FFF1E0'); continue; }
     if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
-    const save = c.kind === 'spiker';
-    const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
-    game.score += pts; if (save) game.saves++;
-    c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
-    S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
-    floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER ' : 'Scattered. ') + '+' + pts, save ? '#FF4F9A' : '#F4B942');
+    scareOff(c);
     bailed++;
   }
   if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to spook', '#FFF1E0');
@@ -514,12 +529,19 @@ function groupWander(c, dt, depth) {
 }
 
 /* ---------- ask for help ---------- */
+// Solo creeps a bystander could help with: flagged, still a threat, not part of a crew.
+const isThreat = c => c && c.kind !== 'bystander' && c.flagged && !['ko', 'bail'].includes(c.state) && !c.gone && !(c.crew && c.crew.isActive);
+function nearestThreat(from) {
+  let best = null, bd = Infinity;
+  for (const c of game.chars) { if (!isThreat(c)) continue; const d = Math.hypot(c.x - from.x, c.y - from.y); if (d < bd) { bd = d; best = c; } }
+  return best;
+}
 function useAsk() {
   const c = charAt(pointer.x, pointer.y), k = game.crew;
   if (!c) return;
   const s = sc(c.y);
   if (c.kind !== 'bystander') {
-    if (k && c.crew === k) {                   // aim at this one
+    if ((k && c.crew === k) || isThreat(c)) {   // aim at this one
       game.focus = c;
       ringFx(c.x, c.y - 45 * s, 34 * s + 8, COLORS.amber);
       floatText(c.x, c.y - 150 * s, 'Now ask someone', '#FFF1E0');
@@ -529,16 +551,38 @@ function useAsk() {
   const h = c.helper;
   if (!h || c.assist) return;
   if (h.ability === Ability.DELAY && game.hearts >= CONFIG.hearts) { floatText(c.x, c.y - 100 * s, 'No need yet.', '#FFF1E0'); return; }
-  if (!k && h.ability !== Ability.DELAY) { floatText(c.x, c.y - 100 * s, 'All quiet.', '#FFF1E0'); return; }
+  if (!k && h.ability !== Ability.DELAY && !nearestThreat(c)) { floatText(c.x, c.y - 100 * s, 'All quiet.', '#FFF1E0'); return; }
   h.specificAsk();
   const effect = h.tryAct(S.time.now);
   if (!effect) { floatText(c.x, c.y - 100 * s, 'Hang on…', '#FFF1E0'); return; }
   helperAct(c, effect);
 }
+// Help against one creep who isn't part of a crew.
+function soloHelp(c, effect) {
+  const h = c.helper, info = HELPERS[h.ability];
+  const t = game.focus && isThreat(game.focus) ? game.focus : nearestThreat(c);
+  game.focus = null;
+  if (!t) return;
+  const s = sc(t.y);
+  const walk = { x:t.x + (c.x < t.x ? -48 : 48), y:t.y, t:2.4 };
+  switch (h.ability) {
+    case Ability.DIRECT:   scareOff(t); floatText(t.x, t.y - 118 * s, 'Scared off', '#7CFF6B'); break;
+    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); floatText(t.x, t.y - 118 * s, 'Distracted', '#7CFF6B'); break;
+    case Ability.DOCUMENT:
+      t.marked = true; S.time.delayedCall(5000, () => { t.marked = false; });
+      floatText(t.x, t.y - 118 * s, 'Filmed: slower, easier to hit', '#7CFF6B'); break;
+    case Ability.DELEGATE:
+      floatText(W / 2, H * 0.32, 'Staff on the way', '#FFF1E0');
+      S.time.delayedCall(effect.arrivalMs, () => { if (isThreat(t)) { scareOff(t); floatText(t.x, t.y - 118 * sc(t.y), 'Staff stepped in', '#7CFF6B'); } });
+      c.assist = { x:c.x < W / 2 ? -40 : W + 40, y:c.y, t:6, leave:true };
+      return;
+  }
+  c.assist = walk;
+}
 function helperAct(c, effect) {
   const h = c.helper, info = HELPERS[h.ability], s = sc(c.y), k = game.crew;
   floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
-  narrate(k ? 'The ' + info.name + ' steps in. Watch the TEAM bar.' : 'The ' + info.name + ' checks in.');
+  narrate(k && k.isActive ? 'The ' + info.name + ' steps in. Watch the TEAM bar.' : 'The ' + info.name + ' steps in.');
   ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
   buzz('tag');
   if (effect.type === 'heal') {
@@ -547,7 +591,7 @@ function helperAct(c, effect) {
     c.assist = { x:c.x, y:c.y, t:1.2 };
     return;
   }
-  if (!k || !k.isActive) return;
+  if (!k || !k.isActive) { soloHelp(c, effect); return; }
   const target = game.focus && game.focus.crew === k && liveMembers(k).includes(game.focus) ? game.focus : nearestMember(k, c);
   if (!target) return;
   const match = ROLE_WEAKNESS[target.role] === h.ability;   // read before applyEffect, which clears roles if the crew breaks
@@ -619,7 +663,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();

@@ -31,7 +31,7 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 | 2 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | Glitter bomb. Every villain in the radius gets a shower from above, ends up covered in glitter that stays on him, and spends 0.7s rubbing his eyes (stunned). Bombed creeps take double damage and are **force-flagged**. Bystanders are skipped. |
 | 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Hold and aim a cone from the player. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
 | 4 | 🦵 Knee | `knee` | 0 | `tap` | `dmg:2`, `cooldown:0.55` | One hard hit on a flagged creep (shows "OOF!"). Drops a Spiker or Grabber (2 hp) in one tap and a Follower (3 hp) in two. Always available. Replaced Keys on Sep 28. |
-| 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. See `docs/CREW.md`. |
+| 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. Against a flagged creep (tap him first to aim, else the nearest): Bouncer scares him off, Regular stuns him 2.5s, Phone slows him and doubles damage for 5s, Waiter fetches staff (he leaves after ~4s). Friend heals a heart. Against crews, see `docs/CREW.md`. |
 
 Bar order is Ask, Knee, Fake Call, Glitter, Pepper. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
 

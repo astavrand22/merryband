@@ -72,3 +72,9 @@ The real game now has crews and an **Ask** weapon slot (🙋, unlocked from the 
 - **Staff (Waiter)** take `CREW.staffHit` (60) off the link instead of ending the crew (`CREW_TUNING.staffBreaks = false` in game).
 - **Friend (Delay)** heals one heart, only when hurt.
 - Ordinary spawns pause while a crew is due, so a full room can't block it.
+
+## Level 1 status
+Crews are switched off for Level 1 (`CREW.enabled = false` in `src/data.js`) and saved for a later level.
+The Ask button stays: helpers act on single flagged creeps (see `WEAPONS.md`). Creeps also arrive by stage
+(`STAGES`: Spiker at the start, Follower at 18 s, Grabber at 36 s), with a short pop-up the first time each
+type appears (`INTRO`).
