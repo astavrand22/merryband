@@ -1,4 +1,4 @@
-# Keys Out
+# RedFlag
 
 A short arcade game for the browser. You walk home through the city at night and take out fictional predators with everyday objects before they make their move.
 
