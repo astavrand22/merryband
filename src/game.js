@@ -977,8 +977,16 @@ function drawRoom() {
   r.fillStyle(COLORS.neon, 1).fillRect(-10, counterTop, W + 20, 3);          // bright edge
   r.fillStyle(0x000000, 0.18);
   for (let x = 0; x < W; x += 48) r.fillRect(x, counterTop + 9, 2, horizonY - counterTop - 9);
-  const bk = barK();
-  drinks.forEach((d, i) => r.fillStyle(0x3a2020, 1).fillRect(d.x - 26 * bk, horizonY - 8 * bk, 12 * bk, 10 * bk));
+  // A bar stool under each friend: seat, pole and a neon-rimmed base, seen from behind. Mostly hidden by her; the seat peeks out at her hips.
+  const s0 = sc(horizonY);
+  for (const d of drinks) {
+    const cx = d.x - 20, seatY = horizonY + 2 - 22 * s0;
+    r.lineStyle(3 * s0, 0x2A1C3A, 1).lineBetween(cx, seatY, cx, horizonY + 4);
+    r.fillStyle(0x120A20, 1).fillEllipse(cx, horizonY + 5, 30 * s0, 7 * s0);
+    r.lineStyle(1.2, COLORS.neon, 0.45).strokeEllipse(cx, horizonY + 5, 30 * s0, 7 * s0);
+    r.fillStyle(0x2A1C3A, 1).fillEllipse(cx, seatY, 46 * s0, 11 * s0);
+    r.lineStyle(1.2, COLORS.neon, 0.5).strokeEllipse(cx, seatY, 46 * s0, 11 * s0);
+  }
 
   S.glows.forEach((gl, i) => gl.setPosition(W * [0.2, 0.5, 0.8][i], horizonY * 0.1).setDisplaySize(W * 0.5, W * 0.5));
   S.neon.setPosition(W / 2, horizonY * 0.3).setFontSize(Math.round(clamp(W * 0.075, 22, 44)) + 'px');
