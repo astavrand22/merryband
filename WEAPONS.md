@@ -6,7 +6,7 @@ Reference for the current arsenal and a backlog of proposed weapons. The live de
 
 These apply to every weapon:
 
-- Hitting a **bystander** costs a heart (1.2s grace before the same bystander can cost another).
+- Hitting a **bystander** costs the nearest friend a chunk of her comfort bar (`FRIENDS.bystanderHit`; 1.2s grace before the same bystander can cost another).
 - Hitting a **villain before his red flag** costs 50 points and resets the combo.
 - **Tagged** villains (see Glitter) take double damage from everything.
 - Weapons unlock at a score threshold (`unlock`) and are selected from the bottom bar or with number keys.
@@ -31,7 +31,7 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 | 2 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | Glitter bomb. Every villain in the radius gets a shower from above, ends up covered in glitter that stays on him, and spends 0.7s rubbing his eyes (stunned). Bombed creeps take double damage and are **force-flagged**. Bystanders are skipped. |
 | 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Hold and aim a cone from the player. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
 | 4 | 🦵 Knee | `knee` | 0 | `tap` | `dmg:2`, `cooldown:0.55` | One hard hit on a flagged creep (shows "OOF!"). Drops a Spiker or Grabber (2 hp) in one tap and a Follower (3 hp) in two. Always available. Replaced Keys on Sep 28. |
-| 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. Against a flagged creep (tap him first to aim, else the nearest): Bouncer scares him off, Regular stuns him 2.5s, Phone slows him and doubles damage for 5s, Waiter fetches staff (he leaves after ~4s). Friend heals a heart. Against crews, see `docs/CREW.md`. |
+| 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. Against a flagged creep (tap him first to aim, else the nearest): Bouncer scares him off, Regular stuns him 2.5s, Phone slows him and doubles damage for 5s, Waiter fetches staff (he leaves after ~4s). Friend checks in on your most shaken friend. Against crews, see `docs/CREW.md`. |
 
 Bar order is Ask, Knee, Fake Call, Glitter, Pepper. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
 
@@ -109,7 +109,7 @@ Added from Abi's notes: realistic self-defense moves, a loud whistle, and a swin
 
 ### Decisions (Sep 28)
 - **Close moves auto-trigger.** No tap needed: when a lunging Grabber enters the close zone, your equipped close move fires on its own. The cost is a cooldown: if the move is still recharging, he grabs you as usual.
-- **Close moves are passive, not bar slots.** You carry one equipped close move (Knee Strike by default), shown as a small badge by the hearts with a cooldown ring. It doesn't use a number key, which keeps the bar at 4 until the hotkey handler is extended.
+- **Close moves are passive, not bar slots.** You carry one equipped close move (Knee Strike by default), shown as a small badge by the friends' hearts with a cooldown ring. It doesn't use a number key, which keeps the bar at 4 until the hotkey handler is extended.
 - **Bystanders are never hit by 1:1 moves or the bag.** Close moves only ever target the Grabber. The Bag Swing skips bystanders in its ring. This is an exception to the shared bystander rule, on purpose: these are protective moves, not area weapons.
 - **Sizes** (both scale with play-field depth, `depth = playerY - horizonY`, like villain speeds do):
 
@@ -168,7 +168,7 @@ Landing a hit buzzes the phone. Tuning lives in `HAPTICS` in `src/data.js`; the 
 | Save (KO'd a Spiker before he spiked) | `save` | 18, 30, 18, 30, 40 | `ko()` |
 | Glitter bomb or lipstick mark | `tag` | 8 | `useGlitter()`, `writeCreep()` |
 | Fake call rings | `call` | 40, 60, 40, 60, 40 | `fakeCall()` |
-| You lost a heart | `hurt` | 70, 50, 70 | `hurt()` |
+| A friend lost comfort | `hurt` | 70, 50, 70 | `hurtFriend()` |
 
 - **Held weapons** (pepper) would buzz nonstop, so each kind is throttled by `minGap` (0.09s).
 - **Early hits** (before the flag) don't buzz. The silence is part of the "wait for the flag" feedback.

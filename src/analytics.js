@@ -1,7 +1,7 @@
 /* Privacy-first play analytics. Off unless ANALYTICS.endpoint is set in data.js.
 
    What it sends: one small JSON summary per run (score, how it ended, which weapons were used,
-   crew outcomes, what cost hearts) plus a "run_start". No cookies, no local ids, no fingerprinting,
+   crew outcomes, what shook a friend) plus a "run_start". No cookies, no local ids, no fingerprinting,
    no free text, no user-submitted content. It respects Do Not Track and Global Privacy Control.
    It never sends anything from the donation, petition or feedback flows.
 
@@ -25,9 +25,9 @@ function trackRunEnd(g, win) {
   const lost = {};
   for (const w of g.events) lost[w] = (lost[w] || 0) + 1;
   track('run_end', {
-    win, score:g.score, kos:g.kos, saves:g.saves, hearts_left:Math.max(0, g.hearts),
+    win, score:g.score, kos:g.kos, saves:g.saves, weakest_friend:Math.round(Math.min(...g.friends.map(f => f.wellbeing))),
     seconds:Math.round(CONFIG.levelSeconds - g.time),
-    weapons_used:[...g.used], faced:[...g.faced], hearts_lost_by:lost,
+    weapons_used:[...g.used], faced:[...g.faced], hits_by:lost,
     crews_made:g.crewsMade, crews_broken:g.crewsBroken
   });
 }

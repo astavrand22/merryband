@@ -70,7 +70,7 @@ The real game now has crews and an **Ask** weapon slot (🙋, unlocked from the 
   so weapons can't hit them (the old unflagged penalty applies). Break the link with helpers, or the plan bar runs out and they all flag together and act like normal villains.
 - **Pace**: the test page uses `CREW_TUNING.planPace` (0.4, about 57 s idle). The game gives each crew its own `paceScale` so the plan takes `CREW.planSeconds` (30 s) and fits in a 60 s level.
 - **Staff (Waiter)** take `CREW.staffHit` (60) off the link instead of ending the crew (`CREW_TUNING.staffBreaks = false` in game).
-- **Friend (Delay)** heals one heart, only when hurt.
+- **Friend (Delay)** restores some of your most shaken friend's comfort bar, only when one is hurt.
 - Ordinary spawns pause while a crew is due, so a full room can't block it.
 
 ## Level 1 status

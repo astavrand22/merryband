@@ -8,7 +8,7 @@ The game is one bad night, played leg by leg: the bar, the walk home, the garage
 
 Every level follows the same rules:
 
-- Villains look like everyone else until they act. Then a red flag shows on his clothing — sometimes obvious, sometimes easy to miss — and you strike. Hitting early costs points; hitting a bystander costs a heart.
+- Villains look like everyone else until they act. Then a red flag shows on his clothing — sometimes obvious, sometimes easy to miss — and you strike. Hitting early costs points; hitting a bystander shakes the nearest friend. You look out for three friends at the counter and are never the target.
 - Assaults are never shown. The tell signals intent and the player always interrupts.
 - Each level adds one new villain behavior and one new weapon, so a new player learns one thing at a time.
 - The end screen carries one real-world action tied to that level's villain. Villains stay fictional.
@@ -23,7 +23,7 @@ Every level follows the same rules:
 
 ## Level 1: Last Call, as built today
 
-A 60-second survival round in a bar at closing time, three hearts, built on Phaser with no image assets and no saved state. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose at zero hearts.
+A 60-second survival round in a bar at closing time, built on Phaser with no image assets and no saved state. Three friends sit at the counter, each with a comfort bar. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose when any friend's bar hits zero.
 
 **The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 
@@ -32,11 +32,11 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 
 **Villains.** Each one wanders like a bystander until his tell timer runs out, then a red flag appears on his clothing and he acts. How obvious the flag is varies per spawn (a `subtlety` range per villain in `src/data.js`): the Grabber wears an obvious one, the Spiker often a subtle one. A first-time text callout above him still names the tell.
 
-| Villain | HP | Flag after | What he does once flagged | You lose a heart when | Points |
+| Villain | HP | Flag after | What he does once flagged | A friend loses comfort (34) when | Points |
 | --- | --- | --- | --- | --- | --- |
 | The Spiker | 2 | 1.2–2.2 s | Walks to an unspiked drink, spends 1.4 s spiking it | He finishes: the drink glows green for 4 s | 150, +100 save bonus |
-| The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward you | He reaches you | 100 |
-| The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast | He reaches you | 120 |
+| The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward the friend who's had the worst night | He reaches her | 100 |
+| The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast at that friend | He reaches her | 120 |
 
 **Weapons.** Knee is free (and the bar order is Ask, Knee, Fake Call, Glitter, Pepper); the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
 
@@ -44,7 +44,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 | --- | --- | --- | --- |
 | Fake Call | Tap | Your friend calls, 15 s recharge. Flagged Followers and Spikers walk off for half points (a Spiker counts as a save); flagged Grabbers freeze for 1.5 s | 1,700 |
 | Glitter bomb | Tap | Area blast, 5 s recharge. Villains in it are covered in glitter, stunned for 0.7 s, flag immediately and take double damage | 1,200 |
-| Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and costs a heart if it hits a bystander | 700 |
+| Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and shakes the nearest friend if it hits a bystander | 700 |
 | Knee | Tap | 2 damage, 0.55 s cooldown. One tap drops a Spiker or Grabber, two a Follower | Start |
 | Ask | Tap a bystander | Ask for help (see CREW.md) | Start |
 
@@ -70,7 +70,7 @@ Level 1 is the tutorial and the thing people share, so it needs to be the most p
 
 - Real petition link and cause copy in `CAUSE`, checked against the partner org's own wording.
 - A 10-second guided opening: one Spiker, a prompt to wait for the flag, a prompt to strike. Normal spawning starts after the first knockout.
-- Sound: a key jingle on hit, a KO sting, a glass clink when a drink is saved, a low hum when a flag goes up. Short vibration on phones when you lose a heart.
+- Sound: a key jingle on hit, a KO sting, a glass clink when a drink is saved, a low hum when a flag goes up. Short vibration on phones when a friend loses comfort.
 - Save best score and the gold lipstick in the browser so they survive a reload.
 
 **Make the bar feel alive**

@@ -28,7 +28,13 @@ function selectWeapon(i){
 }
 function updateHUD(){
   const g=game; if(!g) return;
-  $('hearts').textContent='♥'.repeat(Math.max(0,g.hearts))+'♡'.repeat(CONFIG.hearts-Math.max(0,g.hearts));
+  // One heart per friend, coloured by how she's doing. Only touched when something changes.
+  const key=g.friends.map(f=>Math.ceil(f.wellbeing/34)).join(''), pips=$('friends');
+  if(pips.dataset.k!==key){
+    pips.dataset.k=key; pips.innerHTML='';
+    g.friends.forEach(f=>{ const s=document.createElement('span'); s.textContent='♥'; s.style.color=f.out?'#5A4A60':f.wellbeing>66?'#7CFF6B':f.wellbeing>33?'#F4B942':'#FF2D4A'; s.style.opacity=f.out?0.5:1; pips.appendChild(s) });
+    pips.setAttribute('aria-label','Friends: '+g.friends.map((f,i)=>FRIENDS.labels[i]+' '+Math.round(f.wellbeing)+' percent').join(', '));
+  }
   const t=Math.ceil(g.time); $('time').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
   $('score').textContent=g.score;
   const mult=Math.min(4,1+Math.floor(g.combo/3)); $('combo').textContent=mult>1?('Combo x'+mult):'';
@@ -107,7 +113,7 @@ $('introOk').onclick=closeIntro; $('introX').onclick=closeIntro;
 document.addEventListener('keydown',e=>{ if(state==='intro'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')) { e.preventDefault(); closeIntro() } });
 
 function startGame(){
-  $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Wait for the red flag on their clothes.',4000);
+  $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch your friends. Wait for the red flag on their clothes.',4000);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
@@ -119,8 +125,8 @@ function showEpilogues(){
 }
 function endGame(win){
   if(state!=='play') return; state='end'; pointer.down=false; $('narr').classList.remove('show');
-  $('endTitle').textContent=win?'Made it home.':'Rough night.';
-  $('endSub').textContent=win?'Keys in the lock. Deadbolt thrown.':'Out of hearts \u2014 and they\u2019re still out there.';
+  $('endTitle').textContent=win?'Everyone got home.':'Rough night.';
+  $('endSub').textContent=win?'You looked out for each other.':'A friend had to call it \u2014 and they\u2019re still out there. Run it back.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
@@ -146,7 +152,7 @@ const plural=(n,one,many)=>n+' '+(n===1?one:many);
 function shareText(withLink){
   const r=lastRun, pts=r.score.toLocaleString('en-US');
   const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
-  let t=r.win?'Walked home through Last Call':'Took on Last Call';
+  let t=r.win?'Got my friends through Last Call':'Took on Last Call';
   if(bits.length) t+=' \u2014 '+bits.join(', ');
   t+=`. ${pts} points in RedFlag. Your turn.`;
   const link=gameLink();
@@ -170,7 +176,7 @@ function drawCard(){
   x.strokeStyle='#FFF1E0'; x.lineWidth=8; x.lineCap='round'; x.beginPath(); x.moveTo(cx-40,720); x.lineTo(cx-40,590); x.stroke();
   x.fillStyle='#E0302B'; x.beginPath(); x.moveTo(cx-40,590); x.lineTo(cx+60,618); x.lineTo(cx-40,648); x.closePath(); x.fill();
   // result + score
-  x.font=`64px ${BG}`; x.fillStyle='#FFF1E0'; x.fillText(r.win?'I MADE IT HOME.':'ROUGH NIGHT.',cx,830);
+  x.font=`64px ${BG}`; x.fillStyle='#FFF1E0'; x.fillText(r.win?'WE ALL GOT HOME.':'ROUGH NIGHT.',cx,830);
   const pts=r.score.toLocaleString('en-US');
   x.font=`${pts.length>5?210:260}px ${BG}`; x.fillStyle='#F4B942'; x.fillText(pts,cx,1090);
   x.font=`800 40px ${RB}`; x.fillStyle='rgba(255,241,224,.75)'; x.fillText('POINTS',cx,1150);
@@ -208,7 +214,7 @@ $('shareThreads').onclick=()=>{
 };
 $('shareInsta').onclick=async()=>{
   if(!lastRun) return;
-  const file=new File([card||toBlobSync(drawCard())],'keys-out-score.png',{type:'image/png'});
+  const file=new File([card||toBlobSync(drawCard())],'redflag-score.png',{type:'image/png'});
   const caption=shareText(true);
   try{ navigator.clipboard&&navigator.clipboard.writeText(caption).catch(()=>{}) }catch(_){}
   if(navigator.canShare&&navigator.canShare({files:[file]})){

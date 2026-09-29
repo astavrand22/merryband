@@ -1,6 +1,14 @@
 /* ============ RedFlag tuning: edit these to add villains, weapons, causes ============
    Plain JavaScript (not JSON) so the game still runs when index.html is opened straight from disk. */
-const CONFIG = { levelSeconds: 60, hearts: 3 };
+const CONFIG = { levelSeconds: 60 };
+
+// You're looking out for three friends at the counter, not for yourself. Each friend has a comfort
+// bar (0-100). A creep who reaches her, or her drink, takes that villain's `hit` off it. If any
+// friend's bar runs out, the night's over. You are never the target and nothing is shown happening.
+// approachScale: Followers and Grabbers walk to a friend at the counter, a shorter trip than the old walk
+//   to the player, so their speed is scaled down to keep the same time from flag to contact. First-pass number.
+// bystanderHit: comfort the nearest friend loses when you hit a bystander (a scene at the bar).
+const FRIENDS = { count: 3, approachScale: 0.5, bystanderHit: 34, labels: ['on the left', 'in the middle', 'on the right'] };
 
 // Who the characters look like. Villains are men 99 times in 100; bystanders are a mix,
 // so looking like a man is never a reason to hit someone. Only the red flag is.
@@ -8,6 +16,8 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 
 // behavior: 'target-drink' | 'approach' | 'lunge'
 // tell: seconds [min,max] before the red flag shows on his clothes. speed is relative to room size.
+// hit: comfort a friend loses when he reaches her (or her drink). reachedText: the line shown when he does.
+//   Say who it happened to, never what he did.
 // tellText: a few words shown above him the first time this villain flags in a run, so new players
 //   learn what the flag means. Describe the intent, never the act.
 // outfit: the shirt colour every villain of this type wears, so players learn who is who by colour.
@@ -16,12 +26,12 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 // subtlety: [min,max], 0 = a glaring flag you can't miss, 1 = a small dark one that's easy to miss.
 //   Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
-  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
+  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100, hit:34, reachedText:'He got something in her drink.',
               outfit:'#A070FF', intro:'He heads for a drink at the bar. Wait for his red flag, then hit him before he reaches it. Two hits, or one Knee.', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
-  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
-              outfit:'#F2B233', intro:'He trails you and keeps coming. Wait for his red flag, then stop him before he catches up. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
-  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
-              outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges at you. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
+  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100, hit:34, reachedText:'He wouldn’t leave her alone.',
+              outfit:'#F2B233', intro:'He picks one of your friends and keeps coming. Wait for his red flag, then stop him before he reaches her. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
+  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, hit:34, reachedText:'He got to her.',
+              outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
@@ -41,7 +51,7 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
-  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend heals a heart. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
+  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend checks in on your most shaken friend and restores some of her bar. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
   { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },
@@ -86,7 +96,7 @@ const HAPTICS = {
   save:   [18, 30, 18, 30, 40], // KO'd a Spiker before he spiked a drink
   tag:    8,              // glitter bomb
   call:   [40, 60, 40, 60, 40], // fake call: phone ringing
-  hurt:   [70, 50, 70],   // you lost a heart
+  hurt:   [70, 50, 70],   // a friend lost comfort
   minGap: 0.09            // seconds between buzzes of the same kind
 };
 
@@ -198,4 +208,4 @@ const SHARE = {
 };
 
 // Play analytics (see src/analytics.js). Leave endpoint empty to keep it off. Summaries only, no ids or cookies.
-const ANALYTICS = { endpoint:'', version:1 };
+const ANALYTICS = { endpoint:'', version:2 };   // v2: hearts_left / hearts_lost_by became weakest_friend / hits_by
