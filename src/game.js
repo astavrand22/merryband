@@ -393,7 +393,7 @@ function spawnCrew() {
   const crew = new Crew(S, members, { wellbeing:100 }, { depth:7000, paceScale:idle / CREW.planSeconds,
     anchor:c => ({ x:c.x, y:c.y - 55 * sc(c.y) }) });
   crew.gx = W * 0.5; crew.gy = horizonY + 0.2 * depth;   // where the group is wandering to
-  crew.hud = S.add.text(0, 0, 'LINK\nPLAN', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
+  crew.hud = S.add.text(0, 0, 'TEAM\nTIME', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
     align:'right', lineSpacing:-2, resolution:TEXT_RES * 2 }).setOrigin(1, 0.5).setDepth(8001);
   for (const c of members) {
     c.crew = crew;
@@ -402,7 +402,7 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  toast('A crew. Break their link before their plan finishes. Ask for help.');
+  toast('A crew. TEAM = how tightly they work together: Ask helpers to shrink it. TIME = how long till they act.');
   return true;
 }
 function killCrew(k) {
@@ -505,7 +505,7 @@ function drawCrewHud(f) {
   f.fillStyle(0x000000, 0.45).fillRoundedRect(x - 2, y - 3, w + 4, 21, 4);
   f.fillStyle(0x3A2A40, 1).fillRect(x, y, w, 6).fillRect(x, y + 9, w, 6);
   f.fillStyle(COLORS.flag, 1).fillRect(x, y, w * clamp(k.cohesion / 100, 0, 1), 6);
-  f.fillStyle(COLORS.cream, 1).fillRect(x, y + 9, w * k.planProgress, 6);
+  f.fillStyle(COLORS.cream, 1).fillRect(x, y + 9, w * (1 - k.planProgress), 6);   // time left: drains as their plan runs
   k.hud.setVisible(true).setPosition(x - 5, y + 7.5);
   const t = game.focus;
   if (t && t.crew === k && liveMembers(k).includes(t)) {
