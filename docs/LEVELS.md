@@ -38,7 +38,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 | The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward you | He reaches you | 100 |
 | The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast | He reaches you | 120 |
 
-**Weapons.** Knee is free (and the bar order is Fake Call, Glitter, Pepper, Knee, Ask); the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
+**Weapons.** Knee is free (and the bar order is Ask, Knee, Fake Call, Glitter, Pepper); the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
 
 | Weapon | Input | Effect | Unlocks at |
 | --- | --- | --- | --- |

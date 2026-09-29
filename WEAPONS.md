@@ -33,7 +33,7 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 | 4 | 🦵 Knee | `knee` | 0 | `tap` | `dmg:2`, `cooldown:0.55` | One hard hit on a flagged creep (shows "OOF!"). Drops a Spiker or Grabber (2 hp) in one tap and a Follower (3 hp) in two. Always available. Replaced Keys on Sep 28. |
 | 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. See `docs/CREW.md`. |
 
-Bar order is Fake Call, Glitter, Pepper, Knee, Ask. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
+Bar order is Ask, Knee, Fake Call, Glitter, Pepper. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
 
 Double damage doesn't stack.
 
