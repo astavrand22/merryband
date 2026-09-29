@@ -87,7 +87,9 @@ const CREW = {
   planSeconds: 30,        // how long a fully linked crew's plan takes if nobody helps
   minTimeLeft: 24,        // no crew starts with less than this many seconds left in the run
   breakPoints: 200,       // bonus for breaking a crew, on top of half of each member's usual points
-  staffHit: 60            // how much of the link staff take off when they arrive (out of 100)
+  staffHit: 60,           // how much of the link staff take off when they arrive (out of 100)
+  drainPerSec: 2.5,       // comfort the targeted friend loses per second at full danger (shirts fully red)
+  drainFloor: 25          // the plan alone never takes her below this; only a creep reaching her can end the night
 };
 
 // The five bystander helpers (the "5 Ds"). The key is the ability. weight = how often a bystander is that type.

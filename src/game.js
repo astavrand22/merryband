@@ -8,6 +8,7 @@ const hex = s => parseInt(s.slice(1), 16);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
 // Blend two 0xRRGGBB colours, t from 0 (a) to 1 (b).
 const lerpHex = (a, b, t) => {
   const ar = a >> 16 & 255, ag = a >> 8 & 255, ab = a & 255;
@@ -574,7 +575,8 @@ function spawnCrew() {
   });
   // Seconds a fully linked plan takes at paceScale 1, so CREW.planSeconds can say what we actually want.
   const idle = PHASE_ORDER.reduce((a, p) => a + PHASE_DURATION[p], 0) / 1000 / (CREW_TUNING.planPace * 1.5);
-  const crew = new Crew(S, members, { wellbeing:100 }, { depth:7000, paceScale:idle / CREW.planSeconds,
+  const friend = pick(g.friends.filter(f => !f.out));   // the friend this crew is after
+  const crew = new Crew(S, members, friend, { depth:7000, paceScale:idle / CREW.planSeconds,
     anchor:c => ({ x:c.x, y:c.y - 55 * sc(c.y) }) });
   crew.gx = W * 0.5; crew.gy = horizonY + 0.2 * depth;   // where the group is wandering to
   crew.hud = S.add.text(0, 0, 'TEAM', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
@@ -586,7 +588,7 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  toast('Crew alert. Split them up before their shirts go red.');
+  toast('Crew after your friend ' + FRIENDS.labels[friend.i] + '. Split them up.');
   narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
@@ -617,13 +619,22 @@ function crewSucceeds(k) {
   let cx = 0, cy = 0;
   for (const c of members) { cx += c.x / members.length; cy += (c.y - 110 * sc(c.y)) / members.length; }
   killCrew(k);                                 // unlinks them, so flag() below goes through
-  for (const c of members) flag(c);            // they all flag together and act as usual
+  for (const c of members) {                   // they all flag together and go for the friend they were after
+    flag(c);
+    if (k.target.out) continue;
+    if (c.kind === 'spiker') { if (!drinks[k.target.i].spiked) c.drink = k.target.i; }
+    else c.target = k.target;
+  }
   if (members.length) floatText(cx, cy, 'Their plan’s ready.', '#FF8A80');
 }
 function updateCrew(dt) {
   const k = game.crew;
   if (!k) return;
   k.update(dt * 1000);
+  if (k.isActive && !k.target.out) {   // the closer the plan gets, the worse she feels, but never past the floor
+    const floor = Math.min(k.target.wellbeing, CREW.drainFloor);
+    k.target.wellbeing = Math.max(floor, k.target.wellbeing - CREW.drainPerSec * crewDanger(k) * dt);
+  }
   if (k.phase === Phase.SUCCEEDED) crewSucceeds(k);
   else if (k.phase === Phase.BROKEN) crewBroken(k);
   else if (!liveMembers(k).length) killCrew(k);
@@ -632,7 +643,8 @@ function updateCrew(dt) {
 function groupWander(c, dt, depth) {
   const k = c.crew;
   if (moveToward(c, k.gx + c.off.x, k.gy + c.off.y, 0.07 * W, dt) && c === k.creeps[0]) {
-    k.gx = rand(0.18, 0.82) * W; k.gy = horizonY + rand(0.08, 0.4) * depth;
+    const spot = friendSpot(k.target.i), pull = 0.8 * k.planProgress;   // drift toward her as the plan advances
+    k.gx = lerp(rand(0.18, 0.82) * W, spot.x, pull); k.gy = lerp(horizonY + rand(0.08, 0.4) * depth, spot.y + 30, pull);
   }
 }
 
@@ -743,6 +755,10 @@ function drawCrewHud(f) {
   f.fillStyle(COLORS.cream, 1).fillRect(x, y, w * clamp(k.cohesion / 100, 0, 1), 6);
   k.hud.setVisible(true).setPosition(x - 5, y + 3);
   crewShirts(k);
+  if (!k.target.out) {   // a red ring under the friend they're after
+    const fx = drinks[k.target.i].x - 20, pulse = 0.55 + 0.35 * Math.sin(S.time.now / 220);
+    f.lineStyle(2, COLORS.flag, pulse).strokeEllipse(fx, horizonY + 8, 40, 12);
+  }
   const t = game.focus;
   if (t && t.crew === k && liveMembers(k).includes(t)) {
     const s = sc(t.y);

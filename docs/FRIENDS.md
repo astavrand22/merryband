@@ -30,11 +30,14 @@ Followers and Grabbers pick the friend with the lowest comfort when they flag (`
 - **False alarm**: every `FRIENDS.falseAlarmEvery` seconds a nervous friend points at someone harmless, in the same words. That's on purpose: a call-out is a reason to look, never a reason to hit.
 - **Shuts it down**: when a creep reaches an assertive friend she may handle it. He backs off, she loses nothing, you get no points. It's counted in `self_saves` (see `docs/ANALYTICS.md`).
 
+## Crews
+
+A crew picks one friend, drains her bar as its plan advances (never below `CREW.drainFloor`), and goes for her if the plan finishes. See `docs/CREW.md`. Crews are still off in Level 1 (`CREW.enabled = false`).
+
 ## Content rules
 
 Friend lines are about a person being worth watching, never about what he would do. No line and no animation depicts contact. See `docs/SAFETY.md` and `CONTRIBUTING.md`.
 
 ## Not built yet
 
-- Crews targeting a specific friend (`spawnCrew()` still passes a placeholder target).
 - Friends who move around the room.
