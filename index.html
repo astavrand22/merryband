@@ -22,7 +22,9 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn.locked{opacity:.4;cursor:default}
 @media(max-width:340px){.wbtn{font-size:9.5px}}
 .hudr{display:flex;align-items:center;gap:8px}
-.pausebtn{pointer-events:auto;width:40px;height:40px;border-radius:12px;border:2px solid var(--line);background:rgba(26,14,29,.85);color:var(--cream);font-size:16px;cursor:pointer}
+.pausebtn{pointer-events:auto;height:40px;padding:0 12px 0 10px;border-radius:20px;border:2px solid var(--cream);background:rgba(26,14,29,.9);color:var(--cream);font:700 13px Rubik,system-ui,sans-serif;display:flex;align-items:center;gap:7px;cursor:pointer;text-shadow:none}
+.pausebtn svg{width:14px;height:14px;fill:currentColor}
+.pausebtn:active{background:var(--plum)}
 .pitem{text-align:left;font-size:14px;line-height:1.35;padding:8px 0;border-top:1px solid var(--line)}
 .pitem b{display:block;margin-bottom:2px}
 #pauseList{max-height:42vh;overflow:auto;margin:8px 0 12px}
@@ -115,7 +117,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 <div class="hud" aria-live="polite">
   <div class="friends" id="friends" role="img" aria-label="Friends: all fine">♥♥♥</div>
   <div class="mid"><div id="time">1:00</div><div class="combo" id="combo"></div></div>
-  <div class="hudr"><div id="score">0</div><button class="pausebtn" id="pauseBtn" aria-label="Pause and how to play">⏸</button></div>
+  <div class="hudr"><div id="score">0</div><button class="pausebtn" id="pauseBtn" aria-label="Pause and how to play"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="0" width="4.5" height="14" rx="1"/><rect x="8.5" y="0" width="4.5" height="14" rx="1"/></svg>Pause</button></div>
 </div>
 <div class="toast" id="toast"></div>
 <div class="narr" id="narr" aria-live="polite"></div>
@@ -129,9 +131,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
     <span class="level">Level 1 &middot; Last Call</span>
     <p class="sub">2 a.m. and every exit&rsquo;s got a guy in it</p>
     <ul class="rules">
-      <li><span>🚩</span>Wait for the red flag on a creep&rsquo;s clothes, then hit him.</li>
-      <li><span>❤️</span>Keep every creep away from your three friends. If any friend&rsquo;s bar runs out, the night&rsquo;s over.</li>
-      <li><span>⏸</span>Stuck? Pause any time to reread the rules. New things get a quick tip.</li>
+      <li><span>🚩</span>Wait for the red flag, then hit him.</li>
+      <li><span>❤️</span>Keep creeps away from your friends.</li>
+      <li><span>💔</span>If a friend&rsquo;s bar empties, it&rsquo;s over.</li>
+      <li><span>&#9208;&#65039;</span>Tap Pause any time to reread this.</li>
     </ul>
     <p class="note" id="bestStart"></p>
     <p class="note">Close to start. Cartoon violence against fictional predators; no assaults are shown. Need support? RAINN, 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>

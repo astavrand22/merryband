@@ -2,6 +2,12 @@
    Plain JavaScript (not JSON) so the game still runs when index.html is opened straight from disk. */
 const CONFIG = { levelSeconds: 60 };
 
+// How the room is framed. Most of the action is at the counter, so the bar gets a bigger share of the screen.
+// horizon: where the counter sits, as a fraction of screen height (the floor is everything below it).
+// minScale / maxScale: how big people are at the counter and at the bottom of the floor. The counter, friends,
+//   drinks and their bars scale with minScale, so raising it zooms in on the bar. Retune FRIENDS.approachScale after.
+const VIEW = { horizon: 0.46, minScale: 1.05, maxScale: 1.5 };
+
 // You're looking out for three friends at the counter, not for yourself. Each friend has a comfort
 // bar (0-100). A creep who reaches her, or her drink, takes that villain's `hit` off it. If any
 // friend's bar runs out, the night's over. You are never the target and nothing is shown happening.

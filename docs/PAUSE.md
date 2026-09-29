@@ -1,6 +1,6 @@
 # Pause and pop-up cards
 
-**Pause.** The ⏸ button (top right), `Esc` or `P` pauses instantly, and so does leaving the tab. The pause screen
+**Pause.** The Pause button (top right), `Esc` or `P` pauses instantly, and so does leaving the tab. The pause screen
 lists what you have met so far (red flag rule, friends, unlocked tools, creeps and tips seen) as a refresher, and
 always shows the RAINN line (SAFETY.md: pause is always available). Resume with the button, `Esc`, `P` or `Enter`.
 
