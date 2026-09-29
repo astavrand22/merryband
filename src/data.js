@@ -57,6 +57,9 @@ const STAGES = { spiker:0, follower:18, grabber:36 };
 // A short explainer pops up (and pauses the game) the first time each creep, tool or situation comes up.
 // Each is shown once per browser (see ui.js); everyRun:true brings the creep cards back every run.
 const INTRO = { enabled:true, everyRun:false };
+// A player's first run is kept simple: only these tools, no friend trait labels, no call-outs, no false alarms.
+// Everything switches on from the next run. (Runs finished are counted in this browser only.)
+const EASY = { enabled:true, runs:1, tools:['knee', 'ask', 'checkin'] };
 // Pop-up cards for things that aren't a new creep or tool. Creep cards come from VILLAINS[k].intro, tool cards from WEAPONS.
 const CARDS = {
   youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick You ok?, then tap her to restore some of it. It doesn\u2019t stop a creep, so use it in the gaps.' },
