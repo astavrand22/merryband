@@ -19,12 +19,12 @@ function renderBar(){
     b.innerHTML=`<span class="ic">${unlocked?w.icon:'🔒'}</span><span>${unlocked?w.name:w.unlock}</span><span class="cd" id="cd-${w.id}"></span>`;
     b.onclick=()=>selectWeapon(i);
     bar.appendChild(b);
-    if(w.mode==='ask'){ const s=document.createElement('div'); s.className='sep'; s.setAttribute('aria-hidden','true'); bar.appendChild(s) }   // help | tools
+    if(w.help&&!(WEAPONS[i+1]&&WEAPONS[i+1].help)){ const s=document.createElement('div'); s.className='sep'; s.setAttribute('aria-hidden','true'); bar.appendChild(s) }   // help | tools
   });
 }
 function selectWeapon(i){
   if(!game||!game.unlocked.has(WEAPONS[i].id)) return;
-  selected=i; pointer.down=false; renderBar(); toast(WEAPONS[i].name+'. '+WEAPONS[i].hint); narrate(WEAPONS[i].name+': '+(WEAPONS[i].how||WEAPONS[i].hint),6500);
+  selected=i; pointer.down=false; renderBar(); const q=/[?!]$/.test(WEAPONS[i].name); toast(WEAPONS[i].name+(q?' ':'. ')+WEAPONS[i].hint); narrate(WEAPONS[i].name+(q?' ':': ')+(WEAPONS[i].how||WEAPONS[i].hint),6500);
 }
 function updateHUD(){
   const g=game; if(!g) return;

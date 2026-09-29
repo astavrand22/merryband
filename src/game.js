@@ -311,6 +311,31 @@ function healFriend(amount) {
   f.wellbeing = Math.min(100, f.wellbeing + amount);
   return f;
 }
+// Which friend, if any, is under a tap. Generous on purpose: fingers are bigger than a half-size patron.
+function friendAt(px, py) {
+  if (!game.friends) return null;
+  let best = null, bd = Infinity;
+  for (const f of game.friends) {
+    if (f.out) continue;
+    const cx = drinks[f.i].x - 20, dx = Math.abs(px - cx);
+    if (dx < 36 && py > horizonY - 70 && py < horizonY + 22 && dx < bd) { bd = dx; best = f; }
+  }
+  return best;
+}
+// Check in: tap a friend, ask if she's okay. Restores comfort but doesn't touch any creep, so it costs you a beat.
+function useCheckIn() {
+  const w = WPN('checkin'), f = friendAt(pointer.x, pointer.y);
+  if (!f) { toast('Tap one of your friends at the bar.'); return; }
+  const x = drinks[f.i].x - 20, y = horizonY - 40;
+  if (game.cool.checkin > 0) { floatText(x, y, 'Give her a sec.', '#FFF1E0'); return; }
+  if (f.wellbeing >= 100) { floatText(x, y, 'She\u2019s good.', '#FFF1E0'); return; }
+  game.cool.checkin = w.cooldown;
+  f.wellbeing = Math.min(100, f.wellbeing + w.heal);
+  ringFx(x, horizonY - 20, 34, COLORS.spiked);
+  buzz('tag');
+  floatText(x, y - 24, 'You okay? \u2665', '#7CFF6B');
+}
+
 // Comfort bars over each friend's head: green when fine, amber, then red as it runs out.
 function drawFriendBars(f) {
   if (!game.friends) return;
@@ -702,7 +727,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   game = { score:0, friends:makeFriends(), time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
@@ -955,7 +980,7 @@ class BarScene extends Phaser.Scene {
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
       game.used.add(w.id);
-      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
+      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk(); else if (w.mode === 'checkin') useCheckIn();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
     this.input.on('pointerup', () => pointer.down = false);

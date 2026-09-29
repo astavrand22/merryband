@@ -32,8 +32,9 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 | 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Hold and aim a cone from the player. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
 | 4 | 🦵 Knee | `knee` | 0 | `tap` | `dmg:2`, `cooldown:0.55` | One hard hit on a flagged creep (shows "OOF!"). Drops a Spiker or Grabber (2 hp) in one tap and a Follower (3 hp) in two. Always available. Replaced Keys on Sep 28. |
 | 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. Against a flagged creep (tap him first to aim, else the nearest): Bouncer scares him off, Regular stuns him 2.5s, Phone slows him and doubles damage for 5s, Waiter fetches staff (he leaves after ~4s). Friend checks in on your most shaken friend. Against crews, see `docs/CREW.md`. |
+| 6 | 💬 You ok? | `checkin` | 0 | `checkin` | `cooldown:8`, `heal:30` | Tap one of your three friends at the bar to check on her ("You okay?"). Restores 30 of her comfort bar. Does nothing to creeps, so it costs you a beat. "She's good." at full, and the reload only starts when it lands. |
 
-Bar order is Ask, Knee, Fake Call, Glitter, Pepper. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
+Bar order is Ask, You ok?, then a divider, then Knee, Fake Call, Glitter, Pepper (`help: true` in `WEAPONS` puts a weapon in the left group). Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
 
 Double damage doesn't stack.
 
@@ -42,7 +43,7 @@ Double damage doesn't stack.
 - **Pepper is now the only held weapon** and the only one that can hit bystanders by accident.
 - **Glitter force-flags.** An unflagged Grabber you glitter starts his windup immediately and a Spiker heads for a drink. The 0.7s stun softens it.
 - **Fake Call can trivialize a crowded screen.** The 15s cooldown and 1,700-point unlock keep it to about one or two uses a run. Watch this in playtesting.
-- **Bar is 5 wide.** Number keys now go 1 to the number of weapons. Six buttons will get tight on small phones.
+- **Bar is 6 wide.** Number keys go 1 to the number of weapons. Six buttons are tight on small phones (390 px wide): check the labels don't clip.
 
 ## Proposed weapons
 
