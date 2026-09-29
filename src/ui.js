@@ -116,7 +116,7 @@ const plural=(n,one,many)=>n+' '+(n===1?one:many);
 function shareText(withLink){
   const r=lastRun, pts=r.score.toLocaleString('en-US');
   const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
-  let t=r.win?'Walked home through Last Call':'Last Call got rough';
+  let t=r.win?'Walked home through Last Call':'Took on Last Call';
   if(bits.length) t+=' \u2014 '+bits.join(', ');
   t+=`. ${pts} points in Keys Out. Your turn.`;
   const link=gameLink();
