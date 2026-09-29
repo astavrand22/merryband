@@ -26,6 +26,11 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .toast.show{opacity:1}
 .overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
+.overlay.popup{align-items:center;background:rgba(26,14,29,.5)}
+.panel{position:relative;background:#2a1530;border:2px solid var(--line);border-radius:18px;padding:22px 20px 18px;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.panel h1{font-size:40px}
+.x{position:absolute;top:8px;right:8px;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--cream);font:400 30px/1 system-ui,sans-serif;cursor:pointer}
+.x:hover,.x:focus-visible{background:rgba(255,255,255,.12)}
 .card{max-width:400px;width:100%;margin:auto}
 h1{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:52px;line-height:.95;color:var(--neon);text-shadow:4px 4px 0 var(--flag);margin-bottom:6px}
 h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height:1.05;color:var(--amber);margin-bottom:6px}
@@ -53,7 +58,6 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .tip p{font-size:14px;line-height:1.45;opacity:.9}
 .tip a{font-size:12px;color:var(--amber)}
 .tips .more{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--amber)}
-#tipStart{margin-bottom:16px}
 .cause{border:2px solid var(--flag);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(224,48,43,.08)}
 .cause h3{font-size:18px;margin-bottom:6px}
 .cause p{font-size:14px;line-height:1.45;margin-bottom:12px;opacity:.9}
@@ -98,22 +102,20 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 <div class="toast" id="toast"></div>
 <div class="bar" id="bar"></div>
 
-<div class="overlay" id="startScreen">
-  <div class="card">
-    <h1>Keys Out</h1>
-    <p class="sub">Level 1 · Last Call — 2 a.m. and every exit’s got a guy in it</p>
-    <p id="bestStart"></p>
+<div class="overlay popup" id="startScreen" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <div class="card panel">
+    <button class="x" id="startBtn" aria-label="Close rules and start playing">&times;</button>
+    <h1 id="rulesTitle">Keys Out</h1>
+    <p class="sub">Last Call: 2 a.m. and every exit&rsquo;s got a guy in it</p>
     <ul class="rules">
       <li><span>🚩</span>Wait for the red flag. Then make him regret it.</li>
       <li><span>💔</span>Hit a bystander, lose a heart.</li>
-      <li><span>🍸</span>Drop the Spiker before he reaches her drink. That’s a save.</li>
+      <li><span>🍸</span>Drop the Spiker before he reaches her drink. That&rsquo;s a save.</li>
       <li><span>🔑</span>Tap to swing. Score more, unlock worse.</li>
+      <li><span>🙋</span>Matching shirts = a crew, and they can&rsquo;t be hit yet. Pick Ask, then tap a bystander to split them up before their shirts go full red.</li>
     </ul>
-    <div class="tips" id="tipStart" aria-live="polite"></div>
-    <button class="btn" id="startBtn">Start the walk home</button>
-    <button class="btn alt" id="giveBtnStart">Donate to survivors' legal help</button>
-    <p class="note">Cartoon violence against fictional predators. No assaults are shown.<br>If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
-    <p class="note">Know a creep who belongs in here? A weapon he deserves? <a href="feedback.html">Tell us</a>.</p>
+    <p class="note" id="bestStart"></p>
+    <p class="note">Close this to start. Cartoon violence against fictional predators; no assaults are shown. If this brings something up, RAINN is there 24/7: <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
   </div>
 </div>
 

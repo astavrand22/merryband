@@ -57,7 +57,9 @@ function makePersonView(p, back) {
     body.fillRoundedRect(-12.5, -76, 6, 27, 3).fillRoundedRect(6.5, -76, 6, 27, 3);
     body.fillStyle(COLORS.ink, 1).fillRect(-4.5, -72, 2.2, 2.6).fillRect(2.3, -72, 2.2, 2.6);
   }
-  v.add([g, arms, body]);
+  const torso = S.add.graphics();   // recoloured for crews; empty otherwise
+  v.add([g, arms, body, torso]);
+  v.torso = torso;
   v.arms = arms; v.armPose = null; v.person = p;
   setArms(v, 'down');
   return v;
@@ -393,7 +395,7 @@ function spawnCrew() {
   const crew = new Crew(S, members, { wellbeing:100 }, { depth:7000, paceScale:idle / CREW.planSeconds,
     anchor:c => ({ x:c.x, y:c.y - 55 * sc(c.y) }) });
   crew.gx = W * 0.5; crew.gy = horizonY + 0.2 * depth;   // where the group is wandering to
-  crew.hud = S.add.text(0, 0, 'TEAM\nTIME', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
+  crew.hud = S.add.text(0, 0, 'TEAM', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'9px', color:'#FFF1E0',
     align:'right', lineSpacing:-2, resolution:TEXT_RES * 2 }).setOrigin(1, 0.5).setDepth(8001);
   for (const c of members) {
     c.crew = crew;
@@ -402,12 +404,12 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  toast('A crew. TEAM = how tightly they work together: Ask helpers to shrink it. TIME = how long till they act.');
+  toast('A crew: matching shirts. They turn redder as their plan nears. Ask helpers to split them up (TEAM bar).');
   return true;
 }
 function killCrew(k) {
   k.destroy(); if (k.hud) k.hud.destroy();
-  for (const c of k.creeps) { c.crew = null; if (c.view && c.view.tag) { c.view.tag.destroy(); c.view.tag = null; } }
+  for (const c of k.creeps) { if (c.baseOutfit !== undefined && c.view && c.view.scene && c.state !== 'ko') { setOutfit(c, c.baseOutfit); c.view.torso.clear(); } c.crew = null; if (c.view && c.view.tag) { c.view.tag.destroy(); c.view.tag = null; } }
   if (game.crew === k) { game.crew = null; game.focus = null; }
 }
 function crewBroken(k) {
@@ -494,6 +496,25 @@ function helperAct(c, effect) {
   } else c.assist = { x:target.x + (c.x < target.x ? -48 : 48), y:target.y, t:2.4 };
   if (match) floatText(target.x, target.y - 118 * sc(target.y), 'Good match', '#7CFF6B');
 }
+// The crew wears one shirt colour, and it reddens as the plan nears its end (calmer again as the team weakens).
+function crewDanger(k) { return clamp(k.planProgress * (0.55 + 0.45 * k.cohesion / 100), 0, 1); }
+function crewShirts(k) {
+  const d = Math.round(crewDanger(k) * 16) / 16;
+  const a = [0xF4, 0xEC, 0xDE], b = [0xB0, 0x10, 0x1A];
+  const col = (a[0] + (b[0] - a[0]) * d << 16) | (a[1] + (b[1] - a[1]) * d << 8) | (a[2] + (b[2] - a[2]) * d);
+  for (const c of liveMembers(k)) {
+    if (c.outfit === col) continue;
+    if (c.baseOutfit === undefined) c.baseOutfit = c.outfit;
+    setOutfit(c, col);
+  }
+}
+function setOutfit(c, col) {
+  const v = c.view, pose = v.armPose;
+  c.outfit = col;
+  v.torso.clear().fillStyle(col, 1);
+  if (c.male) v.torso.fillRoundedRect(-15, -62, 30, 38, 5); else v.torso.fillRoundedRect(-12, -62, 24, 38, 9);
+  v.armPose = null; setArms(v, pose || 'down');
+}
 function drawCrewHud(f) {
   const k = game.crew;
   if (!k || !k.isActive) return;
@@ -501,12 +522,12 @@ function drawCrewHud(f) {
   if (!live.length) return;
   let cx = 0, top = Infinity;
   for (const c of live) { cx += c.x / live.length; top = Math.min(top, c.y - 104 * sc(c.y)); }
-  const w = 84, x = cx - w / 2 + 14, y = top - 14;
-  f.fillStyle(0x000000, 0.45).fillRoundedRect(x - 2, y - 3, w + 4, 21, 4);
-  f.fillStyle(0x3A2A40, 1).fillRect(x, y, w, 6).fillRect(x, y + 9, w, 6);
-  f.fillStyle(COLORS.flag, 1).fillRect(x, y, w * clamp(k.cohesion / 100, 0, 1), 6);
-  f.fillStyle(COLORS.cream, 1).fillRect(x, y + 9, w * (1 - k.planProgress), 6);   // time left: drains as their plan runs
-  k.hud.setVisible(true).setPosition(x - 5, y + 7.5);
+  const w = 70, x = cx - w / 2 + 16, y = top - 28;
+  f.fillStyle(0x000000, 0.45).fillRoundedRect(x - 2, y - 3, w + 4, 12, 4);
+  f.fillStyle(0x3A2A40, 1).fillRect(x, y, w, 6);
+  f.fillStyle(COLORS.cream, 1).fillRect(x, y, w * clamp(k.cohesion / 100, 0, 1), 6);
+  k.hud.setVisible(true).setPosition(x - 5, y + 3);
+  crewShirts(k);
   const t = game.focus;
   if (t && t.crew === k && liveMembers(k).includes(t)) {
     const s = sc(t.y);

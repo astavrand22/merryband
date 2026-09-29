@@ -56,12 +56,6 @@ function tipEl(t){
   const a=document.createElement('a'); a.href=t.url; a.target='_blank'; a.rel='noopener'; a.textContent='Source: '+t.source;
   d.append(b,p,a); return d;
 }
-function showStartTip(){
-  const box=$('tipStart'); box.innerHTML='';
-  const l=document.createElement('div'); l.className='label'; l.textContent='Real-life tip';
-  const more=document.createElement('a'); more.className='more'; more.href='tips.html'; more.textContent='All tips';
-  box.append(l,tipEl(rpick(TIPS)),more);
-}
 // Two tips for what actually happened this run: what hurt you first, then who you fought,
 // then what you used. Random within each, so repeat players see different ones.
 let lastTipIds=[];
@@ -82,7 +76,6 @@ function showEndTips(){
   const list=$('tipList'); list.innerHTML='';
   pickTips(game).forEach(t=>list.appendChild(tipEl(t)));
 }
-showStartTip();
 
 function startGame(){
   newGame(); state='play';
@@ -96,12 +89,13 @@ function endGame(win){
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
-  showBestStart(); showStartTip(); showEndTips();
+  showBestStart(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
   lastRun={win,score:game.score,kos:game.kos,saves:game.saves}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
 }
 $('startBtn').onclick=startGame;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&state!=='play'&&!$('startScreen').classList.contains('hidden')) startGame() });
 $('againBtn').onclick=startGame;
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
@@ -223,7 +217,6 @@ function openGive(from){
 }
 function closeGive(){ $('giveScreen').classList.add('hidden'); if(giveFrom) giveFrom.classList.remove('hidden') }
 $('giveBtn').onclick=()=>openGive($('endScreen'));
-$('giveBtnStart').onclick=()=>openGive($('startScreen'));
 $('giveClose').onclick=closeGive;
 $('donateBtn').onclick=()=>{
   const r=DONATE.recipients[giveOrg];
