@@ -1,4 +1,4 @@
-# Contributing to Keys Out
+# Contributing to RedFlag
 
 Thanks for wanting to help. There are two ways in.
 

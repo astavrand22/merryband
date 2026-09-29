@@ -1,6 +1,6 @@
-# Keys Out: Level Design
+# RedFlag: Level Design
 
-_As of 2026-09-28. Living copy: the "Keys Out: Level Design" doc in the Merry Band project. This file is the snapshot for the repo._
+_As of 2026-09-28. Living copy: the "RedFlag: Level Design" doc in the Merry Band project. This file is the snapshot for the repo. (The game was renamed from "Keys Out" to "RedFlag" on 2026-09-28.)_
 
 ## Overview
 
@@ -8,7 +8,7 @@ The game is one bad night, played leg by leg: the bar, the walk home, the garage
 
 Every level follows the same rules:
 
-- Villains look like everyone else until they act. A red flag goes up, then you strike. Hitting early costs points; hitting a bystander costs a heart.
+- Villains look like everyone else until they act. Then a red flag shows on his clothing — sometimes obvious, sometimes easy to miss — and you strike. Hitting early costs points; hitting a bystander costs a heart.
 - Assaults are never shown. The tell signals intent and the player always interrupts.
 - Each level adds one new villain behavior and one new weapon, so a new player learns one thing at a time.
 - The end screen carries one real-world action tied to that level's villain. Villains stay fictional.
@@ -29,7 +29,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 
 **Crowd.** A new person arrives roughly every second, and the pace nearly doubles by the final seconds. At most 9 people are on the floor and at most 2 Spikers at once. The mix is 50% bystanders, 20% Spikers, 15% Followers, 15% Grabbers.
 
-**Villains.** Each one wanders like a bystander until his tell timer runs out, then raises a red flag and acts.
+**Villains.** Each one wanders like a bystander until his tell timer runs out, then a red flag appears on his clothing and he acts. How obvious the flag is varies per spawn (a `subtlety` range per villain in `src/data.js`): the Grabber wears an obvious one, the Spiker often a subtle one.
 
 | Villain | HP | Flag after | What he does once flagged | You lose a heart when | Points |
 | --- | --- | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 - No sound or haptics.
 - Nothing persists: best score, gold hatpins and unlocks are lost on reload.
 - Villains and weapons are config objects inside the HTML, not the separate data files the original design called for.
-- Characters are drawn from shapes, so villains and bystanders differ only by the flag. That's intentional for fairness but gives each villain little personality.
+- Characters are drawn from shapes, so villains and bystanders differ only by the worn flag (whose subtlety now varies). That's intentional for fairness but gives each villain little personality.
 - No onboarding. A first-time player learns the "wait for the flag" rule by losing points.
 - The Wolf and the Mogul from the original villain list aren't in yet.
 
@@ -194,4 +194,4 @@ Polish Level 1 before building Level 2; a strong first minute matters more than 
 - [ ] Do weapon unlocks carry across levels, or does each level restart at Keys?
 - [x] Move to Phaser. Done 2026-09-28.
 - [ ] Which partner org backs each level's cause card, and have they seen the game?
-- [ ] Final game name. "Keys Out" is still the placeholder.
+- [x] Game name. Renamed to "RedFlag" on 2026-09-28 (was the placeholder "Keys Out").

@@ -1,15 +1,22 @@
-/* ============ Keys Out tuning: edit these to add villains, weapons, causes ============
+/* ============ RedFlag tuning: edit these to add villains, weapons, causes ============
    Plain JavaScript (not JSON) so the game still runs when index.html is opened straight from disk. */
 const CONFIG = { levelSeconds: 60, hearts: 3 };
 
 // behavior: 'target-drink' | 'approach' | 'lunge'
-// tell: seconds [min,max] before the red flag goes up. speed is relative to room size.
+// tell: seconds [min,max] before the red flag shows on his clothes. speed is relative to room size.
+// subtlety: [min,max], 0 = a glaring flag you can't miss, 1 = a small dark one that's easy to miss.
+//           Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
-  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100 },
-  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100 },
-  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120 }
+  spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100, subtlety:[0.4,0.9] },
+  follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100, subtlety:[0.15,0.7] },
+  grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, subtlety:[0.1,0.55] }
 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
+
+// The red flag now shows ON the villain's clothing when he makes his move, not above his head.
+// subtlety = the default range when a villain has none of its own. obvious/subtle = the two ends
+// of the colour: a bright flag fades toward a small dark one as subtlety rises.
+const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'hold' | 'cone' | 'area'. unlock = score needed.
 const WEAPONS = [
@@ -49,5 +56,5 @@ const DONATE = {
 // or a download on desktop.
 const SHARE = {
   url: '',        // live game link for posts and the card. Blank = the page's own web address
-  tag: 'KeysOut'  // hashtag added to the Threads post and copied caption (no #). '' for none
+  tag: 'RedFlag'  // hashtag added to the Threads post and copied caption (no #). '' for none
 };
