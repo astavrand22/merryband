@@ -19,7 +19,8 @@ const FLAG_RANGE = (typeof FLAG !== 'undefined' && FLAG.subtlety) || [0.2, 0.85]
 
 const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, flag:0xFF2D4A, cream:0xEAF7FF, spiked:0x7CFF6B, pepper:0xFF8C3C };
 // Dark noir jewel tones: bodies read as rim-lit silhouettes against the neon room.
-const OUTFITS = ['#241C3A','#2A1830','#182A3A','#22182E','#1E2E2E','#301826','#1A2440','#2E2440','#231A34','#182E28'].map(hex);
+// Bystanders wear softer everyday colours; villains wear one saturated colour per type (VILLAINS[kind].outfit).
+const OUTFITS = ['#2BB59A','#7FB069','#C77DA5','#8899A6','#8C6A5D','#B07A4B','#E6E1D6','#5E8C9E','#C9C2B0','#A67C52'].map(hex);
 const SKINS = ['#F1C7A5','#D9A07A','#A86B45','#7A4A2E','#E8B894','#5C3A24'].map(hex);
 const HAIRS = ['#1E1410','#4A2C1A','#8B5A2B','#C9A15B','#2B2B2B','#7A2E1E','#D8D0C0'].map(hex);
 // Render at the screen's pixel density (capped at 3) so phones stay sharp. World units stay CSS pixels:
@@ -106,7 +107,7 @@ function setArms(v, pose) {
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
   const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
-    outfit:pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
+    outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:pick(SKINS), hair:pick(HAIRS),
     state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;

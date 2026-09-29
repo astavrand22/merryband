@@ -10,17 +10,18 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 // tell: seconds [min,max] before the red flag shows on his clothes. speed is relative to room size.
 // tellText: a few words shown above him the first time this villain flags in a run, so new players
 //   learn what the flag means. Describe the intent, never the act.
+// outfit: the shirt colour every villain of this type wears, so players learn who is who by colour.
 // epilogue: one cartoonish line about what happens to him afterward, shown on the end screen.
 //   Keep it under about 45 characters so it also fits on the share card.
 // subtlety: [min,max], 0 = a glaring flag you can't miss, 1 = a small dark one that's easy to miss.
 //   Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
   spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100,
-              icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
+              outfit:'#A070FF', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
   follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100,
-              icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Got lost in a corn maze. Still in there.', subtlety:[0.15,0.7] },
+              outfit:'#F2B233', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
-              icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
+              outfit:'#38B6FF', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
