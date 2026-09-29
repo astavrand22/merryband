@@ -73,9 +73,9 @@ From the doc, still unanswered:
 - Separate levels, or one continuous night?
 - Do unlocks carry across levels, or restart at Keys each time?
 - Which partner org backs each cause card, and have they seen the game? (Blocks step 2's petition copy and the donation recipients.)
-- Final game name — "Keys Out" is still the placeholder.
+- Game name — renamed to "RedFlag" on 2026-09-28 (was the placeholder "Keys Out").
 
 New ones this comparison surfaces:
 
 - Who is the named reviewer for scenarios, and do they need legal counsel for tier-3? (Blocks the content layer entirely.)
-- Does the codex/armor track ship as part of Keys Out, or become its own thing? The two have different tones, audiences, and review burdens.
+- Does the codex/armor track ship as part of RedFlag, or become its own thing? The two have different tones, audiences, and review burdens.

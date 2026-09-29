@@ -1,4 +1,4 @@
-/* Keys Out: Level 1 (Last Call) on Phaser 4.
+/* RedFlag: Level 1 (Last Call) on Phaser 4.
    Tuning (villains, weapons, causes, donations) is in src/data.js.
    Screens, HUD and the weapon bar are in src/ui.js, which owns the shared
    `game`, `state`, `selected`, `goldPin` and `pointer` variables. */
@@ -8,6 +8,14 @@ const hex = s => parseInt(s.slice(1), 16);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// Blend two 0xRRGGBB colours, t from 0 (a) to 1 (b).
+const lerpHex = (a, b, t) => {
+  const ar = a >> 16 & 255, ag = a >> 8 & 255, ab = a & 255;
+  return (((ar + ((b >> 16 & 255) - ar) * t) | 0) << 16) | (((ag + ((b >> 8 & 255) - ag) * t) | 0) << 8) | (((ab + ((b & 255) - ab) * t) | 0));
+};
+const FLAG_OBVIOUS = hex((typeof FLAG !== 'undefined' && FLAG.obvious) || '#FF2E2A');
+const FLAG_SUBTLE = hex((typeof FLAG !== 'undefined' && FLAG.subtle) || '#9E1B1B');
+const FLAG_RANGE = (typeof FLAG !== 'undefined' && FLAG.subtlety) || [0.2, 0.85];
 
 const COLORS = { ink:0x0C0714, amber:0xF4B942, neon:0xFF4F9A, cyan:0x3AE7FF, flag:0xFF2D4A, cream:0xEAF7FF, spiked:0x7CFF6B, pepper:0xFF8C3C };
 // Dark noir jewel tones: bodies read as rim-lit silhouettes against the neon room.
@@ -67,6 +75,20 @@ function makePersonView(p, back) {
   setArms(v, 'down');
   return v;
 }
+// The red flag worn on the chest, shown when a villain makes his move. A container
+// pinned at the pole so it can flutter (scaleX) without drifting. subtlety 0..1: bigger
+// and brighter at 0, smaller and darker at 1.
+function makeFlag(subtlety) {
+  const t = clamp(subtlety, 0, 1), k = 1.2 - 0.5 * t, col = lerpHex(FLAG_OBVIOUS, FLAG_SUBTLE, t);
+  const c = S.add.container(-3, -50).setVisible(false);
+  const g = S.add.graphics();
+  g.lineStyle(2 * k, 0x2c1a12, 1).lineBetween(0, 8 * k, 0, -9 * k);       // short pole on the chest
+  g.fillStyle(col, 1).fillTriangle(0, -9 * k, 13 * k, -5 * k, 0, -1 * k); // the pennant
+  if (t < 0.4) g.lineStyle(1, COLORS.cream, 0.9).strokeTriangle(0, -9 * k, 13 * k, -5 * k, 0, -1 * k); // obvious ones get an outline
+  c.add(g);
+  c.wave = t < 0.5;
+  return c;
+}
 function setArms(v, pose) {
   if (v.armPose === pose) return;
   v.armPose = pose;
@@ -87,15 +109,12 @@ function makeChar(kind) {
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
   c.beard = c.male && Math.random() < LOOKS.beardChance;
-  if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); }
+  if (kind !== 'bystander') { const v = VILLAINS[kind]; c.hp = v.hp; c.tellT = rand(v.tell[0], v.tell[1]); c.subtlety = rand(...(v.subtlety || FLAG_RANGE)); }
+  else c.subtlety = 0.5;
 
   const view = makePersonView(c, false);
   view.stunFx = S.add.circle(0, -70, 16, COLORS.pepper, 0.35).setVisible(false);
-  view.flag = S.add.container(9, 0).setVisible(false);
-  const fg = S.add.graphics();
-  fg.lineStyle(2, COLORS.cream, 1).lineBetween(0, -82, 0, -116);
-  fg.fillStyle(COLORS.flag, 1).fillTriangle(0, -116, 24, -110, 0, -102);
-  view.flag.add(fg);
+  view.flag = makeFlag(c.subtlety);
   view.sparkles = [0,1,2,3,4].map(i => S.add.circle(0, 0, 2.5, i % 2 ? COLORS.neon : COLORS.amber).setVisible(false));
   view.add([view.stunFx, view.flag, ...view.sparkles]);
   c.view = view;
@@ -119,8 +138,8 @@ function flag(c) {
   if (c.flagged) return;
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
-  c.view.flag.setVisible(true);
-  if (!reduceMotion) S.tweens.add({ targets:c.view.flag, scaleX:0.8, duration:160, yoyo:true, repeat:-1 });
+  const fl = c.view.flag; fl.setVisible(true);
+  if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
   // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
   const tellText = VILLAINS[c.kind].tellText;
   if (tellText && !game.seenTells.has(c.kind)) {

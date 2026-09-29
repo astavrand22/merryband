@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Keys Out: Suggestions</title>
+<title>RedFlag: Suggestions</title>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#1A0E1D;--plum:#2A1830;--amber:#F4B942;--neon:#FF4F9A;--flag:#E0302B;--cream:#FFF1E0;--line:#5a3a60}
@@ -76,7 +76,7 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--amber)}
 
   <section class="contrib">
     <h2>Build it with us</h2>
-    <p>Keys Out lives on GitHub. If you code, draw or write, you can propose a change directly.</p>
+    <p>RedFlag lives on GitHub. If you code, draw or write, you can propose a change directly.</p>
     <ol>
       <li>Read the <a href="https://github.com/astavrand22/merryband/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contributing guide</a>.</li>
       <li>Fork <a href="https://github.com/astavrand22/merryband" target="_blank" rel="noopener">astavrand22/merryband</a> and make your change. Most tuning lives in the <code>CONFIG</code> block of <code>index.html</code>.</li>
@@ -115,7 +115,7 @@ $('ghBtn').onclick = () => {
 
 $('mailBtn').onclick = () => {
   const f = read(); if (!f) return;
-  location.href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('Keys Out: ' + f.subject)}&body=${encodeURIComponent(f.body)}`;
+  location.href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent('RedFlag: ' + f.subject)}&body=${encodeURIComponent(f.body)}`;
   $('status').textContent = 'Opening your email app.';
 };
 </script>

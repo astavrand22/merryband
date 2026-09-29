@@ -1,4 +1,4 @@
-/* Keys Out: screens, HUD, weapon bar, best score, sharing and donations. Game logic is in src/game.js. */
+/* RedFlag: screens, HUD, weapon bar, best score, sharing and donations. Game logic is in src/game.js. */
 const $ = id => document.getElementById(id);
 let game=null, state='start', selected=0, goldPin=false;
 const pointer={x:0,y:0,down:false};
@@ -30,9 +30,9 @@ function updateHUD(){
   for(const w of WEAPONS){const el=$('cd-'+w.id); if(el&&w.cooldown){el.style.width=((g.cool[w.id]||0)/w.cooldown*100)+'%'}}
 }
 /* ---------- best score (saved in this browser only, no login) ---------- */
-const BEST_KEY='keysout.best.v1';
+const BEST_KEY='redflag.best.v1';
 function loadBest(){
-  try{ const v=JSON.parse(localStorage.getItem(BEST_KEY)); return v&&Number.isFinite(v.score)?v:null }catch(e){ return null }
+  try{ const v=JSON.parse(localStorage.getItem(BEST_KEY) || localStorage.getItem('keysout.best.v1')); return v&&Number.isFinite(v.score)?v:null }catch(e){ return null }
 }
 function saveBest(rec){ try{ localStorage.setItem(BEST_KEY,JSON.stringify(rec)) }catch(e){} }
 let bestMem=loadBest(); // fallback if storage is blocked (private mode)
@@ -118,7 +118,7 @@ function shareText(withLink){
   const bits=[]; if(r.kos) bits.push(plural(r.kos,'creep','creeps')+' down'); if(r.saves) bits.push(plural(r.saves,'drink','drinks')+' saved');
   let t=r.win?'Walked home through Last Call':'Took on Last Call';
   if(bits.length) t+=' \u2014 '+bits.join(', ');
-  t+=`. ${pts} points in Keys Out. Your turn.`;
+  t+=`. ${pts} points in RedFlag. Your turn.`;
   const link=gameLink();
   if(withLink&&link) t+='\n'+link;
   if(SHARE.tag) t+=(withLink&&link?' ':'\n')+'#'+SHARE.tag;
@@ -133,8 +133,8 @@ function drawCard(){
   x.fillStyle=glow; x.fillRect(0,0,1080,1100);
   x.textAlign='center'; x.textBaseline='alphabetic';
   // title
-  x.font=`150px ${BG}`; x.fillStyle='#E0302B'; x.fillText('KEYS OUT',cx+8,408);
-  x.save(); x.shadowColor='#FF4F9A'; x.shadowBlur=30; x.fillStyle='#FF4F9A'; x.fillText('KEYS OUT',cx,400); x.restore();
+  x.font=`150px ${BG}`; x.fillStyle='#E0302B'; x.fillText('REDFLAG',cx+8,408);
+  x.save(); x.shadowColor='#FF4F9A'; x.shadowBlur=30; x.fillStyle='#FF4F9A'; x.fillText('REDFLAG',cx,400); x.restore();
   x.font=`800 44px ${RB}`; x.fillStyle='#F4B942'; x.fillText('LEVEL 1  ·  LAST CALL',cx,480);
   // red flag
   x.strokeStyle='#FFF1E0'; x.lineWidth=8; x.lineCap='round'; x.beginPath(); x.moveTo(cx-40,720); x.lineTo(cx-40,590); x.stroke();
@@ -154,7 +154,7 @@ function drawCard(){
   // call to action
   x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1580);
   const link=gameLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
-  x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'KeysOut')),cx,1650);
+  x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'RedFlag')),cx,1650);
   return c;
 }
 function toBlobSync(canvas){
@@ -235,7 +235,7 @@ $('sgSend').onclick=()=>{
   if(!name){ $('suggestNote').textContent='Add the nonprofit\u2019s name first.'; $('sgName').focus(); return }
   if(!DONATE.suggestEmail){ $('suggestNote').textContent='Suggestions aren\u2019t set up yet. Add an address to DONATE.suggestEmail.'; return }
   const body='Nonprofit: '+name+'\nWebsite: '+(link||'-')+'\n\nWhat they do:\n'+(why||'-');
-  location.href='mailto:'+DONATE.suggestEmail+'?subject='+encodeURIComponent('Keys Out recipient suggestion: '+name)+'&body='+encodeURIComponent(body);
+  location.href='mailto:'+DONATE.suggestEmail+'?subject='+encodeURIComponent('RedFlag recipient suggestion: '+name)+'&body='+encodeURIComponent(body);
   $('suggestNote').textContent='Your email app should open with the message ready to send.';
 };
 (function thanksFromDonation(){
