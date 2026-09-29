@@ -50,6 +50,7 @@ const HAPTICS = {
 // volume is 0 to 1. minGap stops the same effect stacking into a buzz when hits land back to back.
 // Players can mute from the speaker button; that choice is saved in the browser.
 const SOUND = { volume: 0.8, minGap: 0.06 };
+
 // Real-life tips. Shown on the start screen, on the end screen (picked by what happened in
 // the run), and all together on tips.html. Every tip needs a source a reader can check.
 // tags: what makes a tip relevant after a run.

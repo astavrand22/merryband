@@ -28,7 +28,6 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .mute:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 /* hidden while the end or donate screen is open, where it would sit on top of scrolling content; it comes after them in the page so ~ works */
 #endScreen:not(.hidden) ~ .mute,#giveScreen:not(.hidden) ~ .mute{display:none}
-.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
 .card{max-width:400px;width:100%;margin:auto}
