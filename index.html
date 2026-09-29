@@ -52,6 +52,11 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .tips{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--plum)}
 .tips .label{margin-bottom:8px}
+.epis{margin:0 0 16px}
+.epis.hidden{display:none}
+.epi{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.45}
+.epi:first-of-type{border-top:0;padding-top:0}
+.epi b{color:var(--amber);font-size:13px;display:block}
 .tip{padding:8px 0;border-top:1px solid var(--line)}
 .tip:first-of-type{border-top:0;padding-top:0}
 .tip b{display:block;font-size:15px;margin-bottom:3px;color:var(--cream)}
@@ -128,6 +133,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
       <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
       <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
+    </div>
+    <div class="epis hidden" id="epiBox">
+      <div class="label">What happened to them</div>
+      <div id="epiList"></div>
     </div>
     <div class="tips" id="tipsEnd">
       <div class="label">Off the screen</div>

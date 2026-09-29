@@ -22,6 +22,8 @@ const VILLAINS = {
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120,
               tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
+// The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
+const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 
 // The red flag shows ON the villain's clothing when he makes his move, not above his head.
