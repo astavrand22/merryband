@@ -32,7 +32,9 @@ Gifts go through [Every.org](https://www.every.org), a 501(c)(3), directly to th
 
 ## Roadmap
 
-[docs/LEVELS.md](docs/LEVELS.md) documents Level 1 as built, how it should evolve, the designs for Levels 2–5, the build order and open questions.
+[docs/LEVELS.md](docs/LEVELS.md) documents Level 1 as built, how it should evolve, the designs for Levels 2–5, the build order and open questions. [docs/STATUS.md](docs/STATUS.md) compares that plan against what's actually built.
+
+The legal-education content layer lives in [content/](content/README.md), under the rules in [docs/FICTIONALIZATION.md](docs/FICTIONALIZATION.md) and [docs/SAFETY.md](docs/SAFETY.md); `node tools/validate.mjs` is its build gate.
 
 A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). Open `crew-test.html` to try it.
 

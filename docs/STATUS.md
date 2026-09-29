@@ -56,7 +56,7 @@ Until these clear, no content ships, and `content/README.md` says integration sh
 
 Ordered by what unblocks the most:
 
-1. **Update `LEVELS.md`.** It's the single biggest gap — it no longer matches the game and doesn't mention the content layer, armor system, crew, or validator. Reconcile the two tracks in the doc so the roadmap is real again. (Cheap, and everything else is easier once the map is right.)
+1. **Update `LEVELS.md`.** ✅ Done in this change — its "as built," gaps and roadmap now match the game and point at the content layer, crew and validator. `README.md` now links this file and the content docs too.
 2. **Finish the "before sharing" wave for Level 1**, since it's the tutorial and the thing people share:
    - Real petition link + cause copy in `CAUSE` (needs the partner org's wording).
    - A 10-second guided opening: one Spiker, "wait for the flag," "strike."

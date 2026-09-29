@@ -1,10 +1,12 @@
 # Keys Out: Level Design
 
-_As of 2026-09-28. Living copy: the "Keys Out: Level Design" doc in the Merry Band project. This file is the snapshot for the repo._
+_As of 2026-09-28. This file is the level design plan. For how the plan compares to what's actually built — and the content and safety layer that grew up alongside it — see [STATUS.md](STATUS.md)._
 
 ## Overview
 
 The game is one bad night, played leg by leg: the bar, the walk home, the garage. Levels 4 and 5 leave the street for the places predators hide in daylight: the office and the phone. Level 1 is built and live in the repo; everything after it is design.
+
+Two systems run alongside the levels and are documented separately: a **legal-education content layer** (codex, armor model, composite scenarios — see [FICTIONALIZATION.md](FICTIONALIZATION.md), [SAFETY.md](SAFETY.md) and [../content/README.md](../content/README.md)) and a **crew mechanic** prototype ([CREW.md](CREW.md)). Neither is wired into the game yet. See "The rest of the project" below.
 
 Every level follows the same rules:
 
@@ -23,9 +25,9 @@ Every level follows the same rules:
 
 ## Level 1: Last Call, as built today
 
-A 60-second survival round in a bar at closing time, three hearts, built on Phaser with no image assets and no saved state. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose at zero hearts.
+A 60-second survival round in a bar at closing time, three hearts, built on Phaser with no image assets. Best score is saved in the browser; nothing else persists between runs. (It was plain canvas code until the Phaser port on 2026-09-28.) You survive the minute to win; you lose at zero hearts. The look is neon noir: a near-black room, a glowing sign, a magenta grid floor, and rim-lit silhouettes.
 
-**The room.** A back bar with bottle shelves, three hanging lamps and a flickering LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
+**The room.** A back bar with bottle shelves, three hanging lamps and a glowing LAST CALL neon sign. Three women sit at the counter with their backs to you, each with a drink in front of her. The floor fills with people walking in from both sides.
 
 **Crowd.** A new person arrives roughly every second, and the pace nearly doubles by the final seconds. At most 9 people are on the floor and at most 2 Spikers at once. The mix is 50% bystanders, 20% Spikers, 15% Followers, 15% Grabbers.
 
@@ -49,17 +51,27 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 
 **Scoring.** Hitting a villain before his flag costs 50 points and resets the combo. Every 3 knockouts in a row add 1 to the multiplier, up to 4x. Stopping a Spiker before he finishes counts as a save.
 
-**End screen.** Score, creeps down and saves, then the cause card: "The Spiker is fiction. Spiking isn't." The petition link is still blank, and the copy is placeholder. Tapping the button unlocks gold lipstick for the next run in that browser tab. The start and end screens both link to RAINN.
+**End screen.** Score, creeps down, saves and your best. Then two real-life safety tips picked by what happened in the run, the cause card ("The Spiker is fiction. Spiking isn't." — petition link still blank, copy still placeholder), a **Share your score** card for Threads and Instagram, and a **donation panel** that routes money through Every.org to three legal-aid nonprofits. Tapping the petition button unlocks gold lipstick for the next run. The start screen carries a rotating tip and its own donate button; both screens link to RAINN.
 
-**Gaps in what's built**
+**What's done since the first cut**
 
-- No petition URL or final cause copy.
-- No sound or haptics.
-- Nothing persists: best score, gold lipstick and unlocks are lost on reload.
-- Villains and weapons are config objects inside the HTML, not the separate data files the original design called for.
-- Characters are drawn from shapes, so villains and bystanders differ only by the flag. That's intentional for fairness but gives each villain little personality.
-- No onboarding. A first-time player learns the "wait for the flag" rule by losing points.
-- The Wolf and the Mogul from the original villain list aren't in yet.
+- Haptics on hits, KOs and lost hearts.
+- Best score saved in the browser.
+- Villain personality: a tell callout by the flag ("Following her") and a per-villain epilogue on the end screen.
+- Male/female looks, with creeps 99% men so a man is never a safe target on sight.
+- Real-life safety tips (start screen, end screen, and `tips.html`).
+- A donation panel, a share-your-score card, and a feedback page.
+- Neon-noir art pass.
+
+**Still open**
+
+- No petition URL or final cause copy (`CAUSE.url` is empty).
+- No sound. Haptics are in; audio isn't.
+- Gold lipstick and weapon unlocks still reset every run; only best score persists.
+- Villains and weapons are JS objects in `src/data.js`, not the `villains.json` / `weapons.json` the design called for. (A separate `content/` JSON layer does exist — see "The rest of the project" below.)
+- No onboarding. A first-time player still learns "wait for the flag" by losing points.
+- Characters are drawn from shapes, so the flag is still the only reliable tell. Intentional for fairness.
+- The Wolf and the Mogul aren't in yet.
 
 ## Level 1: how it should evolve
 
@@ -67,10 +79,10 @@ Level 1 is the tutorial and the thing people share, so it needs to be the most p
 
 **Before sharing widely**
 
-- Real petition link and cause copy in `CAUSE`, checked against the partner org's own wording.
-- A 10-second guided opening: one Spiker, a prompt to wait for the flag, a prompt to strike. Normal spawning starts after the first knockout.
-- Sound: a key jingle on hit, a KO sting, a glass clink when a drink is saved, a low hum when a flag goes up. Short vibration on phones when you lose a heart.
-- Save best score and the gold lipstick in the browser so they survive a reload.
+- Real petition link and cause copy in `CAUSE`, checked against the partner org's own wording. **(Still open.)**
+- A 10-second guided opening: one Spiker, a prompt to wait for the flag, a prompt to strike. Normal spawning starts after the first knockout. **(Still open.)**
+- Sound: a key jingle on hit, a KO sting, a glass clink when a drink is saved, a low hum when a flag goes up. **(Haptics done; audio still open.)**
+- Persist state so it survives a reload. **Best score done.** Gold lipstick and unlocks still reset each run.
 
 **Make the bar feel alive**
 
@@ -90,6 +102,15 @@ Level 1 is the tutorial and the thing people share, so it needs to be the most p
 
 - Pepper spray stuns unflagged villains for free, which makes it a safe way to scout. Keep it, or make it cost points like a keys hit?
 - Glitter flags villains early. That's strong at 1,200 points; it may need a longer recharge once the Wolf exists.
+
+## The rest of the project (documented separately)
+
+Two systems grew up next to the level plan and aren't wired into the game yet:
+
+- **The legal-education content layer** (`content/`). A codex of sourced legal cards in three tiers, a 12-layer "armor" model, and invented composite scenarios, gated by a validator (`tools/validate.mjs`) and the rules in [FICTIONALIZATION.md](FICTIONALIZATION.md) and [SAFETY.md](SAFETY.md). Its governing rule: **the law is his armor, not her sword** — legal mechanisms are protection the player strips, never weapons she picks up. The validator fails on purpose right now; [STATUS.md](STATUS.md) lists the blockers.
+- **The crew mechanic** ([CREW.md](CREW.md)). Creeps team up; bystanders break the link with the five Ds. A prototype in `crew-test.html`, not in the live game.
+
+How these meet the levels is an open decision — see the open questions at the end.
 
 ## Level 2: The Walk Home
 
@@ -183,11 +204,12 @@ Level 5 changes the frame: the screen becomes a phone. It's the level most playe
 
 Polish Level 1 before building Level 2; a strong first minute matters more than a fifth level.
 
-1. Level 1 "before sharing" wave: petition link, guided opening, sound, saved best score.
+1. Level 1 "before sharing" wave: petition link, guided opening, sound. (Best score and haptics already done.)
 2. Split config into `villains.json`, `weapons.json` and `levels.json`, and add a level select.
-3. Level 2, with the Wolf and the Group Chat ultimate.
-4. Level 1 "feel alive" wave, informed by what players say in the feedback page.
-5. Level 5 (cheap, no scene art), then Level 3, then the Level 4 boss.
+3. Clear the content validator's ship blockers and decide how the content layer meets the game (see [STATUS.md](STATUS.md)) before building the armor system or wiring crews.
+4. Level 2, with the Wolf and the Group Chat ultimate.
+5. Level 1 "feel alive" wave, informed by what players say in the feedback page.
+6. Level 5 (cheap, no scene art), then Level 3, then the Level 4 boss.
 
 **Open questions**
 
@@ -196,3 +218,5 @@ Polish Level 1 before building Level 2; a strong first minute matters more than 
 - [x] Move to Phaser. Done 2026-09-28.
 - [ ] Which partner org backs each level's cause card, and have they seen the game?
 - [ ] Final game name. "Keys Out" is still the placeholder.
+- [ ] Does the codex/armor content layer ship inside Keys Out, or become its own thing? Different tone, audience and review burden.
+- [ ] Who is the named human reviewer for scenarios, and does tier-3 content need legal counsel? Three scenarios and four codex cards currently block the content build.
