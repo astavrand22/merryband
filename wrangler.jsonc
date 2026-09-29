@@ -2,9 +2,16 @@
   // "name" must match the Worker's name in the Cloudflare dashboard.
   "name": "merryband",
   "compatibility_date": "2026-09-27",
+  // Static site, plus one tiny Worker route for play analytics (see docs/ANALYTICS.md).
+  "main": "worker.mjs",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    // Only /a runs the Worker. Every other path is served as a static file, as before.
+    "run_worker_first": ["/a"]
   },
+  // Turn this on after enabling Analytics Engine in the Cloudflare dashboard (Workers > Analytics Engine).
+  // Until then the Worker just accepts and discards events, and the site is unaffected.
+  // "analytics_engine_datasets": [{ "binding": "PLAY", "dataset": "redflag_play" }],
   // Required for branch preview builds. Empty is fine for a static site.
   "previews": {}
 }

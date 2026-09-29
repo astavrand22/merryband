@@ -1,6 +1,6 @@
 # Play analytics
 
-Off by default. To turn on, set `ANALYTICS.endpoint` in `src/data.js` to a URL that accepts a POST.
+Sent to `/a` (`ANALYTICS.endpoint` in `src/data.js`). Set it empty to turn it off.
 Try it without an endpoint by opening the game with `?analytics=debug`; events print to the console.
 
 ## What is sent
@@ -13,9 +13,9 @@ Cookies, local ids, fingerprints, free text, anything from the donation, petitio
 Nothing is sent if the browser sends Do Not Track or Global Privacy Control.
 
 ## What's left
-There is no collector yet. The site is static. The simplest option is a small Cloudflare Worker that
-receives the POST and writes it to Workers Analytics Engine (that needs a change to `wrangler.jsonc`, so it should be a deliberate step).
-Keep whatever collector is used from storing IP addresses.
+The collector is `worker.mjs`, a tiny Cloudflare Worker that only handles POST /a. It
+validates and whitelists fields, then writes to Workers Analytics Engine. To start storing: enable Analytics Engine in the Cloudflare dashboard, then uncomment `analytics_engine_datasets` in `wrangler.jsonc`. Until then events are accepted and discarded.
+It stores no IP address or user agent. Query the `redflag_play` dataset with SQL (blob1 event, blob2 win/loss, blob3 weapons, blob4 villains faced, blob5 hearts lost by reason; double1..8 version, score, kos, saves, hearts left, seconds, crews made, crews broken).
 
 ## Related fix
 `hurt(msg, why)` now takes a reason code (`spiked`, `followed`, `grabbed`, `bystander`) so the end-of-run tips

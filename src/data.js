@@ -193,4 +193,4 @@ const SHARE = {
 };
 
 // Play analytics (see src/analytics.js). Leave endpoint empty to keep it off. Summaries only, no ids or cookies.
-const ANALYTICS = { endpoint:'', version:1 };
+const ANALYTICS = { endpoint:'/a', version:1 };
