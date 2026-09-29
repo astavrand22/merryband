@@ -27,15 +27,15 @@ Only Grabbers ever reach the player fast enough for close range to matter. Follo
 
 | # | Weapon | `id` | Unlock | `mode` | Stats | Behavior |
 |---|---|---|---|---|---|---|
-| 1 | 🔑 Keys | `keys` | 0 | `tap` | `dmg:1`, `cooldown:0.22` | Hits the character under the pointer. |
-| 2 | 💄 Lipstick | `lipstick` | 300 | `mark` | `dmg:1`, `cooldown:0.5`, `slow:0.65` | Tap a flagged creep: CREEP is written across his forehead, letter by letter, with the lipstick moving along it. Marked creeps take double damage and move at 65% speed for the rest of their life. The mark stays on him through the KO. |
+| 1 | 📱 Fake Call | `call` | 1700 | `call` | `cooldown:15`, `freeze:1.5` | Your friend calls ("OMG I'm literally right outside."). Every flagged Follower and Spiker gives up and walks off for half points; a Spiker who bails counts as a save. Flagged Grabbers freeze for 1.5s. Unflagged villains and bystanders aren't affected. |
+| 2 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | Glitter bomb. Every villain in the radius gets a shower from above, ends up covered in glitter that stays on him, and spends 0.7s rubbing his eyes (stunned). Bombed creeps take double damage and are **force-flagged**. Bystanders are skipped. |
 | 3 | 🌶️ Pepper | `spray` | 700 | `cone` | `dps:1.8` | Hold and aim a cone from the player. Damages and stuns every flagged villain in it. Stuns unflagged villains with no penalty. Hurts bystanders. |
-| 4 | ✨ Glitter | `glitter` | 1200 | `area` | `cooldown:5` | Glitter bomb. Every villain in the radius gets a shower from above, ends up covered in glitter that stays on him, and spends 0.7s rubbing his eyes (stunned). Bombed creeps take double damage and are **force-flagged**. Bystanders are skipped. |
-| 5 | 📱 Fake Call | `call` | 1700 | `call` | `cooldown:15`, `freeze:1.5` | Your friend calls ("OMG I'm literally right outside."). Every flagged Follower and Spiker gives up and walks off for half points; a Spiker who bails counts as a save. Flagged Grabbers freeze for 1.5s. Unflagged villains and bystanders aren't affected. |
+| 4 | 🦵 Knee | `knee` | 0 | `tap` | `dmg:2`, `cooldown:0.55` | One hard hit on a flagged creep (shows "OOF!"). Drops a Spiker or Grabber (2 hp) in one tap and a Follower (3 hp) in two. Always available. Replaced Keys on Sep 28. |
+| 5 | 🙋 Ask | `ask` | 0 | `ask` | | Ask a bystander for help. See `docs/CREW.md`. |
 
-Hatpins were removed on Sep 28. **Gold lipstick** replaces gold hatpins: pressing the petition button on the end screen makes the next run's CREEP marks gold.
+Bar order is Fake Call, Glitter, Pepper, Knee, Ask. Knee is the selected weapon at the start of each run. Lipstick (and the gold-lipstick petition reward) was retired on Sep 28; the `marked` code path is dormant.
 
-Double damage doesn't stack: a creep who is both glitter-bombed and lipstick-marked still takes 2×.
+Double damage doesn't stack.
 
 ### Known issues / balance notes
 

@@ -36,11 +36,10 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 
 // mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
-  { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    how:'Tap a creep after he flags to hit him. Tap low, at his feet and body.', hint:'Tap to swing. Aim low.' },
-  { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  how:'Tap a flagged creep to brand him. He slows down and takes double damage.', hint:'Brand CREEP on his forehead. Marked men move slow and bruise easy.', slow:0.65 },
-  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  how:'Hold and drag to aim a cone of spray. It hurts anyone in it, bystanders too.', hint:'Hold and aim. She\u2019ll catch it too.' },
-  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area. Every creep inside is forced to show his flag, freezes for a moment, and takes double damage from then on. Bystanders are safe. Reloads in 5 seconds.', hint:'Tap an area to glitter-bomb.' },
-  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Your phone rings. Followers and Spikers back off, and Grabbers freeze for a moment.', hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 },
+  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
+  { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },
+  { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  how:'Hold and drag to spray a cone: steady damage and stun on flagged creeps, but it hits bystanders too. Best on one creep with nobody near.', hint:'Hold to spray one creep.' },
+  { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to ask them for help. Tap a crew member first to aim the help at him.', hint:'Tap a bystander to ask for help. Tap a crew member first to aim it.' }
 ];
 
@@ -79,7 +78,7 @@ const HAPTICS = {
   hit:    12,             // any damage to a flagged creep
   ko:     [18, 40, 30],   // knockout: double thump
   save:   [18, 30, 18, 30, 40], // KO'd a Spiker before he spiked a drink
-  tag:    8,              // glitter bomb or lipstick mark
+  tag:    8,              // glitter bomb
   call:   [40, 60, 40, 60, 40], // fake call: phone ringing
   hurt:   [70, 50, 70],   // you lost a heart
   minGap: 0.09            // seconds between buzzes of the same kind
@@ -90,7 +89,7 @@ const HAPTICS = {
 // tags: what makes a tip relevant after a run.
 //   hurt by:   spiked, followed, grabbed, bystander
 //   faced:     spiker, follower, grabber
-//   used:      a weapon id (keys, lipstick, spray, glitter, call)
+//   used:      a weapon id (knee, spray, glitter, call, ask)
 //   general:   fine for anyone
 const TIP_GROUPS = [
   { id:'drinks',   title:'At the bar' },
@@ -120,7 +119,7 @@ const TIPS = [
     title:'Don\u2019t lead him home',
     text:'Go somewhere busy instead: an open caf\u00e9, a store, a full parking lot. Call a friend and stay on the line. If you feel you\u2019re in danger, call 911.',
     source:'SafeWise', url:'https://www.safewise.com/blog/what-to-do-if-you-think-youre-being-followed/' },
-  { id:'follow-look', group:'followed', tags:['lipstick','follower'],
+  { id:'follow-look', group:'followed', tags:['follower'],
     title:'Get a good look',
     text:'Notice his face, his clothes and which way he went. Those details are what police need for a report.',
     source:'UCCS Police', url:'https://police.uccs.edu/prevention/crime-prevention/crime-prevention-tips/being-followed' },

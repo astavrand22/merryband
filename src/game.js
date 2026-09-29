@@ -37,7 +37,7 @@ const sc = y => 0.55 + 0.75 * clamp((y - horizonY) / (playerY - horizonY), 0, 1)
 const origin = () => ({ x:W / 2, y:playerY + 14 });
 const WPN = id => WEAPONS.find(w => w.id === id);
 const dmgMult = c => (c.tagged || c.marked) ? 2 : 1;   // glitter-bombed or lipstick-marked
-const slowMult = c => c.marked ? WPN('lipstick').slow : 1;
+const slowMult = c => c.marked ? 0.65 : 1;   // lipstick marks are retired; kept so old code paths stay safe
 
 /* ---------- characters ---------- */
 
@@ -275,13 +275,17 @@ function hurt(msg, why) {
   if (game.hearts > 0) narrate('A heart gone, ' + game.hearts + ' left. Only hit someone after they flag.');
   if (game.hearts <= 0) endGame(false);
 }
-function useKeys() {
-  const w = WPN('keys');
-  if (game.cool.keys > 0) return;
-  game.cool.keys = w.cooldown;
+function useKnee() {
+  const w = WPN('knee');
+  if (game.cool.knee > 0) return;
+  game.cool.knee = w.cooldown;
   const c = charAt(pointer.x, pointer.y);
   game.streaks.push({ star:true, x2:pointer.x, y2:pointer.y, life:0.15, color:COLORS.cream });
-  if (c) applyHit(c, w.dmg);
+  if (c) {
+    const before = c.hp, wasFlagged = c.flagged;
+    applyHit(c, w.dmg);
+    if (c.kind !== 'bystander' && wasFlagged && before !== undefined) floatText(c.x, c.y - 96 * sc(c.y), 'OOF!', '#FFF1E0');
+  }
 }
 function sprayTick(dt) {
   const w = WPN('spray'), o = origin(), ang = Math.atan2(pointer.y - o.y, pointer.x - o.x);
@@ -614,10 +618,10 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   game = { score:0, hearts:CONFIG.hearts, time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['keys', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
-  selected = 0; renderBar(); updateHUD();
+  selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
 }
 
 /* ---------- per-frame logic ---------- */
@@ -862,7 +866,7 @@ class BarScene extends Phaser.Scene {
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
       game.used.add(w.id);
-      if (w.mode === 'tap') useKeys(); else if (w.mode === 'mark') useLipstick(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
+      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
     });
     this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
     this.input.on('pointerup', () => pointer.down = false);

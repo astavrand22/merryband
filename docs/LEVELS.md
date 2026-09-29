@@ -38,15 +38,15 @@ A 60-second survival round in a bar at closing time, three hearts, built on Phas
 | The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward you | He reaches you | 100 |
 | The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast | He reaches you | 120 |
 
-**Weapons.** Keys are free; the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
+**Weapons.** Knee is free (and the bar order is Fake Call, Glitter, Pepper, Knee, Ask); the rest unlock by score within a run and reset on the next run. Number keys 1–5 switch weapons on a keyboard.
 
 | Weapon | Input | Effect | Unlocks at |
 | --- | --- | --- | --- |
-| Keys | Tap | 1 damage, 0.22 s cooldown | Start |
-| Lipstick | Tap | 1 damage and writes CREEP on his forehead. Marked villains take double damage and move at 65% speed | 300 |
-| Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and costs a heart if it hits a bystander | 700 |
-| Glitter bomb | Tap | Area blast, 5 s recharge. Villains in it are covered in glitter, stunned for 0.7 s, flag immediately and take double damage | 1,200 |
 | Fake Call | Tap | Your friend calls, 15 s recharge. Flagged Followers and Spikers walk off for half points (a Spiker counts as a save); flagged Grabbers freeze for 1.5 s | 1,700 |
+| Glitter bomb | Tap | Area blast, 5 s recharge. Villains in it are covered in glitter, stunned for 0.7 s, flag immediately and take double damage | 1,200 |
+| Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and costs a heart if it hits a bystander | 700 |
+| Knee | Tap | 2 damage, 0.55 s cooldown. One tap drops a Spiker or Grabber, two a Follower | Start |
+| Ask | Tap a bystander | Ask for help (see CREW.md) | Start |
 
 **Scoring.** Hitting a villain before his flag costs 50 points and resets the combo. Every 3 knockouts in a row add 1 to the multiplier, up to 4x. Stopping a Spiker before he finishes counts as a save.
 

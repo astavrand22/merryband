@@ -121,7 +121,7 @@ $('signBtn').closest('.cause').hidden=!CAUSE.enabled;
 $('signBtn').onclick=()=>{
   if(CAUSE.url) window.open(CAUSE.url,'_blank','noopener');
   goldPin=true;
-  $('signNote').textContent=CAUSE.url?'Thanks. Gold lipstick unlocked for your next run.':'No petition link yet. Add it to CAUSE.url. Gold lipstick unlocked anyway.';
+  $('signNote').textContent=CAUSE.url?'Thanks for signing.':'No petition link yet. Add it to CAUSE.url.';
 };
 
 /* ---------- share your score ---------- */

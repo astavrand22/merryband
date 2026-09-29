@@ -24,8 +24,9 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .wbtn:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .toast{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--amber);color:var(--ink);font-weight:800;font-size:14px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
 .toast.show{opacity:1}
-.narr{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:rgba(26,14,29,.82);color:var(--cream);font-weight:600;font-size:15px;line-height:1.35;padding:8px 14px;border-radius:12px;border:1px solid var(--line);opacity:0;transition:opacity .25s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
+.narr{position:fixed;left:50%;width:max-content;bottom:84px;transform:translateX(-50%);background:rgba(26,14,29,.82);color:var(--cream);font-weight:600;font-size:14px;line-height:1.3;padding:7px 12px;border-radius:12px;border:1px solid var(--line);opacity:0;transition:opacity .25s;pointer-events:none;z-index:3;text-align:center;max-width:90vw}
 .narr.show{opacity:1}
+@media (max-width:520px){.narr{max-width:94vw;font-size:13px}}
 .overlay{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(26,14,29,.9);padding:20px;z-index:5;overflow:auto}
 .overlay.hidden{display:none}
 .overlay.popup{align-items:center;background:rgba(26,14,29,.5)}
@@ -124,7 +125,7 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <li><span>🚩</span>Wait for the red flag on his clothes &mdash; some plain, some easy to miss. Then make him regret it.</li>
       <li><span>💔</span>Hit a bystander, lose a heart.</li>
       <li><span>🍸</span>Drop the Spiker before he reaches her drink. That&rsquo;s a save.</li>
-      <li><span>🔑</span>Tap to swing. Score more, unlock worse.</li>
+      <li><span>🧰</span>Pick a tool from the bar. 📱 Fake Call scares them off. ✨ Glitter exposes and stuns. 🌶️ Pepper works on one creep at a time. 🦵 Knee is your hard hit. Tap a tool to see when to use it. Score more to unlock the rest.</li>
       <li><span>🙋</span>Matching shirts = a crew, and they can&rsquo;t be hit yet. Tap one crew member to aim, then Ask a bystander to split them up before their shirts go full red.</li>
     </ul>
     <p class="note" id="bestStart"></p>
