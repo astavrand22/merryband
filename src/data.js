@@ -22,14 +22,41 @@ const VILLAINS = {
 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
 
-// mode: 'tap' | 'cone' | 'area' | 'mark' | 'call'. unlock = score needed.
+// mode: 'tap' | 'cone' | 'area' | 'mark' | 'call' | 'ask'. unlock = score needed.
 const WEAPONS = [
   { id:'keys',     name:'Keys',      icon:'🔑', mode:'tap',  dmg:1,   cooldown:0.22, unlock:0,    hint:'Tap to swing. Aim low.' },
   { id:'lipstick', name:'Lipstick',  icon:'💄', mode:'mark', dmg:1,   cooldown:0.5,  unlock:300,  hint:'Brand CREEP on his forehead. Marked men move slow and bruise easy.', slow:0.65 },
   { id:'spray',    name:'Pepper',    icon:'🌶️', mode:'cone', dps:1.8,                unlock:700,  hint:'Hold and aim. She\u2019ll catch it too.' },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, hint:'Glitter-bomb them. Never comes off. Double damage.' },
-  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 }
+  { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, hint:'Phone lights up. Followers and Spikers bolt; Grabbers freeze.', freeze:1.5 },
+  { id:'ask',      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    hint:'Tap a bystander to ask for help. Tap a crew member first to aim it.' }
 ];
+
+// Crews: two or more villains working together. While they're linked none of them flags, so your
+// weapons can't touch them. Break the link with help from bystanders before their plan finishes.
+// If the plan finishes, they all flag together and act as usual. If you break it, they bolt.
+// The plan is a countdown with a visible link, never a scene. Nobody is shown being led anywhere.
+const CREW = {
+  enabled: true,
+  firstAt: [14, 22],      // seconds into the run before the crew shows up
+  maxPerRun: 1,
+  size: 2,                // villains per crew (2 or 3)
+  kinds: ['follower', 'grabber', 'spiker'],   // who can be in a crew
+  planSeconds: 30,        // how long a fully linked crew's plan takes if nobody helps
+  minTimeLeft: 24,        // no crew starts with less than this many seconds left in the run
+  breakPoints: 200,       // bonus for breaking a crew, on top of half of each member's usual points
+  staffHit: 60            // how much of the link staff take off when they arrive (out of 100)
+};
+
+// The five bystander helpers (the "5 Ds"). The key is the ability. weight = how often a bystander is that type.
+// line = what they say when they step in. Short, and about helping, never about the act.
+const HELPERS = {
+  direct:   { name:'Bouncer',  weight:0.15, line:'Leave them alone.' },
+  distract: { name:'Regular',  weight:0.25, line:'Hey! Is this your jacket?' },
+  delegate: { name:'Waiter',   weight:0.20, line:'I’ll get the manager.' },
+  delay:    { name:'Friend',   weight:0.15, line:'You okay? Sit with us.' },
+  document: { name:'Phone',    weight:0.25, line:'I’m filming.' }
+};
 
 // Haptics: a short buzz when you land a hit. Patterns are milliseconds (on, off, on...).
 // Android browsers support this. iPhone Safari has no vibration API, so iPhones get
@@ -109,7 +136,7 @@ const TIPS = [
     title:'Set up a code word',
     text:'Agree on a word or text with your friends that means \u201ccall me and get me out of here.\u201d It\u2019s the real version of the Fake Call.',
     source:'KPRC Click2Houston', url:'https://www.click2houston.com/news/local/2024/08/28/5-emergency-code-words-to-use-when-youre-in-danger-how-to-alert-friends-discreetly/' },
-  { id:'others-5d', group:'others', tags:['glitter','bystander','general'],
+  { id:'others-5d', group:'others', tags:['glitter','bystander','general','ask'],
     title:'Use the 5Ds',
     text:'Distract (interrupt with something unrelated), Delegate (get staff or someone in charge), Document (only once they\u2019re getting help), Delay (check on them after), Direct (a short \u201cLeave them alone\u201d).',
     source:'Right To Be', url:'https://righttobe.org/guides/bystander-intervention-training/' },
