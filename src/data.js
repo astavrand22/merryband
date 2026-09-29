@@ -48,8 +48,9 @@ const WEAPONS = [
 // weapons can't touch them. Break the link with help from bystanders before their plan finishes.
 // If the plan finishes, they all flag together and act as usual. If you break it, they bolt.
 // The plan is a countdown with a visible link, never a scene. Nobody is shown being led anywhere.
+// Crews and the Ask button are saved for a later level. Set enabled: true to bring both back.
 const CREW = {
-  enabled: true,
+  enabled: false,
   firstAt: [14, 22],      // seconds into the run before the crew shows up
   maxPerRun: 1,
   size: 2,                // villains per crew (2 or 3)

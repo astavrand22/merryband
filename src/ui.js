@@ -9,9 +9,11 @@ function toast(msg){const t=$('toast'); t.textContent=msg; t.classList.add('show
 let narrT=0, narrAt=0;
 function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; t.textContent=msg; t.classList.add('show'); clearTimeout(narrT); narrT=setTimeout(()=>t.classList.remove('show'),ms)}
 
+const weaponShown=w=>w.mode!=='ask'||CREW.enabled;   // Ask only appears when crews are on
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
   WEAPONS.forEach((w,i)=>{
+    if(!weaponShown(w)) return;
     const unlocked=!game||game.unlocked.has(w.id);
     const b=document.createElement('button');
     b.className='wbtn'+(i===selected?' sel':'')+(unlocked?'':' locked');
@@ -263,6 +265,7 @@ $('sgSend').onclick=()=>{
 })();
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('giveScreen').classList.contains('hidden')) closeGive() });
 
-addEventListener('keydown',e=>{ if(state==='play'&&e.key>='1'&&e.key<=String(WEAPONS.length)) selectWeapon(+e.key-1) });
+addEventListener('keydown',e=>{ if(state!=='play') return; const shown=WEAPONS.map((w,i)=>i).filter(i=>weaponShown(WEAPONS[i])); const n=+e.key; if(n>=1&&n<=shown.length) selectWeapon(shown[n-1]) });
 
 renderBar();
+if(!CREW.enabled){ const r=$('crewRule'); if(r) r.remove() }
