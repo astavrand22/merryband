@@ -56,7 +56,6 @@ Crews follow [CONTRIBUTING.md](../CONTRIBUTING.md). The plan is an abstract stat
 ## Not built yet
 
 - Wiring crews into `game.js` (spawns via `shouldSpawnCrew(level)`, real characters instead of circles)
-- Anything that lowers the target's wellbeing, so Delay's heal currently has nothing to heal
 - Sound and haptics for a broken crew
 
 ## In the game (branch `crew-in-game`)
@@ -72,6 +71,15 @@ The real game now has crews and an **Ask** weapon slot (🙋, unlocked from the 
 - **Staff (Waiter)** take `CREW.staffHit` (60) off the link instead of ending the crew (`CREW_TUNING.staffBreaks = false` in game).
 - **Friend (Delay)** restores some of your most shaken friend's comfort bar, only when one is hurt.
 - Ordinary spawns pause while a crew is due, so a full room can't block it.
+
+## Who the crew is after
+
+In the real game a crew picks one of your three friends (`spawnCrew()`, see `docs/FRIENDS.md`) and a red ring pulses under her. Two things follow:
+
+- **Her bar drains as the plan advances.** `CREW.drainPerSec` x how red their shirts are (`crewDanger()`), never below `CREW.drainFloor` (25). Left alone, a full plan costs her about 40 points. Break the crew and it stops. The Friend helper and the **You ok?** weapon put it back, which is what Delay's heal was missing.
+- **If the plan finishes, they all flag and go for her.** Followers and Grabbers get her as their target, and a Spiker in the crew goes for her drink. Until then the crew drifts toward her stool.
+
+Only a creep reaching her (or her drink) can end the night; the drain alone can't.
 
 ## Level 1 status
 Crews are switched off for Level 1 (`CREW.enabled = false` in `src/data.js`) and saved for a later level.
