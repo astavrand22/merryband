@@ -98,22 +98,107 @@ function showEndTips(){
 }
 $('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
-// A short explainer when a new kind of creep first shows up. Pauses the game until it's closed.
-function showIntro(kind){
-  const v=VILLAINS[kind]; if(!v||!v.intro||state!=='play') return;
-  state='intro'; pointer.down=false;
-  const t=$('introTitle'); t.innerHTML='';
-  const dot=document.createElement('span'); dot.className='dot'; dot.style.background=v.outfit||'#fff';
-  t.append(dot,document.createTextNode((v.icon?v.icon+' ':'')+v.name));
-  $('introHow').textContent=v.intro;
-  $('introScreen').classList.remove('hidden'); $('introOk').focus();
+/* ---------- pop-up cards, pause and refresher ---------- */
+// Cards explain one new thing at the moment it matters and hold the game until closed. Each is shown once
+// per browser (saved locally, no login); the pause screen lists everything seen so it can be reread, and
+// "Show pop-up tips again" clears it.
+const SEEN_KEY='redflag.seen.v1';
+function loadSeen(){ try{ const a=JSON.parse(localStorage.getItem(SEEN_KEY)); return new Set(Array.isArray(a)?a:[]) }catch(e){ return new Set() } }
+const seenMem=loadSeen();
+function saveSeen(){ try{ localStorage.setItem(SEEN_KEY,JSON.stringify([...seenMem])) }catch(e){} }
+
+function cardFor(id){
+  if(id.startsWith('creep-')){ const v=VILLAINS[id.slice(6)]; return v&&v.intro?{label:'New creep',dot:v.outfit||'#fff',icon:v.icon,title:v.name,text:v.intro}:null }
+  if(id.startsWith('unlock-')){ const w=WEAPONS.find(x=>x.id===id.slice(7)); return w?{label:'New tool',icon:w.icon,title:w.name,text:w.how||w.hint}:null }
+  return CARDS[id]||null;
 }
-function closeIntro(){ if(state!=='intro') return; $('introScreen').classList.add('hidden'); state='play'; pointer.down=false }
-$('introOk').onclick=closeIntro; $('introX').onclick=closeIntro;
-document.addEventListener('keydown',e=>{ if(state==='intro'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')) { e.preventDefault(); closeIntro() } });
+// The game is held (tweens, clock) while a card or the pause screen is up. The Phaser clock's `now` keeps running
+// while paused, so anything timed against it is pushed forward by however long we were held.
+let holdN=0, holdAt=0;
+function holdGame(){
+  if(holdN++>0||!S) return;
+  holdAt=S.time.now; S.tweens.pauseAll(); S.time.paused=true;
+}
+function releaseGame(){
+  if(holdN===0||--holdN>0) return;
+  const d=S.time.now-holdAt; S.time.paused=false; S.tweens.resumeAll();
+  if(game&&d>0){
+    for(const c of game.chars){ const h=c.helper; if(h){ if(h.cooldownUntil>holdAt) h.cooldownUntil+=d; if(Number.isFinite(h.lastAskAt)) h.lastAskAt+=d } }
+    const k=game.crew; if(k&&k.staffArrivesAt!==null) k.staffArrivesAt+=d;
+  }
+}
+function resetHold(){ if(holdN>0&&S){ S.time.paused=false; S.tweens.resumeAll() } holdN=0 }
+
+let cardQueue=[], cardOpen=null;
+// Show a card if it hasn't been seen (or `again`). Returns true if it was shown or queued, so callers can skip their own narration.
+function maybeCard(id,again){
+  if(!INTRO.enabled||!game) return false;
+  const c=cardFor(id); if(!c) return false;
+  if(!again&&seenMem.has(id)) return false;
+  if(state==='intro'||state==='pause'){ if(cardOpen!==id&&!cardQueue.includes(id)) cardQueue.push(id); return true }
+  if(state!=='play') return false;
+  openCard(id); return true;
+}
+function fillCard(c){
+  $('introLabel').textContent=c.label;
+  const t=$('introTitle'); t.innerHTML='';
+  if(c.dot){ const d=document.createElement('span'); d.className='dot'; d.style.background=c.dot; t.append(d) }
+  t.append(document.createTextNode((c.icon?c.icon+' ':'')+c.title));
+  $('introHow').textContent=c.text;
+}
+function openCard(id){
+  const c=cardFor(id); if(!c) return;
+  cardOpen=id; state='intro'; pointer.down=false; holdGame();
+  fillCard(c); $('introScreen').classList.remove('hidden'); $('introOk').focus();
+}
+function closeCard(){
+  if(state!=='intro') return;
+  $('introScreen').classList.add('hidden'); seenMem.add(cardOpen); saveSeen(); cardOpen=null; pointer.down=false;
+  const next=cardQueue.shift();
+  if(next){ state='play'; openCard(next); return }
+  state='play'; releaseGame();
+}
+$('introOk').onclick=closeCard; $('introX').onclick=closeCard;
+
+function buildPauseList(){
+  const l=$('pauseList'); l.innerHTML='';
+  const add=(icon,title,text,dot)=>{
+    const d=document.createElement('div'); d.className='pitem';
+    const b=document.createElement('b');
+    if(dot){ const s=document.createElement('span'); s.className='dot'; s.style.background=dot; b.append(s) }
+    b.append(document.createTextNode((icon?icon+' ':'')+title)); d.append(b,document.createTextNode(text)); l.appendChild(d);
+  };
+  add('🚩','Red flag','Creeps show a red flag on their clothes just before they act. Wait for it, then hit them. Hitting early loses points.');
+  add('❤️','Your friends','Stop each creep before he reaches a friend or her drink. If a friend’s bar runs out, the night is over.');
+  for(const w of WEAPONS) if(game&&game.unlocked.has(w.id)) add(w.icon,w.name,w.how||w.hint);
+  if(game) for(const k of game.introSeen){ const c=cardFor('creep-'+k); if(c) add(c.icon,c.title,c.text,c.dot) }
+  for(const id of Object.keys(CARDS)) if(seenMem.has(id)) add(CARDS[id].icon,CARDS[id].title,CARDS[id].text);
+}
+function pauseGame(){
+  if(state!=='play') return;
+  state='pause'; pointer.down=false; holdGame(); buildPauseList();
+  $('pauseScreen').classList.remove('hidden'); $('resumeBtn').focus();
+}
+function resumeGame(){
+  if(state!=='pause') return;
+  $('pauseScreen').classList.add('hidden'); pointer.down=false;
+  const next=cardQueue.shift();
+  if(next){ state='play'; openCard(next); return }
+  state='play'; releaseGame();
+}
+$('pauseBtn').onclick=pauseGame; $('resumeBtn').onclick=resumeGame;
+$('tipsAgain').onclick=()=>{ seenMem.clear(); saveSeen(); $('tipsAgain').textContent='Pop-up tips will show again'; };
+document.addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  if(state==='intro'&&(e.key==='Escape'||e.key==='Enter'||e.key===' ')){ e.preventDefault(); closeCard() }
+  else if(state==='pause'&&(e.key==='Escape'||e.key==='Enter'||e.key==='p'||e.key==='P')){ e.preventDefault(); resumeGame() }
+  else if(state==='play'&&(e.key==='Escape'||e.key==='p'||e.key==='P')){ e.preventDefault(); pauseGame() }
+});
+// Switching tabs or apps pauses, so nothing happens while you're away.
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) pauseGame() });
 
 function startGame(){
-  $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch your friends. Wait for the red flag on their clothes.',4000);
+  resetHold(); cardQueue=[]; cardOpen=null; $('pauseScreen').classList.add('hidden'); $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch your friends. Wait for the red flag on their clothes.',4000);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
