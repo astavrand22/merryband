@@ -217,7 +217,7 @@ function buzz(kind) {
 function applyHit(c, dmg) {
   if (c.state === 'ko' || c.state === 'bail') return;
   const s = sc(c.y);
-  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That\u2019s just a girl trying to leave.'); return; }
+  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurt('That\u2019s just a girl trying to leave.', 'bystander'); return; }
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
@@ -264,10 +264,9 @@ function koBadge(x, y, s) {
   b.add([g, t]);
   S.tweens.add({ targets:b, alpha:0, duration:900, onComplete:() => b.destroy() });
 }
-function hurt(msg) {
+function hurt(msg, why) {
   if (state !== 'play') return;
   game.hearts--; game.combo = 0;
-  const why = { 'Drink spiked.':'spiked', 'He followed you.':'followed', 'Grabbed.':'grabbed', 'That was a bystander.':'bystander' }[msg];
   if (why) game.events.push(why);
   buzz('hurt');
   S.cameras.main.flash(350, 224, 48, 43, true);
@@ -672,15 +671,15 @@ function step(dt) {
       continue;
     }
     if (c.kind === 'follower') {
-      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.'); }
+      if (moveToward(c, W / 2 + (c.x < W / 2 ? -30 : 30), playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He followed you home.', 'followed'); }
     } else if (c.kind === 'grabber') {
       if (c.state === 'windup') { c.windup -= dt; if (c.windup <= 0) c.state = 'lunge'; }
-      else if (moveToward(c, W / 2, playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.'); }
+      else if (moveToward(c, W / 2, playerY, v.speed * pace * slowMult(c) * depth, dt)) { c.gone = true; hurt('He put his hands on you.', 'grabbed'); }
     } else if (c.kind === 'spiker') {
       const d = drinks[c.drink];
       if (c.state === 'spiking') {
         c.spikeT -= dt;
-        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.'); }
+        if (c.spikeT <= 0) { d.spiked = true; d.resetT = 4; c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40; hurt('He got something in her drink.', 'spiked'); }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
       else if (moveToward(c, d.x + 18, horizonY + 10, v.speed * pace * slowMult(c) * W, dt)) { c.state = 'spiking'; c.spikeT = v.spikeTime; }
     }

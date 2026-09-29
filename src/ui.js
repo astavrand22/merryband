@@ -92,7 +92,7 @@ function showEndTips(){
 $('tipNext').onclick=()=>{ tipIdx=(tipIdx+1)%tipQueue.length; showTip() };
 
 function startGame(){
-  newGame(); state='play'; narrate('2 a.m. Watch for the red flag on their clothes. That\u2019s your cue.',4500);
+  newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch for the red flag on their clothes. That\u2019s your cue.',4500);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
@@ -109,7 +109,7 @@ function endGame(win){
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
   const rec=recordScore(); $('stBest').textContent=rec.best;
   if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
-  showBestStart(); showEpilogues(); showEndTips();
+  trackRunEnd(game,win); showBestStart(); showEpilogues(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
   lastRun={win,score:game.score,kos:game.kos,saves:game.saves,epi:[...game.faced].map(k=>VILLAINS[k]&&VILLAINS[k].epilogue).filter(Boolean)}; $('shareNote').textContent=''; prepCard();
   setTimeout(()=>$('endScreen').classList.remove('hidden'),700);

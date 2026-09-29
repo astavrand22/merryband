@@ -191,3 +191,6 @@ const SHARE = {
   url: '',        // live game link for posts and the card. Blank = the page's own web address
   tag: 'RedFlag'  // hashtag added to the Threads post and copied caption (no #). '' for none
 };
+
+// Play analytics (see src/analytics.js). Leave endpoint empty to keep it off. Summaries only, no ids or cookies.
+const ANALYTICS = { endpoint:'', version:1 };
