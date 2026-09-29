@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>RedFlag: Last Call</title>
+<title>RedFlag</title>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0C0714;--plum:#1A0E28;--amber:#F4B942;--neon:#FF4F9A;--cyan:#3AE7FF;--flag:#FF2D4A;--cream:#EAF7FF;--line:#2E1C42}
+:root{--ink:#0C0714;--plum:#1A0E28;--amber:#F4B942;--neon:#FF4F9A;--cyan:#3AE7FF;--flag:#FF2D4A;--brand:#E0302B;--cream:#EAF7FF;--line:#2E1C42}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik,system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
 #game{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
@@ -28,7 +28,9 @@ html,body{height:100%;background:var(--ink);color:var(--cream);font-family:Rubik
 .overlay.hidden{display:none}
 .overlay.popup{align-items:center;background:rgba(26,14,29,.5)}
 .panel{position:relative;background:#2a1530;border:2px solid var(--line);border-radius:18px;padding:22px 20px 18px;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.5)}
-.panel h1{font-size:40px}
+.panel h1{font-size:40px;color:var(--brand);text-shadow:3px 3px 0 var(--cream);display:flex;align-items:center;gap:10px}
+.panel h1 svg{width:34px;height:40px;flex:none}
+.level{display:inline-block;font:800 12px Rubik,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--neon);border-radius:6px;padding:3px 8px;margin-bottom:6px}
 .x{position:absolute;top:8px;right:8px;width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:var(--cream);font:400 30px/1 system-ui,sans-serif;cursor:pointer}
 .x:hover,.x:focus-visible{background:rgba(255,255,255,.12)}
 .card{max-width:400px;width:100%;margin:auto}
@@ -110,8 +112,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 <div class="overlay popup" id="startScreen" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="card panel">
     <button class="x" id="startBtn" aria-label="Close rules and start playing">&times;</button>
-    <h1 id="rulesTitle">RedFlag</h1>
-    <p class="sub">Last Call: 2 a.m. and every exit&rsquo;s got a guy in it</p>
+    <h1 id="rulesTitle"><svg viewBox="0 0 34 40" aria-hidden="true"><path d="M5 2v36" stroke="#EAF7FF" stroke-width="4" stroke-linecap="round"/><path d="M7 4h22l-6 8 6 8H7z" fill="#E0302B" stroke="#EAF7FF" stroke-width="2.5" stroke-linejoin="round"/></svg>RedFlag</h1>
+    <p class="sub">Spot the red flag. Make him regret it.</p>
+    <span class="level">Level 1 &middot; Last Call</span>
+    <p class="sub">2 a.m. and every exit&rsquo;s got a guy in it</p>
     <ul class="rules">
       <li><span>🙋</span>Need backup? Pick <b>Ask</b>, then tap a bystander. Each one shows a small willingness bar; once it passes the white tick, they’ll step in. Asking the same person again right away does nothing.</li>
       <li><span>🚩</span>Wait for the red flag on his clothes &mdash; some plain, some easy to miss. Then make him regret it.</li>

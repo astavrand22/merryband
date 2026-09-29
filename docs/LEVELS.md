@@ -196,3 +196,7 @@ Polish Level 1 before building Level 2; a strong first minute matters more than 
 - [x] Move to Phaser. Done 2026-09-28.
 - [ ] Which partner org backs each level's cause card, and have they seen the game?
 - [x] Game name. Renamed to "RedFlag" on 2026-09-28 (was the placeholder "Keys Out").
+
+## Branding vs. levels
+
+RedFlag's brand is the red flag mark, the wordmark in flag red (#E0302B) with cream, and the line "Spot the red flag. Make him regret it." It stays the same on every level. Each level gets its own name chip ("Level 1 · Last Call") and its own scene styling (Level 1's neon pink and cyan belong to the bar). Never put a level's name or look in the wordmark.

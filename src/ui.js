@@ -140,12 +140,12 @@ function drawCard(){
   const x=c.getContext('2d'), cx=540, BG="Bungee, 'Arial Black', Impact, sans-serif", RB='Rubik, system-ui, sans-serif';
   let g=x.createLinearGradient(0,0,0,1920); g.addColorStop(0,'#3F2446'); g.addColorStop(0.55,'#1F1024'); g.addColorStop(1,'#120914');
   x.fillStyle=g; x.fillRect(0,0,1080,1920);
-  const glow=x.createRadialGradient(cx,420,20,cx,420,700); glow.addColorStop(0,'rgba(255,79,154,.22)'); glow.addColorStop(1,'rgba(255,79,154,0)');
+  const glow=x.createRadialGradient(cx,420,20,cx,420,700); glow.addColorStop(0,'rgba(224,48,43,.24)'); glow.addColorStop(1,'rgba(224,48,43,0)');
   x.fillStyle=glow; x.fillRect(0,0,1080,1100);
   x.textAlign='center'; x.textBaseline='alphabetic';
   // title
-  x.font=`150px ${BG}`; x.fillStyle='#E0302B'; x.fillText('REDFLAG',cx+8,408);
-  x.save(); x.shadowColor='#FF4F9A'; x.shadowBlur=30; x.fillStyle='#FF4F9A'; x.fillText('REDFLAG',cx,400); x.restore();
+  x.font=`150px ${BG}`; x.fillStyle='#EAF7FF'; x.fillText('REDFLAG',cx+8,408);
+  x.fillStyle='#E0302B'; x.fillText('REDFLAG',cx,400);
   x.font=`800 44px ${RB}`; x.fillStyle='#F4B942'; x.fillText('LEVEL 1  ·  LAST CALL',cx,480);
   // red flag
   x.strokeStyle='#FFF1E0'; x.lineWidth=8; x.lineCap='round'; x.beginPath(); x.moveTo(cx-40,720); x.lineTo(cx-40,590); x.stroke();
@@ -165,7 +165,7 @@ function drawCard(){
   // epilogue: one line about what happened to him
   if(r.epi&&r.epi.length){ x.font=`600 34px ${RB}`; x.fillStyle='rgba(255,241,224,.85)'; x.fillText(r.epi[Math.floor(Math.random()*r.epi.length)],cx,1510) }
   // call to action
-  x.font=`72px ${BG}`; x.fillStyle='#FF4F9A'; x.fillText('YOUR TURN.',cx,1580);
+  x.font=`72px ${BG}`; x.fillStyle='#E0302B'; x.fillText('YOUR TURN.',cx,1580);
   const link=gameLink().replace(/^https?:\/\//,'').replace(/\/$/,'');
   x.font=`600 40px ${RB}`; x.fillStyle='#FFF1E0'; x.fillText(link||('#'+(SHARE.tag||'RedFlag')),cx,1650);
   return c;
