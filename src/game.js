@@ -404,11 +404,8 @@ function useCheckIn() {
 // Comfort bars over each friend's head: green when fine, amber, then red as it runs out.
 function drawFriendBars(f) {
   if (!game.friends) return;
-  if (!S.friendLabels) S.friendLabels = drinks.map(() => S.add.text(0, 0, '', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'700', fontSize:'9px',
-    color:'#EAF7FF', resolution:TEXT_RES * 2 }).setOrigin(0.5, 1).setDepth(8001).setAlpha(0.75));
   for (const fr of game.friends) {
     const cx = drinks[fr.i].x - 20, y = friendHeadY() - 16, w = Math.round(29 * barK()), k = clamp(fr.wellbeing / 100, 0, 1);
-    S.friendLabels[fr.i].setText(game.simple ? '' : fr.trait.label).setPosition(cx, y - 3);
     const col = k > 0.5 ? lerpHex(COLORS.amber, COLORS.spiked, (k - 0.5) * 2) : lerpHex(COLORS.flag, COLORS.amber, k * 2);
     if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000;
     f.fillStyle(0x000000, 0.55).fillRoundedRect(cx - w / 2 - 2, y - 2, w + 4, 9, 3);

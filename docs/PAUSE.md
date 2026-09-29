@@ -18,7 +18,7 @@ time held, since the Phaser clock's `now` keeps advancing while paused.
 
 ## Simple first run
 A player's first run is kept light (`EASY` in `src/data.js`): the bar shows only Ask, You ok? and Knee, friends
-carry no trait labels, and there are no call-outs or false alarms. From the second run everything is on, tools
+have no call-outs or false alarms. From the second run everything is on, tools
 unlock by score as before, and the cards introduce each one. Runs finished are counted in this browser only
 (`redflag.runs.v1`). Set `EASY.enabled = false` to skip this. Live narration is one short line at a time (the
 next action); longer explanations live in the pop-up cards and the pause screen.
