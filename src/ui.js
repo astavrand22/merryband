@@ -12,7 +12,7 @@ function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; 
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
   WEAPONS.forEach((w,i)=>{
-    if(game&&game.simple&&!EASY.tools.includes(w.id)) return;   // first run: only the basics
+    if(toolHidden(w)||(game&&game.simple&&!EASY.tools.includes(w.id))) return;   // only the basics
     const unlocked=!game||game.unlocked.has(w.id);
     const b=document.createElement('button');
     b.className='wbtn'+(i===selected?' sel':'')+(unlocked?'':' locked');
