@@ -35,3 +35,9 @@ When a run ends, a celebration pop-up (confetti on a win) sits over the end page
 help, friend handled it), and one "Try next time" suggestion. Lines only appear for what you actually used
 (`TALLY_LINES`, `NEXT_TIME` in `src/data.js`). "Continue" reveals the page behind it: tips, share, donation
 and play again. Checking in on a friend (You ok?) now earns points (`points` on the tool, 40).
+
+## Less live text
+One message at a time. The bottom line (`narrate`) carries only the next action; flag narration, duplicate toasts, "OOF!" and the takedown caption are gone. A flag's tell text ("Following her") shows once per browser, tool hints once per tool per run, and helpers show one line each. The takedown jokes now live on the result pop-up.
+
+## Big-face takedowns
+Now and then a knee or spray takedown fills the screen with the creep's pained face (his own skin, hair and beard, squeezed eyes, sweat, orbiting stars) and a petty line in a speech bubble, while the game slows to a crawl for about a second. Lines are `BIGFACE.lines` plus per-villain `pain` lists in `src/data.js`; lines don't repeat within a run. `BIGFACE.chance` and `ramp` set how often (roughly every third or fourth takedown, never within `minGap` seconds), and it is calmer with reduced-motion (static, smaller). `BIGFACE.enabled = false` turns it off.

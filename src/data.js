@@ -46,11 +46,11 @@ const LOOKS = { villainFemaleChance: 0.01, bystanderMaleChance: 0.5, beardChance
 //   Picked per spawn in that range. Leave it off to use FLAG.subtlety below.
 const VILLAINS = {
   spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100, hit:34, reachedText:'He got something in her drink.',
-              outfit:'#A070FF', intro:'He heads for a drink at the bar. Wait for his red flag, then hit him before he reaches it. Two hits, or one Knee.', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', subtlety:[0.4,0.9] },
+              outfit:'#A070FF', intro:'He heads for a drink at the bar. Wait for his red flag, then hit him before he reaches it. Two hits, or one Knee.', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', pain:['I was just... guarding it!', 'I was only checking the ice!'], subtlety:[0.4,0.9] },
   follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100, hit:34, reachedText:'He wouldn’t leave her alone.',
-              outfit:'#F2B233', intro:'He picks one of your friends and keeps coming. Wait for his red flag, then stop him before he reaches her. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', subtlety:[0.15,0.7] },
+              outfit:'#F2B233', intro:'He picks one of your friends and keeps coming. Wait for his red flag, then stop him before he reaches her. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', pain:['We were just walking the same way!', 'It\u2019s a free bar!'], subtlety:[0.15,0.7] },
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, hit:34, reachedText:'He got to her.',
-              outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
+              outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', pain:['Personal space is a social construct!', 'It\u2019s called being spontaneous!'], subtlety:[0.1,0.55] }
 };
 // Result pop-up: a joke about the night, picked by total creeps down (the last `min` that fits wins), and one line
 // per way you dealt with creeps, so it only mentions what you actually used. {n} is the count.
@@ -74,6 +74,13 @@ const NEXT_TIME = {
   ask:      'You never asked a bystander for help. Pick Ask and tap one: it scares a creep off for half points with no risk.',
   combo:    'Chain takedowns without a miss: every three in a row raises your multiplier, up to x4.'
 };
+// Big-face moment: every so often when you put a creep down, his pained face fills the screen for a beat with
+// something petty and douchey to say. chance rises by `ramp` for each takedown without one, so it feels
+// occasional but you do see it. minGap is game seconds between them; the game slows to slowK while it shows.
+const BIGFACE = { enabled:true, chance:0.15, ramp:0.12, minGap:8, ms:1400, slowK:0.1,
+  lines:['Do you know who my dad is?!', 'I\u2019m literally a nice guy!!', 'I have a podcast about this!', 'I\u2019m one of the GOOD ones!',
+    'I\u2019m telling my group chat!', 'I was going to buy you a drink!', 'My lawyer is my mom\u2019s friend!', 'I\u2019m a feminist! I have the tote bag!',
+    'It was a joke! Relax!', 'My therapist will hear about this.', 'I follow so many women on Instagram!', 'This is going on my Yelp review.'] };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
 // PACE: how fast flagged creeps close in, as a multiplier on their speed below. Starts gentle and

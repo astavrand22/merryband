@@ -162,29 +162,17 @@ function moveToward(c, tx, ty, sp, dt) {
   if (d <= sp * dt || d < 1) { c.x = tx; c.y = ty; return true; }
   c.x += dx / d * sp * dt; c.y += dy / d * sp * dt; return false;
 }
-const FLAG_LINES = {
-  spiker:   'The Spiker is heading for her drink. Stop him first.',
-  follower: 'The Follower is trailing her. Stop him.',
-  grabber:  'The Grabber is about to lunge. Stop him now.'
-};
-function narrateFlag(c) {
-  const v = VILLAINS[c.kind], g = game;
-  if (!v || !FLAG_LINES[c.kind] || (g.narrFlagAt && g.t - g.narrFlagAt < 4)) return;
-  g.narrFlagAt = g.t;
-  narrate((v.icon ? v.icon + ' ' : '') + FLAG_LINES[c.kind]);
-}
 function flag(c) {
   if (c.flagged) return;
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
-  narrateFlag(c);
   if (game.chars.filter(isThreat).length >= 2) maybeCard('ask');
   const fl = c.view.flag; fl.setVisible(true);
   if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
-  // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
+  // Say what the flag means once per villain type per browser, so the screen stays quiet after that.
   const tellText = VILLAINS[c.kind].tellText;
-  if (tellText && !game.seenTells.has(c.kind)) {
-    game.seenTells.add(c.kind);
+  if (tellText && !game.seenTells.has(c.kind) && !seenMem.has('tell-' + c.kind)) {
+    game.seenTells.add(c.kind); seenMem.add('tell-' + c.kind); saveSeen();
     floatText(c.x, c.y - 128 * sc(c.y), tellText, '#FF8A80');
   }
   if (c.kind !== 'spiker') c.target = weakestFriend();   // Followers and Grabbers go for whoever's had the worst night
@@ -249,7 +237,7 @@ function applyHit(c, dmg) {
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.earlyHits++; game.score = Math.max(0, game.score - 50); game.combo = 0;
-    floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
+    floatText(c.x, c.y - 96 * s, 'Too early -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
@@ -266,24 +254,78 @@ function ko(c, by = 'knee') {
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
   buzz(save ? 'save' : 'ko');
-  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
-  if (save) narrate('Saved.');
+  floatText(c.x, c.y - 100 * s, (save ? 'SAVED +' : '+') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
   S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
   S.tweens.add({ targets:c.view, angle:(c.dir || 1) * 80, alpha:0, duration:900, onComplete:() => { c.view.destroy(); c.dead = true; } });
   epilogueBeat(c, v, s);
+  if (by === 'knee' || by === 'spray') bigFaceCheck(c);
   checkUnlocks();
+}
+// Close-up of his face in pain plus a line, over everything. The game crawls while it shows, then carries on.
+function bigFaceCheck(c) {
+  if (!BIGFACE.enabled || game.faceUntil > game.t) return;
+  if (game.t - (game.lastFaceAt === undefined ? -99 : game.lastFaceAt) < BIGFACE.minGap) { game.sinceFace++; return; }
+  if (Math.random() >= Math.min(1, BIGFACE.chance + BIGFACE.ramp * game.sinceFace)) { game.sinceFace++; return; }
+  game.sinceFace = 0; game.lastFaceAt = game.t;
+  const v = VILLAINS[c.kind], pool = (v.pain || []).concat(BIGFACE.lines).filter(l => !game.faceLines.has(l));
+  const line = pick(pool.length ? pool : BIGFACE.lines); game.faceLines.add(line);
+  bigFace(c, line);
+}
+function bigFace(c, line) {
+  const cx = W / 2, cy = H * 0.4, k = Math.min(W, H * 0.7) * 0.36 / 10;   // head radius 10 units -> about a third of the screen
+  game.faceUntil = game.t + BIGFACE.ms / 1000 * BIGFACE.slowK + 0.2; game.slowT = BIGFACE.ms / 1000; game.slowK = BIGFACE.slowK;
+  const all = [];
+  const dim = S.add.rectangle(0, 0, W * 2, H * 2, 0x1A0E1D, 0.62).setOrigin(0).setDepth(19990); all.push(dim);
+  const f = S.add.container(cx, cy).setDepth(20000).setScale(k * 0.3); all.push(f);
+  const g = S.add.graphics(); f.add(g);
+  // comic burst behind the head
+  const burst = []; for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, r = i % 2 ? 15.5 : 21; burst.push({ x:Math.cos(a) * r, y:Math.sin(a) * r }); }
+  g.fillStyle(COLORS.amber, 1).fillPoints(burst, true); g.lineStyle(1.2, COLORS.ink, 1).strokePoints(burst, true);
+  const p = c;
+  // head, in the same shapes as the little person, drawn big
+  g.fillStyle(p.skin, 1).fillCircle(0, 0, 10).fillCircle(-10, 1, 2).fillCircle(10, 1, 2);
+  g.fillStyle(p.hair, 1);
+  if (p.male) {
+    g.beginPath(); g.arc(0, -5, 10.2, Math.PI * 1.05, -Math.PI * 0.05); g.closePath(); g.fillPath();
+    if (p.beard) { g.beginPath(); g.arc(0, 0, 10, Math.PI * 0.18, Math.PI * 0.82); g.closePath(); g.fillPath(); }
+  } else {
+    g.beginPath(); g.arc(0, -1, 11.5, Math.PI, 0); g.closePath(); g.fillPath();
+    g.fillRoundedRect(-12.5, -4, 5, 20, 2.5).fillRoundedRect(7.5, -4, 5, 20, 2.5);
+  }
+  g.fillStyle(0xFF6B6B, 0.45).fillCircle(-6.6, 2.8, 1.7).fillCircle(6.6, 2.8, 1.7);           // flushed cheeks
+  g.lineStyle(1.1, COLORS.ink, 1);
+  g.lineBetween(-6.4, -4.2, -2.2, -6.4).lineBetween(6.4, -4.2, 2.2, -6.4);                      // brows up in the middle
+  g.beginPath(); g.moveTo(-6.4, -2.6); g.lineTo(-2.8, -0.8); g.lineTo(-6.4, 1); g.strokePath();  // > <  squeezed shut
+  g.beginPath(); g.moveTo(6.4, -2.6); g.lineTo(2.8, -0.8); g.lineTo(6.4, 1); g.strokePath();
+  g.fillStyle(COLORS.ink, 1).fillEllipse(0, 5.4, 6.4, 5.6);                                     // mouth wide open
+  g.fillStyle(COLORS.cream, 1).fillRect(-2.7, 2.7, 5.4, 1.2);
+  g.fillStyle(0xE0607A, 1).fillEllipse(0, 6.9, 3.8, 2);
+  g.fillStyle(0x8FE8FF, 1).fillCircle(-10.6, -5.4, 1.1).fillTriangle(-11.6, -5.9, -9.6, -5.9, -10.6, -8.4).fillCircle(10.9, -3.4, 1.1).fillTriangle(9.9, -3.9, 11.9, -3.9, 10.9, -6.4); // sweat
+  // the line, in a speech bubble under the face
+  const bw = Math.min(W * 0.88, 380), by = cy + k * 13.5;
+  const t = S.add.text(cx, by, line, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'24px', color:'#1A0E1D', align:'center',
+    wordWrap:{ width:bw - 32 }, resolution:TEXT_RES }).setOrigin(0.5, 0).setDepth(20002);
+  const bub = S.add.graphics().setDepth(20001);
+  bub.fillStyle(COLORS.cream, 1).fillRoundedRect(cx - bw / 2, by - 12, bw, t.height + 24, 16).fillTriangle(cx - 14, by - 12, cx + 14, by - 12, cx, by - 30);
+  bub.lineStyle(3, COLORS.ink, 1).strokeRoundedRect(cx - bw / 2, by - 12, bw, t.height + 24, 16);
+  t.y = by; all.push(bub, t);
+  const stars = [];
+  if (!reduceMotion) for (let i = 0; i < 4; i++) stars.push(S.add.text(cx, cy, '\u2605', { fontSize:'34px', color:'#F4B942', stroke:'#1A0E1D', strokeThickness:4 }).setOrigin(0.5).setDepth(20003));
+  all.push(...stars);
+  if (reduceMotion) f.setScale(k * 0.8);
+  else {
+    S.tweens.add({ targets:f, scale:k, duration:170, ease:'Back.easeOut' });
+    S.tweens.add({ targets:f, x:cx + 6, duration:55, yoyo:true, repeat:5, delay:170 });
+    S.tweens.addCounter({ from:0, to:360, duration:BIGFACE.ms, onUpdate:tw => { const a0 = tw.getValue() * Math.PI / 180; stars.forEach((st, i) => { const a = a0 * 2 + i * Math.PI / 2; st.setPosition(cx + Math.cos(a) * k * 12.5, cy - k * 9 + Math.sin(a) * k * 3.2); }); } });
+  }
+  S.tweens.add({ targets:all, alpha:0, delay:BIGFACE.ms - 240, duration:240, onComplete:() => all.forEach(o => o.destroy()) });
 }
 function epilogueBeat(c, v, s) {
   if (!v.epilogue || !EPILOGUE.enabled) return;
   if (!reduceMotion) game.slowT = EPILOGUE.slowSeconds;   // brief slow-mo, the game keeps running
-  if (game.seenEpi.has(c.kind)) return;                   // caption only the first takedown of each type per run
-  game.seenEpi.add(c.kind);
-  const t = S.add.text(clamp(c.x, W * 0.3, W * 0.7), c.y - 165 * s, (v.icon ? v.icon + ' ' : '') + v.name + '\n' + v.epilogue, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px',
-    color:'#FFF1E0', align:'center', wordWrap:{ width:Math.min(280, W * 0.7) }, stroke:'rgba(26,14,29,0.9)', strokeThickness:5, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9600);
-  S.tweens.add({ targets:t, alpha:0, delay:EPILOGUE.captionMs * 0.6, duration:EPILOGUE.captionMs * 0.4, onComplete:() => t.destroy() });
 }
 function koBadge(x, y, s) {
   const b = S.add.container(x, y).setDepth(9000);
@@ -324,7 +366,6 @@ function hurtFriend(f, amount, msg, why) {
   }
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
-  narrate('Your friend is shaken. Only hit flagged creeps.');
   if (f.wellbeing <= 66) maybeCard('youok');
 }
 // A short speech bubble over a friend's head.
@@ -427,7 +468,6 @@ function useKnee() {
   if (c) {
     const before = c.hp, wasFlagged = c.flagged;
     applyHit(c, w.dmg);
-    if (c.kind !== 'bystander' && wasFlagged && before !== undefined) floatText(c.x, c.y - 96 * sc(c.y), 'OOF!', '#FFF1E0');
   }
 }
 function sprayTick(dt) {
@@ -614,7 +654,6 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  toast('Crew after your friend ' + FRIENDS.labels[friend.i] + '. Split them up.');
   if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
@@ -712,13 +751,12 @@ function soloHelp(c, effect) {
   const s = sc(t.y);
   const walk = { x:t.x + (c.x < t.x ? -48 : 48), y:t.y, t:2.4 };
   switch (h.ability) {
-    case Ability.DIRECT:   scareOff(t); floatText(t.x, t.y - 118 * s, 'Scared off', '#7CFF6B'); break;
-    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); floatText(t.x, t.y - 118 * s, 'Distracted', '#7CFF6B'); break;
+    case Ability.DIRECT:   scareOff(t); break;
+    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); break;
     case Ability.DOCUMENT:
       t.marked = true; S.time.delayedCall(5000, () => { t.marked = false; });
-      floatText(t.x, t.y - 118 * s, 'Filmed: slower, easier to hit', '#7CFF6B'); break;
+      break;
     case Ability.DELEGATE:
-      floatText(W / 2, H * 0.32, 'Staff on the way', '#FFF1E0');
       S.time.delayedCall(effect.arrivalMs, () => { if (isThreat(t)) { scareOff(t); floatText(t.x, t.y - 118 * sc(t.y), 'Staff stepped in', '#7CFF6B'); } });
       c.assist = { x:c.x < W / 2 ? -40 : W + 40, y:c.y, t:6, leave:true };
       return;
@@ -728,7 +766,6 @@ function soloHelp(c, effect) {
 function helperAct(c, effect) {
   const h = c.helper, info = HELPERS[h.ability], s = sc(c.y), k = game.crew;
   floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
-  narrate(k && k.isActive ? 'The ' + info.name + ' steps in. Watch the TEAM bar.' : 'The ' + info.name + ' steps in.');
   ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
   buzz('tag');
   if (effect.type === 'heal') {
@@ -795,7 +832,7 @@ function drawCrewHud(f) {
 function checkUnlocks() {
   for (const w of WEAPONS) {
     if ((game.simple && !EASY.tools.includes(w.id)) || toolHidden(w)) continue;
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + w.hint, 4000); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); if (!maybeCard('unlock-' + w.id)) toast(w.name + ' unlocked.'); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
@@ -815,7 +852,7 @@ function newGame() {
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
   game = { score:0, kosBy:{}, outcomes:{}, checkins:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:2, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
@@ -852,7 +889,7 @@ function step(dt) {
   const g = game;
   g.t += dt; g.time -= dt;
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
-  for (const [at, line] of [[40, 'Forty seconds to closing.'], [20, 'Twenty seconds. Guard her drink.'], [10, 'Ten seconds. Almost home.']])
+  for (const [at, line] of [[20, 'Last 20 seconds.']])
     if (g.time <= at && !g.beats[at]) { g.beats[at] = true; narrate(line, 2500); }
   if (SWIPE.enabled && !g.crowdCarded && g.t > 6 && g.chars.filter(c => c.kind === 'bystander' && c.state === 'wander').length >= SWIPE.crowdCard) { g.crowdCarded = true; maybeCard('swipe'); }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
@@ -928,7 +965,7 @@ function step(dt) {
         c.spikeT -= dt;
         if (c.spikeT <= 0) {
           c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40;
-          if (friendCatches(game.friends[c.drink])) { game.selfSaves++; friendSays(game.friends[c.drink], 'Hey, that\u2019s mine.'); floatText(c.x, c.y - 100 * sc(c.y), 'She caught him.', '#7CFF6B'); }
+          if (friendCatches(game.friends[c.drink])) { game.selfSaves++; friendSays(game.friends[c.drink], 'Hey, that\u2019s mine.'); }
           else { d.spiked = true; d.resetT = 4; hurtFriend(game.friends[c.drink], v.hit, v.reachedText, 'spiked'); }
         }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
@@ -1154,7 +1191,7 @@ class BarScene extends Phaser.Scene {
     this.neon.setAlpha(flick);
     drawDrinks();
     if (game) {
-      if (state === 'play') { const slow = game.slowT > 0 ? EPILOGUE.slowScale : 1; if (game.slowT > 0) game.slowT -= dt; step(dt * slow); updateHUD(); }
+      if (state === 'play') { const slow = game.slowT > 0 ? (game.slowK || EPILOGUE.slowScale) : 1; if (game.slowT <= 0) game.slowK = 0; if (game.slowT > 0) game.slowT -= dt; step(dt * slow); updateHUD(); }
       syncViews();
     }
     drawFx();
