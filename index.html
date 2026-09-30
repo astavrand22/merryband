@@ -65,8 +65,11 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 #bestStart{font-weight:600;color:var(--amber);margin:-8px 0 14px;min-height:0}
 #bestStart:empty{display:none}
 .newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
-.tips{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--plum)}
-.tips .label{margin-bottom:8px}
+.tips{border:2px solid var(--cyan);border-radius:14px;padding:12px 14px;margin:14px 0 12px;background:rgba(58,231,255,.07)}
+.reallabel{margin-bottom:10px}
+.reallabel span{display:inline-block;background:var(--cyan);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px}
+#againBtn{margin:12px 0 4px}
+#tipNext{background:transparent;border:2px solid var(--cyan);color:var(--cyan)}
 .resultcard{max-width:420px;overflow:hidden}
 .resultcard h2{font-size:26px;color:var(--amber);line-height:1.1}
 .bigscore{text-align:center;margin:10px 0 0}
@@ -91,10 +94,10 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .epiquip{font-weight:600;color:var(--amber);margin:2px 0 8px}
 .tip{padding:8px 0;border-top:1px solid var(--line)}
 .tip:first-of-type{border-top:0;padding-top:0}
-.tip b{display:block;font-size:15px;margin-bottom:3px;color:var(--cream)}
+.tip b{display:block;font-size:17px;margin-bottom:4px;color:var(--cyan)}
 .tip p{font-size:14px;line-height:1.45;opacity:.9}
-.tip a{font-size:12px;color:var(--amber)}
-.tips .more{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--amber)}
+.tip a{display:inline-block;margin-top:6px;font-size:12px;color:var(--cream);opacity:.8;border:1px solid var(--line);border-radius:999px;padding:2px 9px;text-decoration:none}
+.tips .more{display:inline-block;margin-top:8px;font-size:13px;font-weight:600;color:var(--cyan)}
 .cause{border:2px solid var(--flag);border-radius:14px;padding:14px;margin-bottom:12px;background:rgba(224,48,43,.08)}
 .cause h3{font-size:18px;margin-bottom:6px}
 .cause p{font-size:14px;line-height:1.45;margin-bottom:12px;opacity:.9}
@@ -183,8 +186,9 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
   <div class="card">
     <h2 id="endTitle">Everyone got home.</h2>
     <p class="sub" id="endSub"></p>
+    <button class="btn" id="againBtn">Play again</button>
     <div class="tips" id="tipsEnd">
-      <div class="label">Off the screen</div>
+      <div class="reallabel"><span>💡 In real life</span></div>
       <div id="tipList"></div>
       <button class="btn alt" id="tipNext" style="font-size:14px;padding:9px" type="button">Another tip</button>
       <a class="more" href="tips.html">All real-life tips</a>
@@ -208,7 +212,6 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <p>Real lawyers, for real survivors. Your money goes straight to the nonprofit through Every.org — we never touch a cent of it.</p>
       <button class="btn" id="giveBtn">Donate</button>
     </div>
-    <button class="btn alt" id="againBtn">Play again</button>
     <a class="btn alt" href="feedback.html" style="text-align:center;text-decoration:none">Suggest an idea</a>
     <p class="note">Need to talk to someone? <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
   </div>
