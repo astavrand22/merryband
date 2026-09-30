@@ -447,6 +447,7 @@ function checkInFriend(f) {
 function drawFriendBars(f) {
   if (!game.friends) return;
   for (const fr of game.friends) {
+    if (fr.out || fr.wellbeing >= FRIEND_BAR.showBelow) { if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000; continue; }   // only a shaken friend shows a bar
     const cx = drinks[fr.i].x - 20, y = friendHeadY() - 16, w = Math.round(29 * barK()), k = clamp(fr.wellbeing / 100, 0, 1);
     const col = k > 0.5 ? lerpHex(COLORS.amber, COLORS.spiked, (k - 0.5) * 2) : lerpHex(COLORS.flag, COLORS.amber, k * 2);
     if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000;
@@ -454,8 +455,8 @@ function drawFriendBars(f) {
     f.fillStyle(0x3A2A40, 1).fillRect(cx - w / 2, y, w, 5);
     f.fillStyle(col, 1).fillRect(cx - w / 2, y, w * k, 5);
     if (fr.flashT > 0) f.lineStyle(2, COLORS.cream, clamp(fr.flashT * 2, 0, 1)).strokeRoundedRect(cx - w / 2 - 2, y - 2, w + 4, 9, 3);
-    if (!fr.out && fr.wellbeing < 70 && WEAPONS[selected].mode === 'ask')   // Help is out and she's shaken: point at her
-      f.lineStyle(2, COLORS.cyan, 0.5 + 0.4 * Math.sin(S.time.now / 180)).strokeRoundedRect(cx - w / 2 - 5, y - 5, w + 10, 15, 6);
+    // She's shaken: the ring always pulses (brighter with Help selected) so you can see who needs you.
+    f.lineStyle(2, COLORS.cyan, (WEAPONS[selected].mode === 'ask' ? 0.5 : 0.3) + 0.4 * Math.sin(S.time.now / 180)).strokeRoundedRect(cx - w / 2 - 5, y - 5, w + 10, 15, 6);
   }
 }
 function useKnee() {
@@ -1144,6 +1145,8 @@ class BarScene extends Phaser.Scene {
     let start = null, last = null, swiping = false;
     const useTool = () => {
       const w = WEAPONS[selected];
+      // One tap on a shaken friend checks in on her, whatever tool is selected (no swapping mid-hunt).
+      if (w.mode !== 'ask') { const fr = friendAt(pointer.x, pointer.y); if (fr && fr.wellbeing < FRIEND_BAR.showBelow && !charAt(pointer.x, pointer.y)) { checkInFriend(fr); return; } }
       game.used.add(w.id);
       if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
     };
