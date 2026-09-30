@@ -821,6 +821,32 @@ function newGame() {
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
 }
 
+/* ---------- swipe to part the crowd ---------- */
+const distToSegment = (px, py, x1, y1, x2, y2) => {
+  const dx = x2 - x1, dy = y2 - y1, l2 = dx * dx + dy * dy;
+  const t = l2 ? clamp(((px - x1) * dx + (py - y1) * dy) / l2, 0, 1) : 0;
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+};
+let lastExcuse = -9;
+function partCrowd(x1, y1, x2, y2) {
+  game.streaks.push({ x1, y1, x2, y2, life:0.25, color:COLORS.cream });
+  let moved = 0;
+  for (const c of game.chars) {
+    if (c.kind !== 'bystander' || c.state !== 'wander' || c.assist || c.gone || c.shoveT > 0 || c.shoveId === game.swipeId) continue;
+    const s = sc(c.y), cy = c.y - 45 * s;
+    if (distToSegment(c.x, cy, x1, y1, x2, y2) > SWIPE.reach * s + 8) continue;
+    // Away from the finger, mostly sideways: people step out of the way, they don't walk toward the counter.
+    const ax = c.x - x2, ay = cy - y2, d = Math.hypot(ax, ay) || 1;
+    const dir = Math.abs(ax) < 4 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(ax);
+    c.shoveId = game.swipeId; c.shoveT = SWIPE.pushMs / 1000; c.shoveVx = dir * SWIPE.pushSpeed * W; c.shoveVy = clamp(ay / d, -1, 1) * SWIPE.pushSpeed * W * 0.35;
+    moved++;
+  }
+  if (moved) {
+    buzz('tag');
+    if (game.t - lastExcuse > 2.5) { lastExcuse = game.t; floatText(x2, y2 - 30, pick(['Excuse me!', 'Coming through', 'Sorry, one sec']), '#FFF1E0'); }
+  }
+}
+
 /* ---------- per-frame logic ---------- */
 function step(dt) {
   const g = game;
@@ -828,6 +854,7 @@ function step(dt) {
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
   for (const [at, line] of [[40, 'Forty seconds to closing.'], [20, 'Twenty seconds. Guard her drink.'], [10, 'Ten seconds. Almost home.']])
     if (g.time <= at && !g.beats[at]) { g.beats[at] = true; narrate(line, 2500); }
+  if (SWIPE.enabled && !g.crowdCarded && g.t > 6 && g.chars.filter(c => c.kind === 'bystander' && c.state === 'wander').length >= SWIPE.crowdCard) { g.crowdCarded = true; maybeCard('swipe'); }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
   const pace = PACE.start + (PACE.end - PACE.start) * prog;   // creeps start slow and speed up as the night goes on
   g.spawnT -= dt;
@@ -854,6 +881,13 @@ function step(dt) {
         const arrived = moveToward(c, a.x, a.y, 0.22 * W, dt);
         if (a.leave && arrived) c.gone = true;
         if (a.t <= 0) { c.assist = null; c.tx = rand(0.1, 0.9) * W; c.ty = horizonY + rand(0.06, 0.55) * depth; }
+        continue;
+      }
+      if (c.shoveT > 0) {   // stepping aside after a swipe
+        c.shoveT -= dt;
+        const depth2 = playerY - horizonY;
+        c.x = clamp(c.x + c.shoveVx * dt, 0.05 * W, 0.95 * W); c.y = clamp(c.y + c.shoveVy * dt, horizonY + 0.06 * depth2, playerY);
+        if (c.shoveT <= 0) { c.tx = clamp(c.x + Math.sign(c.shoveVx) * rand(20, 70), 0.1 * W, 0.9 * W); c.ty = c.y; }
         continue;
       }
       c.life -= dt;
@@ -1084,17 +1118,34 @@ class BarScene extends Phaser.Scene {
     window.addEventListener('resize', () => { this.scale.resize(window.innerWidth * DPR, window.innerHeight * DPR); layout(); });
     if (document.fonts) document.fonts.ready.then(() => { this.neon.setFontFamily("Bungee, 'Arial Black', Impact, sans-serif"); layout(); });
 
+    // A tap uses the selected tool when you lift your finger. A drag is a swipe that parts the crowd instead, so it never hits anyone.
+    let start = null, last = null, swiping = false;
+    const useTool = () => {
+      const w = WEAPONS[selected];
+      game.used.add(w.id);
+      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk(); else if (w.mode === 'checkin') useCheckIn();
+    };
     this.input.on('pointerdown', p => {
       if (state !== 'play') return;
       pointer.x = p.worldX; pointer.y = p.worldY; pointer.down = true;
       const w = WEAPONS[selected];
-      game.used.add(w.id);
-      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk(); else if (w.mode === 'checkin') useCheckIn();
+      if (!SWIPE.enabled || w.mode === 'cone' || w.mode === 'call') { useTool(); return; }   // hold-to-spray and the phone act at once
+      start = { x:p.worldX, y:p.worldY }; last = start; swiping = false;
     });
-    this.input.on('pointermove', p => { pointer.x = p.worldX; pointer.y = p.worldY; });
-    this.input.on('pointerup', () => pointer.down = false);
-    this.input.on('pointerupoutside', () => pointer.down = false);
-    this.input.on('gameout', () => pointer.down = false);
+    this.input.on('pointermove', p => {
+      pointer.x = p.worldX; pointer.y = p.worldY;
+      if (!start || state !== 'play') return;
+      if (!swiping && Math.hypot(p.worldX - start.x, p.worldY - start.y) > SWIPE.minDist) { swiping = true; game.swipeId = (game.swipeId || 0) + 1; }
+      if (swiping) { partCrowd(last.x, last.y, p.worldX, p.worldY); last = { x:p.worldX, y:p.worldY }; }
+    });
+    this.input.on('pointerup', p => {
+      pointer.down = false;
+      const tap = start && !swiping && state === 'play';
+      start = null; swiping = false;
+      if (tap) { pointer.x = p.worldX; pointer.y = p.worldY; useTool(); }
+    });
+    this.input.on('pointerupoutside', () => { pointer.down = false; start = null; swiping = false; });
+    this.input.on('gameout', () => { pointer.down = false; start = null; swiping = false; });
   }
 
   update(time, delta) {

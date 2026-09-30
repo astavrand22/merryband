@@ -90,11 +90,18 @@ const INTRO = { enabled:true, everyRun:false };
 // toolsAlways: keep the bar to `tools` in every run, not just the first (Pepper, Glitter and Fake Call stay parked).
 const EASY = { enabled:true, runs:1, tools:['knee', 'ask', 'checkin'], toolsAlways:true };
 const toolHidden = w => EASY.enabled && EASY.toolsAlways ? !EASY.tools.includes(w.id) : false;
+// Swipe to part the crowd: drag a finger across the floor and bystanders in the way step aside. A quick tap
+// still uses the selected tool (it fires when you lift, so a swipe never hits anyone).
+// minDist: pixels a drag must travel to count as a swipe. reach: how close to the finger (at person scale 1)
+// someone gets pushed. pushMs / pushSpeed: how long and how fast (fraction of screen width per second) they slide.
+// crowdCard: bystanders on screen at once before the one-time "Crowded? Swipe" card shows.
+const SWIPE = { enabled:true, minDist:14, reach:38, pushMs:450, pushSpeed:0.55, crowdCard:6 };
 // Pop-up cards for things that aren't a new creep or tool. Creep cards come from VILLAINS[k].intro, tool cards from WEAPONS.
 const CARDS = {
   youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick You ok?, then tap her to restore some of it (+40 points). It doesn\u2019t stop a creep, so use it in the gaps.' },
   ask:     { label:'Tip', icon:'\uD83D\uDE4B', title:'Get backup', text:'Two creeps at once. Pick Ask, tap a creep to aim, then tap a bystander for help. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff, Friend checks in on your most shaken friend.' },
   callout: { label:'Tip', icon:'\uD83D\uDC40', title:'Your friends notice things', text:'Some friends spot a creep just before his red flag and say so. It\u2019s a hint, not proof: still wait for the flag. Nervous friends sometimes point at someone harmless.' },
+  swipe:   { label:'Tip', icon:'\uD83D\uDC49', title:'Crowded? Swipe', text:'Drag your finger across the bar to part the crowd. People step aside. A quick tap still uses your tool.' },
   crew:    { label:'New', icon:'\uD83D\uDC65', title:'A crew', text:'Matching shirts mean a crew, and crews can\u2019t be hit. Pick Ask and tap a bystander for help to split them up before their shirts go red. Watch the red ring: it shows which friend they\u2019re after.' }
 };
 

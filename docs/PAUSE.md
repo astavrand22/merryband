@@ -23,6 +23,12 @@ unlock by score as before, and the cards introduce each one. Runs finished are c
 (`redflag.runs.v1`). The three-tool bar now stays that way in every run (`EASY.toolsAlways`); Pepper, Glitter and Fake Call are parked in `WEAPONS` and come back by setting it to false. Set `EASY.enabled = false` to skip all of this. Live narration is one short line at a time (the
 next action); longer explanations live in the pop-up cards and the pause screen.
 
+## Swipe to part the crowd
+Drag a finger across the floor and bystanders in the path step aside (each person once per swipe; they drift
+on again afterward). A quick tap still uses the selected tool, but it now fires when you lift your finger, so a
+swipe never hits anyone. Tuning is `SWIPE` in `src/data.js`. A one-time "Crowded? Swipe" card shows when six or
+more bystanders are on screen. Hold-to-spray and Fake Call (parked tools) still act on touch-down.
+
 ## Result pop-up
 When a run ends, a celebration pop-up (confetti on a win) sits over the end page: score, "Who you took out"
 (creeps by type, then one line per way you dealt with them: knee, bystander
