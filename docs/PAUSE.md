@@ -6,7 +6,7 @@ always shows the RAINN line (SAFETY.md: pause is always available). Resume with 
 
 **Pop-up cards.** The first time something new matters, the game holds and a card explains it: a new creep
 (`VILLAINS[k].intro`), a newly unlocked tool (`WEAPONS`), a friend's bar getting low ("You ok?"), two flagged creeps
-at once (Ask), the first friend call-out, and a crew when crews are on. Text for the last four lives in `CARDS`
+at once (Help), the first friend call-out, and a crew when crews are on. Text for the last four lives in `CARDS`
 in `src/data.js`. Cards queue if one is already up, and are never stacked over the pause screen.
 
 **Seen once.** Cards are remembered per browser in `localStorage` (`redflag.seen.v1`, no login, nothing sent
@@ -17,7 +17,7 @@ While held, tweens and the scene clock are paused. Helper cooldowns and staff ar
 time held, since the Phaser clock's `now` keeps advancing while paused.
 
 ## Simple first run
-A player's first run is kept light (`EASY` in `src/data.js`): the bar shows only Ask, You ok? and Knee, friends
+A player's first run is kept light (`EASY` in `src/data.js`): the bar shows only Help and Knee, friends
 have no call-outs or false alarms. From the second run everything is on, tools
 unlock by score as before, and the cards introduce each one. Runs finished are counted in this browser only
 (`redflag.runs.v1`). The three-tool bar now stays that way in every run (`EASY.toolsAlways`); Pepper, Glitter and Fake Call are parked in `WEAPONS` and come back by setting it to false. Set `EASY.enabled = false` to skip all of this. Live narration is one short line at a time (the

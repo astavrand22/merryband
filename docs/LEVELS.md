@@ -38,7 +38,7 @@ A 60-second survival round in a bar at closing time, built on Phaser with no ima
 | The Follower | 3 | 1.4–2.4 s | Walks slowly and steadily toward the friend who's had the worst night | He reaches her | 100 |
 | The Grabber | 2 | 1.0–2.0 s | Shakes for 0.9 s, then lunges fast at that friend | He reaches her | 120 |
 
-**Weapons.** Knee is free (and the bar order is Ask, You ok?, then Knee, Fake Call, Glitter, Pepper); the rest unlock by score within a run and reset on the next run. Number keys 1–6 switch weapons on a keyboard.
+**Weapons.** Knee is free (and the bar is Help, then Knee (Fake Call, Glitter and Pepper are parked)); the rest unlock by score within a run and reset on the next run. Number keys switch weapons on a keyboard.
 
 | Weapon | Input | Effect | Unlocks at |
 | --- | --- | --- | --- |
@@ -46,8 +46,7 @@ A 60-second survival round in a bar at closing time, built on Phaser with no ima
 | Glitter bomb | Tap | Area blast, 5 s recharge. Villains in it are covered in glitter, stunned for 0.7 s, flag immediately and take double damage | 1,200 |
 | Pepper spray | Hold and aim | Cone that damages and stuns flagged villains, stuns unflagged ones, and shakes the nearest friend if it hits a bystander | 700 |
 | Knee | Tap | 2 damage, 0.55 s cooldown. One tap drops a Spiker or Grabber, two a Follower | Start |
-| Ask | Tap a bystander | Ask for help (see CREW.md) | Start |
-| You ok? | Tap a friend | "You okay?" Restores 30 of her comfort bar. 8 s reload, doesn't touch creeps | Start |
+| Help | Tap a friend, or a bystander | Friend: "You okay?" restores 30 of her comfort bar and earns 40 points (8 s reload, doesn't touch creeps). Bystander: ask for backup (see CREW.md) | Start |
 
 **Scoring.** Hitting a villain before his flag costs 50 points and resets the combo. Every 3 knockouts in a row add 1 to the multiplier, up to 4x. Stopping a Spiker before he finishes counts as a save.
 

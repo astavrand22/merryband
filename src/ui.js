@@ -229,12 +229,12 @@ function fillTally(){
 }
 // One thing to try next time, chosen from how the run went.
 function nextTimeTip(g){
-  const ck=WEAPONS.find(w=>w.id==='checkin'), fill=(t,o)=>t.replace(/\{(\w+)\}/g,(m,k)=>o[k]);
+  const ck=WEAPONS.find(w=>w.id==='ask').checkin, fill=(t,o)=>t.replace(/\{(\w+)\}/g,(m,k)=>o[k]);
   const hurt=g.events.length>0||g.friends.some(f=>f.wellbeing<100);
   if(!g.checkins&&hurt) return fill(NEXT_TIME.checkin,{pts:ck.points});
   if(g.earlyHits>=1) return fill(NEXT_TIME.early,{n:g.earlyHits}).replace('creep(s)',g.earlyHits===1?'creep':'creeps');
   if(g.bystanderHits) return NEXT_TIME.bystander;
-  if(!g.used.has('ask')&&g.kos+Object.keys(g.outcomes).length>0) return NEXT_TIME.ask;
+  if(!g.helps&&g.kos+Object.keys(g.outcomes).length>0) return NEXT_TIME.ask;
   return NEXT_TIME.combo;
 }
 function confetti(){
