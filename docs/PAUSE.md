@@ -22,3 +22,10 @@ have no call-outs or false alarms. From the second run everything is on, tools
 unlock by score as before, and the cards introduce each one. Runs finished are counted in this browser only
 (`redflag.runs.v1`). Set `EASY.enabled = false` to skip this. Live narration is one short line at a time (the
 next action); longer explanations live in the pop-up cards and the pause screen.
+
+## Result pop-up
+When a run ends, a celebration pop-up (confetti on a win) sits over the end page: score, "Who you took out"
+(creeps by type, then one line per way you dealt with them: knee, bystander
+help, friend handled it), and one "Try next time" suggestion. Lines only appear for what you actually used
+(`TALLY_LINES`, `NEXT_TIME` in `src/data.js`). "Continue" reveals the page behind it: tips, share, donation
+and play again. Checking in on a friend (You ok?) now earns points (`points` on the tool, 40).

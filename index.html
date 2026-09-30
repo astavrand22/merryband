@@ -67,6 +67,19 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .newbest{display:inline-block;margin-left:6px;background:var(--neon);color:var(--ink);font-weight:800;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;vertical-align:middle}
 .tips{border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:var(--plum)}
 .tips .label{margin-bottom:8px}
+.resultcard{max-width:420px;overflow:hidden}
+.resultcard h2{font-size:26px;color:var(--amber);line-height:1.1}
+.bigscore{text-align:center;margin:10px 0 0}
+.bigscore b{font-size:56px;line-height:1;color:var(--cream);text-shadow:3px 3px 0 var(--brand)}
+.bigscore .newbest{display:block;width:max-content;margin:6px auto 0}
+.newbest.hidden,.taken.hidden{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.chip{background:var(--plum);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700}
+.nexttime{background:var(--plum);border:2px solid var(--amber);border-radius:12px;padding:10px 12px;margin:12px 0 14px}
+.nexttime p{font-size:14px;line-height:1.4}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:8px;height:12px;border-radius:2px;opacity:.9;animation:fall linear forwards}
+@keyframes fall{to{top:105%;margin-left:30px}}
 .epis{margin:0 0 16px}
 .epis.hidden{display:none}
 .epi{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.4}
@@ -170,17 +183,6 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
   <div class="card">
     <h2 id="endTitle">Everyone got home.</h2>
     <p class="sub" id="endSub"></p>
-    <div class="stats">
-      <div class="stat"><b id="stScore">0</b><small>Score</small></div>
-      <div class="stat"><b id="stKos">0</b><small>Creeps down</small></div>
-      <div class="stat"><b id="stSaves">0</b><small>Saves</small></div>
-      <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
-    </div>
-    <div class="epis hidden" id="epiBox">
-      <div class="label">Who you took out</div>
-      <div class="epiquip" id="epiQuip"></div>
-      <div id="epiList"></div>
-    </div>
     <div class="tips" id="tipsEnd">
       <div class="label">Off the screen</div>
       <div id="tipList"></div>
@@ -209,6 +211,28 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
     <button class="btn alt" id="againBtn">Play again</button>
     <a class="btn alt" href="feedback.html" style="text-align:center;text-decoration:none">Suggest an idea</a>
     <p class="note">Need to talk to someone? <a href="https://rainn.org" target="_blank" rel="noopener">rainn.org</a> or 800-656-4673.</p>
+  </div>
+</div>
+
+<div class="overlay popup hidden" id="resultScreen" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+  <div class="card panel resultcard">
+    <div class="confetti" id="rConfetti" aria-hidden="true"></div>
+    <h2 id="rTitle">Everyone got home.</h2>
+    <p class="sub" id="rSub"></p>
+    <div class="bigscore"><b id="rScore">0</b><span class="newbest hidden" id="rNew">New best</span></div>
+    <div class="stats">
+      <div class="stat"><b id="rKos">0</b><small>Creeps down</small></div>
+      <div class="stat"><b id="rSaves">0</b><small>Saves</small></div>
+      <div class="stat best"><b id="rBest">0</b><small>Best</small></div>
+    </div>
+    <div class="taken hidden" id="rTakenOut">
+      <div class="label">Who you took out</div>
+      <div class="epiquip" id="rQuip"></div>
+      <div class="chips" id="rChips"></div>
+      <div id="rTally"></div>
+    </div>
+    <div class="nexttime"><div class="label">Try next time</div><p id="rNext"></p></div>
+    <button class="btn" id="rContinue">Continue</button>
   </div>
 </div>
 
