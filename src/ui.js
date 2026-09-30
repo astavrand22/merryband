@@ -178,9 +178,10 @@ function buildPauseList(){
   };
   add('🚩','Red flag','Creeps show a red flag on their clothes just before they act. Wait for it, then hit them. Hitting early loses points.');
   add('❤️','Your friends','Stop each creep before he reaches a friend or her drink. If a friend’s bar runs out, the night is over.');
+  add('\uD83D\uDC49','Move the crowd','Swipe your finger across the floor to move people aside. A quick tap still uses your tool.');
   for(const w of WEAPONS) if(game&&game.unlocked.has(w.id)) add(w.icon,w.name,w.how||w.hint);
   if(game) for(const k of game.introSeen){ const c=cardFor('creep-'+k); if(c) add(c.icon,c.title,c.text,c.dot) }
-  for(const id of Object.keys(CARDS)) if(seenMem.has(id)) add(CARDS[id].icon,CARDS[id].title,CARDS[id].text);
+  for(const id of Object.keys(CARDS)) if(id!=='swipe'&&seenMem.has(id)) add(CARDS[id].icon,CARDS[id].title,CARDS[id].text);
 }
 function pauseGame(){
   if(state!=='play') return;
