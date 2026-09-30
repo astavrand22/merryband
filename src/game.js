@@ -245,20 +245,22 @@ function buzz(kind) {
 function applyHit(c, dmg) {
   if (c.state === 'ko' || c.state === 'bail') return;
   const s = sc(c.y);
-  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; hurtFriend(nearestFriend(c.x), FRIENDS.bystanderHit, 'That\u2019s just a girl trying to leave.', 'bystander'); return; }
+  if (c.kind === 'bystander') { if (c.hitCool > 0) return; c.hitCool = 1.2; game.bystanderHits++; hurtFriend(nearestFriend(c.x), FRIENDS.bystanderHit, 'That\u2019s just a girl trying to leave.', 'bystander'); return; }
   if (!c.flagged) {
     if (c.hitCool > 0) return;
-    c.hitCool = 0.8; game.score = Math.max(0, game.score - 50); game.combo = 0;
+    c.hitCool = 0.8; game.earlyHits++; game.score = Math.max(0, game.score - 50); game.combo = 0;
     floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
-  if (c.hp <= 0) ko(c); else buzz('hit');
+  if (c.hp <= 0) ko(c, 'knee'); else buzz('hit');
 }
-function ko(c) {
+// How each creep went down, for the result pop-up: knee, spray, call, help, plus glitter-bombed and friend saves.
+function tally(k) { game.outcomes[k] = (game.outcomes[k] || 0) + 1; }
+function ko(c, by = 'knee') {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
-  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind); game.kosBy[c.kind] = (game.kosBy[c.kind] || 0) + 1;
+  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind); game.kosBy[c.kind] = (game.kosBy[c.kind] || 0) + 1; tally(by);
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -363,7 +365,7 @@ function falseAlarm() {
 const friendCatches = f => Math.random() < f.trait.stepIn;
 // An assertive friend handles it herself: he backs off, she loses nothing, and you get no points for it.
 function friendShutsItDown(c, f, text) {
-  game.selfSaves++;
+  game.selfSaves++; tally('friend');
   friendSays(f, 'Back off.');
   floatText(c.x, c.y - 100 * sc(c.y), text, '#7CFF6B');
   c.state = 'bail'; c.tx = c.x < W / 2 ? -40 : W + 40;
@@ -396,6 +398,8 @@ function useCheckIn() {
   if (f.wellbeing >= 100) { floatText(x, y, 'She\u2019s good.', '#FFF1E0'); return; }
   game.cool.checkin = w.cooldown;
   f.wellbeing = Math.min(100, f.wellbeing + w.heal);
+  game.checkins++; game.score += w.points; checkUnlocks();
+  floatText(x, y - 46, '+' + w.points, '#F4B942');
   ringFx(x, horizonY - 40 * barK(), 34 * barK(), COLORS.spiked);
   buzz('tag');
   floatText(x, y - 24, 'You okay? \u2665', '#7CFF6B');
@@ -439,7 +443,7 @@ function sprayTick(dt) {
     if (Math.abs(da) > half + 14 / Math.max(d, 1)) continue;
     if (c.kind === 'bystander') applyHit(c, 0);
     else if (!c.flagged) c.stun = Math.max(c.stun, 0.3);
-    else { c.stun = 0.5; c.hp -= w.dps * dt * dmgMult(c); if (c.hp <= 0) ko(c); else buzz('hit'); }
+    else { c.stun = 0.5; c.hp -= w.dps * dt * dmgMult(c); if (c.hp <= 0) ko(c, 'spray'); else buzz('hit'); }
   }
 }
 function useGlitter() {
@@ -461,6 +465,7 @@ function useGlitter() {
 // stuck wiping his face for a moment.
 function glitterBomb(c) {
   const s = sc(c.y), v = c.view, first = !c.tagged;
+  if (first) tally('glitter');
   c.tagged = true;
   c.stun = Math.max(c.stun, 0.7); c.bombT = 0.7;
   for (let k = 0; k < 6; k++) S.fx.glitterRain.explode(7, c.x + rand(-16, 16) * s, c.y - rand(105, 125) * s);
@@ -522,7 +527,8 @@ const CALL_LINES = [
   'Babe your Uber\u2019s here. And so am I.'
 ];
 // A flagged creep gives up and walks off for half points (a Spiker who bails counts as a save).
-function scareOff(c) {
+function scareOff(c, by = 'help') {
+  tally(by);
   const s = sc(c.y), v = VILLAINS[c.kind];
   const save = c.kind === 'spiker';
   const pts = Math.round(v.points / 2) + (save ? Math.round(v.saveBonus / 2) : 0);
@@ -544,7 +550,7 @@ function fakeCall() {
     const s = sc(c.y), v = VILLAINS[c.kind];
     if (c.kind === 'grabber') { c.stun = Math.max(c.stun, w.freeze); frozen++; floatText(c.x, c.y - 100 * s, 'Somebody\u2019s watching now.', '#FFF1E0'); continue; }
     if (c.kind === 'spiker' && c.state === 'leave') continue;   // already done his damage
-    scareOff(c);
+    scareOff(c, 'call');
     bailed++;
   }
   if (!bailed && !frozen) floatText(W / 2, playerY - 90, 'Nobody to spook', '#FFF1E0');
@@ -808,7 +814,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
-  game = { score:0, kosBy:{}, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  game = { score:0, kosBy:{}, outcomes:{}, checkins:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });

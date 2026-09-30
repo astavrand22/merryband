@@ -52,14 +52,32 @@ const VILLAINS = {
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, hit:34, reachedText:'He got to her.',
               outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
-// End-screen tally ("Who you took out"): a one-line joke under the heading, picked by total creeps down.
-// Each entry applies from `min` creeps up; the last one that fits wins.
+// Result pop-up: a joke about the night, picked by total creeps down (the last `min` that fits wins), and one line
+// per way you dealt with creeps, so it only mentions what you actually used. {n} is the count.
 const TALLY = [
   { min:1,  text:'One creep. It\u2019s a start.' },
   { min:3,  text:'The bar has a few fewer creeps in it.' },
   { min:6,  text:'The bar is honestly nicer now.' },
   { min:10, text:'Creeps are telling each other about you. In a support group.' }
 ];
+const TALLY_LINES = {
+  knee:    { icon:'\uD83E\uDDB5', one:'You kneed 1 creep in the groin.',       many:'You kneed {n} creeps in the groin.',      fate:'Thank you for a world with fewer creep descendants.' },
+  spray:   { icon:'\uD83C\uDF36\uFE0F', one:'You pepper-sprayed 1 creep.',      many:'You pepper-sprayed {n} creeps.',           fate:'Eyes will recover. Reputations won\u2019t.' },
+  glitter: { icon:'\u2728',       one:'1 creep got glitter-bombed.',           many:'{n} creeps got glitter-bombed.',          fate:'It never comes off.' },
+  call:    { icon:'\uD83D\uDCF1', one:'1 creep ran off after a fake call.',   many:'{n} creeps ran off after a fake call.',   fate:'Nobody was ever on the phone.' },
+  help:    { icon:'\uD83D\uDE4B', one:'A bystander backed you up on 1 creep.', many:'Bystanders backed you up on {n} creeps.', fate:'Bars are full of good people.' },
+  friend:  { icon:'\uD83D\uDCAA', one:'A friend handled 1 creep herself.',     many:'Friends handled {n} creeps themselves.',  fate:'Do not mess with her.' }
+};
+// "Next time": one suggestion picked from how the run went, first match wins (see nextTimeTip in ui.js).
+// {pts} is the check-in bonus, {n} a count from the run.
+const NEXT_TIME = {
+  checkin:  'You never asked how a friend was doing. Pick You ok? and tap her: it restores her bar and earns +{pts} points each time.',
+  early:    'You hit {n} creep(s) before the red flag, and each cost 50 points. Wait for the flag, then hit.',
+  bystander:'You hit a bystander, which shakes a friend. Only hit a creep once his flag is up.',
+  ask:      'You never asked a bystander for help. Pick Ask and tap one: it scares a creep off for half points with no risk.',
+  unused:   'You unlocked {tool} but never used it. Give it a try.',
+  combo:    'Chain takedowns without a miss: every three in a row raises your multiplier, up to x4.'
+};
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
 // PACE: how fast flagged creeps close in, as a multiplier on their speed below. Starts gentle and
@@ -76,7 +94,7 @@ const INTRO = { enabled:true, everyRun:false };
 const EASY = { enabled:true, runs:1, tools:['knee', 'ask', 'checkin'] };
 // Pop-up cards for things that aren't a new creep or tool. Creep cards come from VILLAINS[k].intro, tool cards from WEAPONS.
 const CARDS = {
-  youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick You ok?, then tap her to restore some of it. It doesn\u2019t stop a creep, so use it in the gaps.' },
+  youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick You ok?, then tap her to restore some of it (+40 points). It doesn\u2019t stop a creep, so use it in the gaps.' },
   ask:     { label:'Tip', icon:'\uD83D\uDE4B', title:'Get backup', text:'Two creeps at once. Pick Ask, tap a creep to aim, then tap a bystander for help. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff, Friend checks in on your most shaken friend.' },
   callout: { label:'Tip', icon:'\uD83D\uDC40', title:'Your friends notice things', text:'Some friends spot a creep just before his red flag and say so. It\u2019s a hint, not proof: still wait for the flag. Nervous friends sometimes point at someone harmless.' },
   crew:    { label:'New', icon:'\uD83D\uDC65', title:'A crew', text:'Matching shirts mean a crew, and crews can\u2019t be hit. Pick Ask and tap a bystander for help to split them up before their shirts go red. Watch the red ring: it shows which friend they\u2019re after.' }
@@ -91,7 +109,7 @@ const FLAG = { subtlety: [0.2, 0.85], obvious: '#FF2E2A', subtle: '#9E1B1B' };
 // help: true puts the weapon in the left group of the bar (backup for your friends), before the divider.
 const WEAPONS = [
   { id:'ask', help:true,      name:'Ask',       icon:'🙋', mode:'ask',                           unlock:0,    how:'Tap a bystander to get help against a flagged creep. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff. A Friend checks in on your most shaken friend and restores some of her bar. Tap a creep first to aim.', hint:'Tap a bystander for help.' },
-  { id:'checkin', name:'You ok?', icon:'💬', mode:'checkin', cooldown:8, heal:30, unlock:0, help:true, how:'Tap a friend and ask if she\u2019s okay. Restores some of her bar, but doesn\u2019t stop a creep, so use it in the gaps. 8 s reload.', hint:'Tap a friend.' },
+  { id:'checkin', name:'You ok?', icon:'💬', mode:'checkin', cooldown:8, heal:30, points:40, unlock:0, help:true, how:'Tap a friend and ask if she\u2019s okay. Restores some of her bar and earns 40 points, but doesn\u2019t stop a creep, so use it in the gaps. 8 s reload.', hint:'Tap a friend.' },
   { id:'knee',     name:'Knee',      icon:'🦵', mode:'tap',  dmg:2,   cooldown:0.55, unlock:0,    how:'One hard hit on a flagged creep: drops a Spiker or Grabber in one tap, a Follower in two. Always ready. Best as your finisher.', hint:'One hard hit. Your finisher.' },
   { id:'call',     name:'Fake Call', icon:'📱', mode:'call', cooldown:15,             unlock:1700, how:'Phone rings: flagged Followers and Spikers back off (points!), Grabbers freeze. Best when a Spiker nears a drink or several close in. 15 s reload.', hint:'Scares them off.', freeze:1.5 },
   { id:'glitter',  name:'Glitter',   icon:'✨', mode:'area', cooldown:5,              unlock:1200, how:'Tap an area: creeps inside show their flag, freeze briefly, take double damage. Bystanders safe. Best to spot hidden creeps or set up a kill. 5 s reload.', hint:'Exposes and stuns.' },

@@ -205,38 +205,65 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden) pauseGame
 
 function startGame(){
   resetHold(); cardQueue=[]; cardOpen=null; $('pauseScreen').classList.add('hidden'); $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('Wait for the red flag, then hit him.',4000);
-  $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
+  $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden'); closeResult();
   $('signNote').textContent='';
 }
-// "Who you took out": one row per kind of creep you put down, with a count and a fate.
-function showEpilogues(){
-  const list=$('epiList'); list.innerHTML='';
-  const kinds=Object.keys(VILLAINS).filter(k=>game.kosBy[k]);
-  kinds.forEach(k=>{
-    const v=VILLAINS[k], n=game.kosBy[k];
+// Result pop-up. "Who you took out": creeps by type, then one line per way you dealt with them.
+function fillTally(){
+  const chips=$('rChips'); chips.innerHTML='';
+  for(const k of Object.keys(VILLAINS)){ const n=game.kosBy[k]; if(!n) continue; const v=VILLAINS[k]; const c=document.createElement('span'); c.className='chip'; c.textContent=(v.icon?v.icon+' ':'')+v.name.replace(/^The /,'')+' ×'+n; chips.appendChild(c) }
+  const list=$('rTally'); list.innerHTML='';
+  for(const [k,t] of Object.entries(TALLY_LINES)){
+    const n=game.outcomes[k]||0; if(!n) continue;
     const d=document.createElement('div'); d.className='epi';
-    const top=document.createElement('div'); top.className='epitop';
-    const name=document.createElement('b'); name.textContent=(v.icon?v.icon+' ':'')+v.name;
-    const cnt=document.createElement('span'); cnt.className='epin'; cnt.textContent='×'+n;
-    top.append(name,cnt); d.appendChild(top);
-    if(v.epilogue){ const f=document.createElement('div'); f.className='epif'; f.textContent=v.epilogue; d.appendChild(f) }
-    list.appendChild(d);
-  });
+    const b=document.createElement('b'); b.textContent=t.icon+' '+(n===1?t.one:t.many.replace('{n}',n));
+    const f=document.createElement('div'); f.className='epif'; f.textContent=t.fate;
+    d.append(b,f); list.appendChild(d);
+  }
   const q=TALLY.filter(t=>game.kos>=t.min).pop();
-  $('epiQuip').textContent=q?q.text:'';
-  $('epiBox').classList.toggle('hidden',!kinds.length);
+  $('rQuip').textContent=q?q.text:'';
+  $('rTakenOut').classList.toggle('hidden',!game.kos&&!Object.keys(game.outcomes).length);
 }
+// One thing to try next time, chosen from how the run went.
+function nextTimeTip(g){
+  const ck=WEAPONS.find(w=>w.id==='checkin'), fill=(t,o)=>t.replace(/\{(\w+)\}/g,(m,k)=>o[k]);
+  const hurt=g.events.length>0||g.friends.some(f=>f.wellbeing<100);
+  if(!g.checkins&&hurt) return fill(NEXT_TIME.checkin,{pts:ck.points});
+  if(g.earlyHits>=1) return fill(NEXT_TIME.early,{n:g.earlyHits}).replace('creep(s)',g.earlyHits===1?'creep':'creeps');
+  if(g.bystanderHits) return NEXT_TIME.bystander;
+  if(!g.used.has('ask')&&g.kos+Object.keys(g.outcomes).length>0) return NEXT_TIME.ask;
+  const idle=WEAPONS.find(w=>g.unlocked.has(w.id)&&!g.used.has(w.id)&&w.unlock>0);
+  if(idle) return fill(NEXT_TIME.unused,{tool:idle.name});
+  return NEXT_TIME.combo;
+}
+function confetti(){
+  const box=$('rConfetti'); box.innerHTML='';
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols=['#FF4F9A','#F4B942','#3AE7FF','#7CFF6B','#E0302B','#FFF1E0'];
+  for(let i=0;i<46;i++){ const p=document.createElement('i'); p.style.left=Math.random()*100+'%'; p.style.background=cols[i%cols.length]; p.style.animationDelay=(Math.random()*0.9)+'s'; p.style.animationDuration=(2.2+Math.random()*1.6)+'s'; p.style.transform='rotate('+Math.random()*360+'deg)'; box.appendChild(p) }
+}
+function showResult(win,rec){
+  $('rTitle').textContent=(win?'🎉 ':'')+(win?'Everyone got home.':'Rough night.');
+  $('rSub').textContent=win?'You looked out for each other.':'A friend had to call it — and they’re still out there. Run it back.';
+  $('rScore').textContent=game.score.toLocaleString('en-US');
+  $('rNew').classList.toggle('hidden',!rec.isNew);
+  $('rKos').textContent=game.kos; $('rSaves').textContent=game.saves; $('rBest').textContent=rec.best;
+  fillTally(); $('rNext').textContent=nextTimeTip(game);
+  $('resultScreen').classList.toggle('win',win); confetti();
+  $('resultScreen').classList.remove('hidden'); $('rContinue').focus();
+}
+function closeResult(){ $('resultScreen').classList.add('hidden') }
+$('rContinue').onclick=closeResult;
+document.addEventListener('keydown',e=>{ if(!$('resultScreen').classList.contains('hidden')&&(e.key==='Escape'||e.key==='Enter')){ e.preventDefault(); closeResult() } });
 function endGame(win){
   if(state!=='play') return; state='end'; countRun(); pointer.down=false; $('narr').classList.remove('show');
   $('endTitle').textContent=win?'Everyone got home.':'Rough night.';
   $('endSub').textContent=win?'You looked out for each other.':'A friend had to call it \u2014 and they\u2019re still out there. Run it back.';
-  $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
-  const rec=recordScore(); $('stBest').textContent=rec.best;
-  if(rec.isNew){ const nb=document.createElement('span'); nb.className='newbest'; nb.textContent='New best'; $('endTitle').appendChild(nb) }
-  trackRunEnd(game,win); showBestStart(); showEpilogues(); showEndTips();
+  const rec=recordScore();
+  trackRunEnd(game,win); showBestStart(); showEndTips();
   $('causeTitle').textContent=CAUSE.issue; $('causeBlurb').textContent=CAUSE.blurb; $('signBtn').textContent=CAUSE.cta;
   lastRun={win,score:game.score,kos:game.kos,saves:game.saves,epi:[...game.faced].map(k=>VILLAINS[k]&&VILLAINS[k].epilogue).filter(Boolean)}; $('shareNote').textContent=''; prepCard();
-  setTimeout(()=>$('endScreen').classList.remove('hidden'),700);
+  setTimeout(()=>{ $('endScreen').classList.remove('hidden'); showResult(win,rec) },700);
 }
 $('startBtn').onclick=startGame;
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&state!=='play'&&!$('startScreen').classList.contains('hidden')) startGame() });
