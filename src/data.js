@@ -1,6 +1,6 @@
 /* ============ RedFlag tuning: edit these to add villains, weapons, causes ============
    Plain JavaScript (not JSON) so the game still runs when index.html is opened straight from disk. */
-const CONFIG = { levelSeconds: 60 };
+const CONFIG = { levelSeconds: 120 };
 
 // How the room is framed. Most of the action is at the counter, so the bar gets a bigger share of the screen.
 // horizon: where the counter sits, as a fraction of screen height (the floor is everything below it).
@@ -48,7 +48,7 @@ const VILLAINS = {
   spiker:   { name:'The Spiker',   behavior:'target-drink', hp:2, tell:[1.2,2.2], speed:0.11, spikeTime:1.4, points:150, saveBonus:100, hit:34, reachedText:'He got something in her drink.',
               outfit:'#A070FF', intro:'He heads for a drink at the bar. Wait for his red flag, then hit him before he reaches it. Two hits, or one Knee. In the way? Swipe across the floor to move people aside.', icon:'🍸', who:'went for her drink', tellText:'Going for a drink', epilogue:'Banned from every bar in town.', pain:['I was just... guarding it!', 'I was only checking the ice!'], subtlety:[0.4,0.9] },
   follower: { name:'The Follower', behavior:'approach',     hp:3, tell:[1.4,2.4], speed:0.075, points:100, hit:34, reachedText:'He wouldn’t leave her alone.',
-              outfit:'#F2B233', intro:'He picks one of your friends and keeps coming. Wait for his red flag, then stop him before he reaches her. Three hits, or two Knees.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', pain:['We were just walking the same way!', 'It\u2019s a free bar!'], subtlety:[0.15,0.7] },
+              outfit:'#F2B233', intro:'He picks one of your friends and keeps coming. Wait for his red flag, then stop him before he reaches her. Three hits, or two Knees. Or ask someone nearby: Help scares him off.', icon:'👣', who:'followed her', tellText:'Following her', epilogue:'Now follows a GPS that\u2019s always wrong.', pain:['We were just walking the same way!', 'It\u2019s a free bar!'], subtlety:[0.15,0.7] },
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, hit:34, reachedText:'He got to her.',
               outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', pain:['Personal space is a social construct!', 'It\u2019s called being spontaneous!'], subtlety:[0.1,0.55] }
 };
@@ -81,7 +81,8 @@ const NEXT_TIME = {
 // Big-face moment: every so often when you put a creep down, his pained face fills the screen for a beat with
 // something petty and douchey to say. chance rises by `ramp` for each takedown without one, so it feels
 // occasional but you do see it. minKos: takedowns before the first can show. minGap is game seconds between them; the game slows to slowK while it shows.
-const BIGFACE = { enabled:true, chance:0.05, ramp:0.06, minGap:18, minKos:3, ms:2000, slowK:0.1,
+// PARKED for a later level: set enabled:true to bring the big-face takedowns back. All the code and lines are kept.
+const BIGFACE = { enabled:false, chance:0.05, ramp:0.06, minGap:18, minKos:3, ms:2000, slowK:0.1,
   lines:['Do you know who my dad is?!', 'I\u2019m literally a nice guy!!', 'I have a podcast about this!', 'I\u2019m one of the GOOD ones!',
     'I\u2019m telling my group chat!', 'I was going to buy you a drink!', 'My lawyer is my mom\u2019s friend!', 'I\u2019m a feminist! I have the tote bag!',
     'It was a joke! Relax!', 'My therapist will hear about this.', 'I follow so many women on Instagram!', 'This is going on my Yelp review.'] };
@@ -90,9 +91,10 @@ const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200
 // PACE: how fast flagged creeps close in, as a multiplier on their speed below. Starts gentle and
 // ramps linearly to `end` by the last second. 1 = the speed written on the villain.
 const PACE = { start: 0.65, end: 1.35 };
-const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.15, grabber:0.15 };
+const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.3, grabber:0.15 };
 // Creeps arrive one type at a time: seconds into the run before each type can spawn.
-const STAGES = { spiker:0, follower:18, grabber:36 };
+// Level 1: the Follower alone to learn on, then the Spiker at 30 s. The Grabber is saved for a later level.
+const STAGES = { follower:0, spiker:30, grabber:1e9 };
 // A short explainer pops up (and pauses the game) the first time each creep, tool or situation comes up.
 // Each is shown once per browser (see ui.js); everyRun:true brings the creep cards back every run.
 const INTRO = { enabled:true, everyRun:false };
@@ -111,7 +113,6 @@ const SWIPE = { enabled:true, minDist:14, reach:38, pushMs:450, pushSpeed:0.55, 
 const CARDS = {
   youok:   { label:'Tip', icon:'\uD83D\uDCAC', title:'Check in on a friend', text:'A friend\u2019s bar is getting low. Pick Help, then tap her to restore some of it (+40 points). It doesn\u2019t stop a creep, so use it in the gaps.' },
   ask:     { label:'Tip', icon:'\uD83D\uDE4B', title:'Get backup', text:'Two creeps at once. Pick Help, tap a creep to aim, then tap a bystander for backup. Bouncer scares him off, Regular stuns him, Phone slows him, Waiter fetches staff, Friend checks in on your most shaken friend.' },
-  callout: { label:'Tip', icon:'\uD83D\uDC40', title:'Your friends notice things', text:'Some friends spot a creep just before his red flag and say so. It\u2019s a hint, not proof: still wait for the flag. Nervous friends sometimes point at someone harmless.' },
   swipe:   { label:'Tip', icon:'\uD83D\uDC49', title:'Crowded? Swipe', text:'Drag your finger across the bar to part the crowd. People step aside. A quick tap still uses your tool.' },
   crew:    { label:'New', icon:'\uD83D\uDC65', title:'A crew', text:'Matching shirts mean a crew, and crews can\u2019t be hit. Pick Help and tap a bystander for backup to split them up before their shirts go red. Watch the red ring: it shows which friend they\u2019re after.' }
 };

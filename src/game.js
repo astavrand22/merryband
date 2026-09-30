@@ -122,9 +122,9 @@ function setArms(v, pose) {
 
 function makeChar(kind) {
   const depth = playerY - horizonY, fromLeft = Math.random() < 0.5;
-  const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + rand(0.08, 0.3) * depth, dir:fromLeft ? 1 : -1,
+  const c = { kind, x:fromLeft ? -24 : W + 24, y:horizonY + (kind === 'spiker' ? rand(0.5, 0.8) : rand(0.08, 0.3)) * depth, dir:fromLeft ? 1 : -1,
     outfit:(VILLAINS[kind] && VILLAINS[kind].outfit) ? hex(VILLAINS[kind].outfit) : pick(OUTFITS), skin:dealSkin(kind === 'bystander' ? 'bystander' : 'villain'), hair:pick(HAIRS),
-    state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + rand(0.06, 0.45) * depth,
+    state:'wander', tx:rand(0.12, 0.88) * W, ty:horizonY + (kind === 'spiker' ? rand(0.5, 0.85) : rand(0.06, 0.45)) * depth,
     hitCool:0, stun:0, flagged:false, tagged:false, life:rand(6, 10) };
   c.male = kind === 'bystander' ? Math.random() < LOOKS.bystanderMaleChance : Math.random() >= LOOKS.villainFemaleChance;
   c.beard = c.male && Math.random() < LOOKS.beardChance;
@@ -385,7 +385,6 @@ function noticeCheck(c) {
   const f = live.reduce((b, o) => Math.abs(drinks[o.i].x - c.x) < Math.abs(drinks[b.i].x - c.x) ? o : b);
   if (c.tellT > f.trait.notice) return;
   c.noticed = true;
-  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -399,7 +398,6 @@ function falseAlarm() {
   const seen = game.alarmSkins, least = Math.min(...people.map(p => seen[p.skin] || 0));
   const f = pick(fs), c = pick(people.filter(p => (seen[p.skin] || 0) === least));
   seen[c.skin] = (seen[c.skin] || 0) + 1;
-  maybeCard('callout');
   friendSays(f, pick(f.trait.lines));
   ringFx(c.x, c.y - 45 * sc(c.y), 30 * sc(c.y) + 8, COLORS.amber);
 }
@@ -737,11 +735,10 @@ function useAsk() {
   }
   const h = c.helper;
   if (!h || c.assist) return;
-  if (h.ability === Ability.DELAY && !game.friends.some(f => f.wellbeing < 100)) { floatText(c.x, c.y - 100 * s, 'No need yet.', '#FFF1E0'); return; }
-  if (!k && h.ability !== Ability.DELAY && !nearestThreat(c)) { floatText(c.x, c.y - 100 * s, 'All quiet.', '#FFF1E0'); return; }
+  if (!k && !nearestThreat(c)) { floatText(c.x, c.y - 100 * s, 'All quiet.', '#FFF1E0'); return; }
   h.specificAsk();
-  const effect = h.tryAct(S.time.now);
-  if (!effect) { floatText(c.x, c.y - 100 * s, 'Hang on…', '#FFF1E0'); return; }
+  // Anyone you ask steps in: no waiting for them to warm up.
+  const effect = h.tryAct(S.time.now) || { type:'cohesion', amount:0, source:h };
   game.helps++;
   helperAct(c, effect);
 }
@@ -751,19 +748,9 @@ function soloHelp(c, effect) {
   const t = game.focus && isThreat(game.focus) ? game.focus : nearestThreat(c);
   game.focus = null;
   if (!t) return;
-  const s = sc(t.y);
+  // Every helper does the same thing: asking scares him off (he still needs a Knee to be put down).
+  scareOff(t);
   const walk = { x:t.x + (c.x < t.x ? -48 : 48), y:t.y, t:2.4 };
-  switch (h.ability) {
-    case Ability.DIRECT:   scareOff(t); break;
-    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); break;
-    case Ability.DOCUMENT:
-      t.marked = true; S.time.delayedCall(5000, () => { t.marked = false; });
-      break;
-    case Ability.DELEGATE:
-      S.time.delayedCall(effect.arrivalMs, () => { if (isThreat(t)) { scareOff(t); floatText(t.x, t.y - 118 * sc(t.y), 'Staff stepped in', '#7CFF6B'); } });
-      c.assist = { x:c.x < W / 2 ? -40 : W + 40, y:c.y, t:6, leave:true };
-      return;
-  }
   c.assist = walk;
 }
 function helperAct(c, effect) {
@@ -771,12 +758,6 @@ function helperAct(c, effect) {
   floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
   ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
   buzz('tag');
-  if (effect.type === 'heal') {
-    const healed = healFriend(effect.amount);
-    floatText(W / 2, H * 0.5, healed ? 'Someone checked in on your friend ' + FRIENDS.labels[healed.i] + '.' : 'A friend checked in.', '#7CFF6B', true);
-    c.assist = { x:c.x, y:c.y, t:1.2 };
-    return;
-  }
   if (!k || !k.isActive) { soloHelp(c, effect); return; }
   const target = game.focus && game.focus.crew === k && liveMembers(k).includes(game.focus) ? game.focus : nearestMember(k, c);
   if (!target) return;
@@ -943,8 +924,9 @@ function step(dt) {
       if (c.crew) { groupWander(c, dt, depth); continue; }   // linked: waits with the crew, never flags alone
       c.tellT -= dt;
       noticeCheck(c);
-      if (moveToward(c, c.tx, c.ty, 0.07 * W, dt)) { c.tx = rand(0.12, 0.88) * W; c.ty = horizonY + rand(0.06, 0.4) * depth; }
-      if (c.tellT <= 0) flag(c);
+      if (moveToward(c, c.tx, c.ty, 0.07 * W, dt)) { c.tx = rand(0.12, 0.88) * W; c.ty = horizonY + (c.kind === 'spiker' ? rand(0.5, 0.85) : rand(0.06, 0.4)) * depth; }
+      // The Spiker never flags closer to the bar than halfway down the floor: any nearer and he can't be stopped.
+      if (c.tellT <= 0 && (c.kind !== 'spiker' || c.y >= horizonY + 0.5 * depth)) flag(c);
       continue;
     }
     if (c.kind === 'follower') {

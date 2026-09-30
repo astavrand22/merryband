@@ -201,3 +201,6 @@ Polish Level 1 before building Level 2; a strong first minute matters more than 
 ## Branding vs. levels
 
 RedFlag's brand is the red flag mark, the wordmark in flag red (#E0302B) with cream, and the line "Spot the red flag. Make him regret it." It stays the same on every level. Each level gets its own name chip ("Level 1 · Last Call") and its own scene styling (Level 1's neon pink and cyan belong to the bar). Never put a level's name or look in the wordmark.
+
+## Level 1 pacing (two minutes)
+The level runs 120 s. The Follower comes first, so players learn Knee, Help and swipe on the gentlest villain; the Spiker joins at 30 s (`STAGES`). The Grabber is parked for a later level. The Spiker wanders and flags only in the lower half of the floor, never closer to the bar than halfway, so there is always time to reach him. Help is the same for every helper: it scares the creep off.
