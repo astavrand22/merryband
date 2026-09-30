@@ -28,3 +28,10 @@ Drag a finger across the floor and bystanders in the path step aside (each perso
 on again afterward). A quick tap still uses the selected tool, but it now fires when you lift your finger, so a
 swipe never hits anyone. Tuning is `SWIPE` in `src/data.js`. A one-time "Crowded? Swipe" card shows when six or
 more bystanders are on screen. Hold-to-spray and Fake Call (parked tools) still act on touch-down.
+
+## Result pop-up
+When a run ends, a celebration pop-up (confetti on a win) sits over the end page: score, "Who you took out"
+(creeps by type, then one line per way you dealt with them: knee, bystander
+help, friend handled it), and one "Try next time" suggestion. Lines only appear for what you actually used
+(`TALLY_LINES`, `NEXT_TIME` in `src/data.js`). "Continue" reveals the page behind it: tips, share, donation
+and play again. Checking in on a friend (You ok?) now earns points (`points` on the tool, 40).
