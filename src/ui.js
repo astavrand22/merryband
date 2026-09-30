@@ -215,17 +215,22 @@ function startGame(){
 function fillTally(){
   const chips=$('rChips'); chips.innerHTML='';
   for(const k of Object.keys(VILLAINS)){ const n=game.kosBy[k]; if(!n) continue; const v=VILLAINS[k]; const c=document.createElement('span'); c.className='chip'; c.textContent=(v.icon?v.icon+' ':'')+v.name.replace(/^The /,'')+' ×'+n; chips.appendChild(c) }
-  const list=$('rTally'); list.innerHTML='';
-  for(const [k,t] of Object.entries(TALLY_LINES)){
-    const n=game.outcomes[k]||0; if(!n) continue;
+  const line=(t,n,pts)=>{
     const d=document.createElement('div'); d.className='epi';
-    const b=document.createElement('b'); b.textContent=t.icon+' '+(n===1?t.one:t.many.replace('{n}',n));
+    const b=document.createElement('b'); b.textContent=t.icon+' '+(n===1?t.one:t.many).replace('{n}',n).replace('{pts}',pts);
     const f=document.createElement('div'); f.className='epif'; f.textContent=t.fate;
-    d.append(b,f); list.appendChild(d);
-  }
+    d.append(b,f); return d;
+  };
+  const list=$('rTally'); list.innerHTML='';
+  for(const [k,t] of Object.entries(TALLY_LINES)){ const n=game.outcomes[k]||0; if(n) list.appendChild(line(t,n,0)) }
+  // Friend-side numbers, including what checking in earned.
+  const care=$('rCareList'); care.innerHTML='';
+  const ck=WEAPONS.find(w=>w.id==='ask').checkin, counts={checkin:game.checkins, help:game.outcomes.help||0, friend:game.outcomes.friend||0};
+  for(const [k,t] of Object.entries(CARE_LINES)){ const n=counts[k]; if(n) care.appendChild(line(t,n,n*ck.points)) }
+  $('rCare').classList.toggle('hidden',!care.children.length);
   const q=TALLY.filter(t=>game.kos>=t.min).pop();
   $('rQuip').textContent=q?q.text:'';
-  $('rTakenOut').classList.toggle('hidden',!game.kos&&!Object.keys(game.outcomes).length);
+  $('rTakenOut').classList.toggle('hidden',!game.kos);
 }
 // One thing to try next time, chosen from how the run went.
 function nextTimeTip(g){
