@@ -261,7 +261,67 @@ function ko(c, by = 'knee') {
   S.tweens.killTweensOf(c.view.flag); c.view.flag.setVisible(false);
   S.tweens.add({ targets:c.view, angle:(c.dir || 1) * 80, alpha:0, duration:900, onComplete:() => { c.view.destroy(); c.dead = true; } });
   epilogueBeat(c, v, s);
+  if (by === 'knee' || by === 'spray') bigFaceCheck(c);
   checkUnlocks();
+}
+// Close-up of his face in pain plus a line, over everything. The game crawls while it shows, then carries on.
+function bigFaceCheck(c) {
+  if (!BIGFACE.enabled || game.faceUntil > game.t) return;
+  if (game.t - (game.lastFaceAt === undefined ? -99 : game.lastFaceAt) < BIGFACE.minGap) { game.sinceFace++; return; }
+  if (Math.random() >= Math.min(1, BIGFACE.chance + BIGFACE.ramp * game.sinceFace)) { game.sinceFace++; return; }
+  game.sinceFace = 0; game.lastFaceAt = game.t;
+  const v = VILLAINS[c.kind], pool = (v.pain || []).concat(BIGFACE.lines).filter(l => !game.faceLines.has(l));
+  const line = pick(pool.length ? pool : BIGFACE.lines); game.faceLines.add(line);
+  bigFace(c, line);
+}
+function bigFace(c, line) {
+  const cx = W / 2, cy = H * 0.4, k = Math.min(W, H * 0.7) * 0.36 / 10;   // head radius 10 units -> about a third of the screen
+  game.faceUntil = game.t + BIGFACE.ms / 1000 * BIGFACE.slowK + 0.2; game.slowT = BIGFACE.ms / 1000; game.slowK = BIGFACE.slowK;
+  const all = [];
+  const dim = S.add.rectangle(0, 0, W * 2, H * 2, 0x1A0E1D, 0.62).setOrigin(0).setDepth(19990); all.push(dim);
+  const f = S.add.container(cx, cy).setDepth(20000).setScale(k * 0.3); all.push(f);
+  const g = S.add.graphics(); f.add(g);
+  // comic burst behind the head
+  const burst = []; for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, r = i % 2 ? 15.5 : 21; burst.push({ x:Math.cos(a) * r, y:Math.sin(a) * r }); }
+  g.fillStyle(COLORS.amber, 1).fillPoints(burst, true); g.lineStyle(1.2, COLORS.ink, 1).strokePoints(burst, true);
+  const p = c;
+  // head, in the same shapes as the little person, drawn big
+  g.fillStyle(p.skin, 1).fillCircle(0, 0, 10).fillCircle(-10, 1, 2).fillCircle(10, 1, 2);
+  g.fillStyle(p.hair, 1);
+  if (p.male) {
+    g.beginPath(); g.arc(0, -5, 10.2, Math.PI * 1.05, -Math.PI * 0.05); g.closePath(); g.fillPath();
+    if (p.beard) { g.beginPath(); g.arc(0, 0, 10, Math.PI * 0.18, Math.PI * 0.82); g.closePath(); g.fillPath(); }
+  } else {
+    g.beginPath(); g.arc(0, -1, 11.5, Math.PI, 0); g.closePath(); g.fillPath();
+    g.fillRoundedRect(-12.5, -4, 5, 20, 2.5).fillRoundedRect(7.5, -4, 5, 20, 2.5);
+  }
+  g.fillStyle(0xFF6B6B, 0.45).fillCircle(-6.6, 2.8, 1.7).fillCircle(6.6, 2.8, 1.7);           // flushed cheeks
+  g.lineStyle(1.1, COLORS.ink, 1);
+  g.lineBetween(-6.4, -4.2, -2.2, -6.4).lineBetween(6.4, -4.2, 2.2, -6.4);                      // brows up in the middle
+  g.beginPath(); g.moveTo(-6.4, -2.6); g.lineTo(-2.8, -0.8); g.lineTo(-6.4, 1); g.strokePath();  // > <  squeezed shut
+  g.beginPath(); g.moveTo(6.4, -2.6); g.lineTo(2.8, -0.8); g.lineTo(6.4, 1); g.strokePath();
+  g.fillStyle(COLORS.ink, 1).fillEllipse(0, 5.4, 6.4, 5.6);                                     // mouth wide open
+  g.fillStyle(COLORS.cream, 1).fillRect(-2.7, 2.7, 5.4, 1.2);
+  g.fillStyle(0xE0607A, 1).fillEllipse(0, 6.9, 3.8, 2);
+  g.fillStyle(0x8FE8FF, 1).fillCircle(-10.6, -5.4, 1.1).fillTriangle(-11.6, -5.9, -9.6, -5.9, -10.6, -8.4).fillCircle(10.9, -3.4, 1.1).fillTriangle(9.9, -3.9, 11.9, -3.9, 10.9, -6.4); // sweat
+  // the line, in a speech bubble under the face
+  const bw = Math.min(W * 0.88, 380), by = cy + k * 13.5;
+  const t = S.add.text(cx, by, line, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'24px', color:'#1A0E1D', align:'center',
+    wordWrap:{ width:bw - 32 }, resolution:TEXT_RES }).setOrigin(0.5, 0).setDepth(20002);
+  const bub = S.add.graphics().setDepth(20001);
+  bub.fillStyle(COLORS.cream, 1).fillRoundedRect(cx - bw / 2, by - 12, bw, t.height + 24, 16).fillTriangle(cx - 14, by - 12, cx + 14, by - 12, cx, by - 30);
+  bub.lineStyle(3, COLORS.ink, 1).strokeRoundedRect(cx - bw / 2, by - 12, bw, t.height + 24, 16);
+  t.y = by; all.push(bub, t);
+  const stars = [];
+  if (!reduceMotion) for (let i = 0; i < 4; i++) stars.push(S.add.text(cx, cy, '\u2605', { fontSize:'34px', color:'#F4B942', stroke:'#1A0E1D', strokeThickness:4 }).setOrigin(0.5).setDepth(20003));
+  all.push(...stars);
+  if (reduceMotion) f.setScale(k * 0.8);
+  else {
+    S.tweens.add({ targets:f, scale:k, duration:170, ease:'Back.easeOut' });
+    S.tweens.add({ targets:f, x:cx + 6, duration:55, yoyo:true, repeat:5, delay:170 });
+    S.tweens.addCounter({ from:0, to:360, duration:BIGFACE.ms, onUpdate:tw => { const a0 = tw.getValue() * Math.PI / 180; stars.forEach((st, i) => { const a = a0 * 2 + i * Math.PI / 2; st.setPosition(cx + Math.cos(a) * k * 12.5, cy - k * 9 + Math.sin(a) * k * 3.2); }); } });
+  }
+  S.tweens.add({ targets:all, alpha:0, delay:BIGFACE.ms - 240, duration:240, onComplete:() => all.forEach(o => o.destroy()) });
 }
 function epilogueBeat(c, v, s) {
   if (!v.epilogue || !EPILOGUE.enabled) return;
@@ -792,7 +852,7 @@ function newGame() {
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
   game = { score:0, kosBy:{}, outcomes:{}, checkins:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:2, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
@@ -1131,7 +1191,7 @@ class BarScene extends Phaser.Scene {
     this.neon.setAlpha(flick);
     drawDrinks();
     if (game) {
-      if (state === 'play') { const slow = game.slowT > 0 ? EPILOGUE.slowScale : 1; if (game.slowT > 0) game.slowT -= dt; step(dt * slow); updateHUD(); }
+      if (state === 'play') { const slow = game.slowT > 0 ? (game.slowK || EPILOGUE.slowScale) : 1; if (game.slowT <= 0) game.slowK = 0; if (game.slowT > 0) game.slowT -= dt; step(dt * slow); updateHUD(); }
       syncViews();
     }
     drawFx();
