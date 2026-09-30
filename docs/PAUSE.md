@@ -20,7 +20,7 @@ time held, since the Phaser clock's `now` keeps advancing while paused.
 A player's first run is kept light (`EASY` in `src/data.js`): the bar shows only Ask, You ok? and Knee, friends
 have no call-outs or false alarms. From the second run everything is on, tools
 unlock by score as before, and the cards introduce each one. Runs finished are counted in this browser only
-(`redflag.runs.v1`). Set `EASY.enabled = false` to skip this. Live narration is one short line at a time (the
+(`redflag.runs.v1`). The three-tool bar now stays that way in every run (`EASY.toolsAlways`); Pepper, Glitter and Fake Call are parked in `WEAPONS` and come back by setting it to false. Set `EASY.enabled = false` to skip all of this. Live narration is one short line at a time (the
 next action); longer explanations live in the pop-up cards and the pause screen.
 
 ## Result pop-up

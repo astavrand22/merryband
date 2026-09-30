@@ -794,7 +794,7 @@ function drawCrewHud(f) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (game.simple && !EASY.tools.includes(w.id)) continue;
+    if ((game.simple && !EASY.tools.includes(w.id)) || toolHidden(w)) continue;
     if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + w.hint, 4000); renderBar(); }
   }
 }
