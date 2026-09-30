@@ -265,7 +265,7 @@ function ko(c) {
   game.score += pts;
   buzz(save ? 'save' : 'ko');
   floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
-  if (save) narrate('Saved. He never reached her drink.');
+  if (save) narrate('Saved.');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -322,7 +322,7 @@ function hurtFriend(f, amount, msg, why) {
   }
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
-  narrate('Your friend ' + FRIENDS.labels[f.i] + ' is shaken. Only hit creeps who have flagged.');
+  narrate('Your friend is shaken. Only hit flagged creeps.');
   if (f.wellbeing <= 66) maybeCard('youok');
 }
 // A short speech bubble over a friend's head.
@@ -336,7 +336,7 @@ function friendSays(f, text) {
 // The nearest friend who pays attention spots a creep a moment before his flag and says so.
 // A hint only: he isn't flagged yet, so hitting him now still costs points.
 function noticeCheck(c) {
-  if (c.noticed) return;
+  if (c.noticed || game.simple) return;
   const live = game.friends.filter(f => !f.out && f.trait.notice > 0);
   if (!live.length) return;
   const f = live.reduce((b, o) => Math.abs(drinks[o.i].x - c.x) < Math.abs(drinks[b.i].x - c.x) ? o : b);
@@ -404,11 +404,8 @@ function useCheckIn() {
 // Comfort bars over each friend's head: green when fine, amber, then red as it runs out.
 function drawFriendBars(f) {
   if (!game.friends) return;
-  if (!S.friendLabels) S.friendLabels = drinks.map(() => S.add.text(0, 0, '', { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'700', fontSize:'9px',
-    color:'#EAF7FF', resolution:TEXT_RES * 2 }).setOrigin(0.5, 1).setDepth(8001).setAlpha(0.75));
   for (const fr of game.friends) {
     const cx = drinks[fr.i].x - 20, y = friendHeadY() - 16, w = Math.round(29 * barK()), k = clamp(fr.wellbeing / 100, 0, 1);
-    S.friendLabels[fr.i].setText(fr.trait.label).setPosition(cx, y - 3);
     const col = k > 0.5 ? lerpHex(COLORS.amber, COLORS.spiked, (k - 0.5) * 2) : lerpHex(COLORS.flag, COLORS.amber, k * 2);
     if (fr.flashT > 0) fr.flashT -= S.game.loop.delta / 1000;
     f.fillStyle(0x000000, 0.55).fillRoundedRect(cx - w / 2 - 2, y - 2, w + 4, 9, 3);
@@ -791,7 +788,8 @@ function drawCrewHud(f) {
 
 function checkUnlocks() {
   for (const w of WEAPONS) {
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + (w.how || w.hint), 7000); renderBar(); }
+    if (game.simple && !EASY.tools.includes(w.id)) continue;
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + w.hint, 4000); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
@@ -810,7 +808,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
-  game = { score:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  game = { score:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });

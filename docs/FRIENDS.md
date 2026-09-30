@@ -18,7 +18,7 @@ Followers and Grabbers pick the friend with the lowest comfort when they flag (`
 
 ## Traits
 
-`FRIEND_TRAITS` in `src/data.js`. Traits are shuffled across the three seats every run, and each friend's trait shows as a small label over her bar.
+`FRIEND_TRAITS` in `src/data.js`. Traits are shuffled across the three seats every run. Traits aren't labelled on screen (it was too crowded): you learn them from what each friend says and does.
 
 | Trait | Notices a creep | Contact costs her | Shuts a creep down herself | False alarms |
 | --- | --- | --- | --- | --- |

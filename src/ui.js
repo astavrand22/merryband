@@ -12,6 +12,7 @@ function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; 
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
   WEAPONS.forEach((w,i)=>{
+    if(game&&game.simple&&!EASY.tools.includes(w.id)) return;   // first run: only the basics
     const unlocked=!game||game.unlocked.has(w.id);
     const b=document.createElement('button');
     b.className='wbtn'+(i===selected?' sel':'')+(unlocked?'':' locked');
@@ -24,7 +25,7 @@ function renderBar(){
 }
 function selectWeapon(i){
   if(!game||!game.unlocked.has(WEAPONS[i].id)) return;
-  selected=i; pointer.down=false; renderBar(); const q=/[?!]$/.test(WEAPONS[i].name); toast(WEAPONS[i].name+(q?' ':'. ')+WEAPONS[i].hint); narrate(WEAPONS[i].name+(q?' ':': ')+(WEAPONS[i].how||WEAPONS[i].hint),6500);
+  selected=i; pointer.down=false; renderBar(); const q=/[?!]$/.test(WEAPONS[i].name); narrate(WEAPONS[i].name+(q?' ':': ')+WEAPONS[i].hint,3200);
 }
 function updateHUD(){
   const g=game; if(!g) return;
@@ -40,6 +41,11 @@ function updateHUD(){
   const mult=Math.min(4,1+Math.floor(g.combo/3)); $('combo').textContent=mult>1?('Combo x'+mult):'';
   for(const w of WEAPONS){const el=$('cd-'+w.id); if(el&&w.cooldown){el.style.width=((g.cool[w.id]||0)/w.cooldown*100)+'%'}}
 }
+/* ---------- runs finished (saved in this browser only) ---------- */
+const RUNS_KEY='redflag.runs.v1';
+let runsMem=(()=>{ try{ return +localStorage.getItem(RUNS_KEY)||0 }catch(e){ return 0 } })();
+function firstRun(){ return EASY.enabled&&runsMem<EASY.runs }
+function countRun(){ runsMem++; try{ localStorage.setItem(RUNS_KEY,String(runsMem)) }catch(e){} }
 /* ---------- best score (saved in this browser only, no login) ---------- */
 const BEST_KEY='redflag.best.v1';
 function loadBest(){
@@ -198,7 +204,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) pauseGame() });
 
 function startGame(){
-  resetHold(); cardQueue=[]; cardOpen=null; $('pauseScreen').classList.add('hidden'); $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('2 a.m. Watch your friends. Wait for the red flag on their clothes.',4000);
+  resetHold(); cardQueue=[]; cardOpen=null; $('pauseScreen').classList.add('hidden'); $('introScreen').classList.add('hidden'); newGame(); state='play'; track('run_start'); narrate('Wait for the red flag, then hit him.',4000);
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
@@ -209,7 +215,7 @@ function showEpilogues(){
   $('epiBox').classList.toggle('hidden',!seen.length);
 }
 function endGame(win){
-  if(state!=='play') return; state='end'; pointer.down=false; $('narr').classList.remove('show');
+  if(state!=='play') return; state='end'; countRun(); pointer.down=false; $('narr').classList.remove('show');
   $('endTitle').textContent=win?'Everyone got home.':'Rough night.';
   $('endSub').textContent=win?'You looked out for each other.':'A friend had to call it \u2014 and they\u2019re still out there. Run it back.';
   $('stScore').textContent=game.score; $('stKos').textContent=game.kos; $('stSaves').textContent=game.saves;
@@ -371,4 +377,3 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('giveScreen').classList.
 addEventListener('keydown',e=>{ if(state!=='play') return; const n=+e.key; if(n>=1&&n<=WEAPONS.length) selectWeapon(n-1) });
 
 renderBar();
-if(!CREW.enabled){ const r=$('crewRule'); if(r) r.innerHTML='<span>🙋</span>Need backup? Pick <b>Ask</b>, tap a creep to aim, then tap a bystander to help stop him.' }
