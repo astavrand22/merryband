@@ -61,9 +61,13 @@ const TALLY = [
   { min:10, text:'Creeps are telling each other about you. In a support group.' }
 ];
 const TALLY_LINES = {
-  knee:    { icon:'\uD83E\uDDB5', one:'You kneed 1 creep in the groin.',       many:'You kneed {n} creeps in the groin.',      fate:'Thank you for a world with fewer creep descendants.' },
-  help:    { icon:'\uD83D\uDE4B', one:'A bystander backed you up on 1 creep.', many:'Bystanders backed you up on {n} creeps.', fate:'Bars are full of good people.' },
-  friend:  { icon:'\uD83D\uDCAA', one:'A friend handled 1 creep herself.',     many:'Friends handled {n} creeps themselves.',  fate:'Do not mess with her.' }
+  knee:    { icon:'\uD83E\uDDB5', one:'You kneed 1 creep in the groin.',       many:'You kneed {n} creeps in the groin.',      fate:'Thank you for a world with fewer creep descendants.' }
+};
+// "Looking out for each other": the friend-side numbers, some of which earn points. {n} is the count, {pts} the points earned.
+const CARE_LINES = {
+  checkin: { icon:'\uD83D\uDCAC', one:'You checked in on a friend: +{pts} points.', many:'You checked in on friends {n} times: +{pts} points.', fate:'A friend who gets checked on is a friend who stays.' },
+  help:    { icon:'\uD83D\uDE4B', one:'A bystander backed you up on 1 creep.',     many:'Bystanders backed you up on {n} creeps.',           fate:'Bars are full of good people.' },
+  friend:  { icon:'\uD83D\uDCAA', one:'A friend handled 1 creep herself.',          many:'Friends handled {n} creeps themselves.',            fate:'Do not mess with her.' }
 };
 // "Next time": one suggestion picked from how the run went, first match wins (see nextTimeTip in ui.js).
 // {pts} is the check-in bonus, {n} a count from the run.
@@ -77,7 +81,7 @@ const NEXT_TIME = {
 // Big-face moment: every so often when you put a creep down, his pained face fills the screen for a beat with
 // something petty and douchey to say. chance rises by `ramp` for each takedown without one, so it feels
 // occasional but you do see it. minKos: takedowns before the first can show. minGap is game seconds between them; the game slows to slowK while it shows.
-const BIGFACE = { enabled:true, chance:0.05, ramp:0.06, minGap:18, minKos:3, ms:1400, slowK:0.1,
+const BIGFACE = { enabled:true, chance:0.05, ramp:0.06, minGap:18, minKos:3, ms:2000, slowK:0.1,
   lines:['Do you know who my dad is?!', 'I\u2019m literally a nice guy!!', 'I have a podcast about this!', 'I\u2019m one of the GOOD ones!',
     'I\u2019m telling my group chat!', 'I was going to buy you a drink!', 'My lawyer is my mom\u2019s friend!', 'I\u2019m a feminist! I have the tote bag!',
     'It was a joke! Relax!', 'My therapist will hear about this.', 'I follow so many women on Instagram!', 'This is going on my Yelp review.'] };
