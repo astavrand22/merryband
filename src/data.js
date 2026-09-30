@@ -76,8 +76,8 @@ const NEXT_TIME = {
 };
 // Big-face moment: every so often when you put a creep down, his pained face fills the screen for a beat with
 // something petty and douchey to say. chance rises by `ramp` for each takedown without one, so it feels
-// occasional but you do see it. minGap is game seconds between them; the game slows to slowK while it shows.
-const BIGFACE = { enabled:true, chance:0.15, ramp:0.12, minGap:8, ms:1400, slowK:0.1,
+// occasional but you do see it. minKos: takedowns before the first can show. minGap is game seconds between them; the game slows to slowK while it shows.
+const BIGFACE = { enabled:true, chance:0.05, ramp:0.06, minGap:18, minKos:3, ms:1400, slowK:0.1,
   lines:['Do you know who my dad is?!', 'I\u2019m literally a nice guy!!', 'I have a podcast about this!', 'I\u2019m one of the GOOD ones!',
     'I\u2019m telling my group chat!', 'I was going to buy you a drink!', 'My lawyer is my mom\u2019s friend!', 'I\u2019m a feminist! I have the tote bag!',
     'It was a joke! Relax!', 'My therapist will hear about this.', 'I follow so many women on Instagram!', 'This is going on my Yelp review.'] };

@@ -266,7 +266,7 @@ function ko(c, by = 'knee') {
 }
 // Close-up of his face in pain plus a line, over everything. The game crawls while it shows, then carries on.
 function bigFaceCheck(c) {
-  if (!BIGFACE.enabled || game.faceUntil > game.t) return;
+  if (!BIGFACE.enabled || game.faceUntil > game.t || game.kos < BIGFACE.minKos) return;
   if (game.t - (game.lastFaceAt === undefined ? -99 : game.lastFaceAt) < BIGFACE.minGap) { game.sinceFace++; return; }
   if (Math.random() >= Math.min(1, BIGFACE.chance + BIGFACE.ramp * game.sinceFace)) { game.sinceFace++; return; }
   game.sinceFace = 0; game.lastFaceAt = game.t;
@@ -852,7 +852,7 @@ function newGame() {
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
   game = { score:0, kosBy:{}, outcomes:{}, checkins:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:2, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:0, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
