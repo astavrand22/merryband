@@ -8,7 +8,7 @@ Each friend has a comfort bar (0-100), stored as `wellbeing` on `game.friends[i]
 
 Nothing is ever shown happening. Her bar drops, she flinches, and a line says who it happened to (`reachedText`).
 
-Ways her bar goes back up: the Friend helper you can Ask for, and the **You ok?** weapon (`WEAPONS`, id `checkin`).
+Ways her bar goes back up: the Friend helper you can Ask for, and tapping her with **Help** (`WEAPONS`, id `ask`, its `checkin` settings).
 
 ## Who they go for
 

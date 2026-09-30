@@ -60,9 +60,9 @@ Crews follow [CONTRIBUTING.md](../CONTRIBUTING.md). The plan is an abstract stat
 
 ## In the game (branch `crew-in-game`)
 
-The real game now has crews and an **Ask** weapon slot (🙋, unlocked from the start).
+The real game now has crews and a **Help** weapon slot (🙋, unlocked from the start; it also checks in on friends).
 
-- **Ask**: select it, then tap a bystander to ask for help. Tap a crew member first to aim the help at them.
+- **Help**: select it, then tap a bystander to ask for help. Tap a crew member first to aim the help at them.
   Bystanders show a name (Bouncer, Regular, Waiter, Friend, Phone), and a willingness bar with a tick at the point they'll act.
   Each crew member is tagged "weak to: <Helper>". Matching the helper to the tag hits harder.
 - **Crew**: one per run (`CREW` in `src/data.js`), arriving after `firstAt` seconds. Members wander as a group and never flag while linked,

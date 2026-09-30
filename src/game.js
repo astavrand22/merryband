@@ -430,10 +430,9 @@ function friendAt(px, py) {
   }
   return best;
 }
-// Check in: tap a friend, ask if she's okay. Restores comfort but doesn't touch any creep, so it costs you a beat.
-function useCheckIn() {
-  const w = WPN('checkin'), f = friendAt(pointer.x, pointer.y);
-  if (!f) { toast('Tap one of your friends at the bar.'); return; }
+// Check in on a friend (part of Help): restores comfort and earns points, but doesn't touch any creep, so it costs you a beat.
+function checkInFriend(f) {
+  const w = WPN('ask').checkin;
   const x = drinks[f.i].x - 20, y = friendHeadY() - 20;
   if (game.cool.checkin > 0) { floatText(x, y, 'Give her a sec.', '#FFF1E0'); return; }
   if (f.wellbeing >= 100) { floatText(x, y, 'She\u2019s good.', '#FFF1E0'); return; }
@@ -457,6 +456,8 @@ function drawFriendBars(f) {
     f.fillStyle(0x3A2A40, 1).fillRect(cx - w / 2, y, w, 5);
     f.fillStyle(col, 1).fillRect(cx - w / 2, y, w * k, 5);
     if (fr.flashT > 0) f.lineStyle(2, COLORS.cream, clamp(fr.flashT * 2, 0, 1)).strokeRoundedRect(cx - w / 2 - 2, y - 2, w + 4, 9, 3);
+    if (!fr.out && fr.wellbeing < 70 && WEAPONS[selected].mode === 'ask')   // Help is out and she's shaken: point at her
+      f.lineStyle(2, COLORS.cyan, 0.5 + 0.4 * Math.sin(S.time.now / 180)).strokeRoundedRect(cx - w / 2 - 5, y - 5, w + 10, 15, 6);
   }
 }
 function useKnee() {
@@ -654,7 +655,7 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
+  if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Help, then tap a bystander.', 5000);
   return true;
 }
 function killCrew(k) {
@@ -722,7 +723,8 @@ function nearestThreat(from) {
   return best;
 }
 function useAsk() {
-  const c = charAt(pointer.x, pointer.y), k = game.crew;
+  const c = charAt(pointer.x, pointer.y), k = game.crew, fr = friendAt(pointer.x, pointer.y);
+  if (fr && !(c && c.kind === 'bystander')) { checkInFriend(fr); return; }   // a friend: check in on her
   if (!c) return;
   const s = sc(c.y);
   if (c.kind !== 'bystander') {
@@ -740,6 +742,7 @@ function useAsk() {
   h.specificAsk();
   const effect = h.tryAct(S.time.now);
   if (!effect) { floatText(c.x, c.y - 100 * s, 'Hang on…', '#FFF1E0'); return; }
+  game.helps++;
   helperAct(c, effect);
 }
 // Help against one creep who isn't part of a crew.
@@ -851,8 +854,8 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
-  game = { score:0, kosBy:{}, outcomes:{}, checkins:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
-    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:0, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
+  game = { score:0, kosBy:{}, outcomes:{}, checkins:0, helps:0, earlyHits:0, bystanderHits:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
+    spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, sinceFace:0, faceLines:new Set(), faceUntil:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });
   selected = Math.max(0, WEAPONS.findIndex(w => w.id === 'knee')); renderBar(); updateHUD();
@@ -1160,7 +1163,7 @@ class BarScene extends Phaser.Scene {
     const useTool = () => {
       const w = WEAPONS[selected];
       game.used.add(w.id);
-      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk(); else if (w.mode === 'checkin') useCheckIn();
+      if (w.mode === 'tap') useKnee(); else if (w.mode === 'area') useGlitter(); else if (w.mode === 'call') fakeCall(); else if (w.mode === 'ask') useAsk();
     };
     this.input.on('pointerdown', p => {
       if (state !== 'play') return;
