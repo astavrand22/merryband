@@ -46,3 +46,6 @@ A prototype of creeps teaming up into crews is in [docs/CREW.md](docs/CREW.md). 
 ## Support
 
 If this subject brings something up, RAINN is there 24/7: [rainn.org](https://rainn.org) or 800-656-4673.
+
+## Cache busting
+The script tags in `index.html` end in `?v=YYYYMMDDHHMM`. Bump that number whenever you change anything in `src/`, so browsers (phones especially) load the new files instead of a cached copy.
