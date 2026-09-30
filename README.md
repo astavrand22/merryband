@@ -18,7 +18,7 @@ The game runs on [Phaser](https://phaser.io), a free JavaScript game library loa
 
 Tuning in `src/data.js`:
 
-- `VILLAINS`: add a villain by adding an entry. Give each one a `tellText` (a few words shown by the flag) and an `epilogue` (one cartoonish line for the end screen)
+- `VILLAINS`: add a villain by adding an entry. Give each one a `tellText` (a few words shown by the flag) and an `epilogue` (one cartoonish line, shown under the "Who you took out" count on the end screen; `TALLY` holds the joke line by total creeps down)
 - `WEAPONS`: add or adjust weapons
 - `CAUSE`: the end-screen petition. Paste the live link into `url`
 - `TIPS`: real-life safety tips. One shows on the start screen, two on the end screen (picked by what happened in the run), and all of them on `tips.html`. Each tip needs a source link

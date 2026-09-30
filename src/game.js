@@ -258,7 +258,7 @@ function applyHit(c, dmg) {
 function ko(c) {
   const v = VILLAINS[c.kind], s = sc(c.y);
   const save = c.kind === 'spiker' && c.state !== 'leave';
-  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind);
+  c.state = 'ko'; game.kos++; game.combo++; game.faced.add(c.kind); game.kosBy[c.kind] = (game.kosBy[c.kind] || 0) + 1;
   const mult = Math.min(4, 1 + Math.floor(game.combo / 3));
   let pts = v.points * mult;
   if (save) { pts += v.saveBonus; game.saves++; }
@@ -808,7 +808,7 @@ function newGame() {
     if (game.crew) killCrew(game.crew);
   }
   skinBags.villain.length = 0; skinBags.bystander.length = 0;
-  game = { score:0, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
+  game = { score:0, kosBy:{}, friends:makeFriends(), selfSaves:0, alarmSkins:{}, alarmT:firstRun() ? 1e9 : rand(FRIENDS.falseAlarmEvery[0], FRIENDS.falseAlarmEvery[1]), simple:firstRun(), time:CONFIG.levelSeconds, chars:[], streaks:[],
     spawnT:0.6, combo:0, kos:0, saves:0, cool:{}, unlocked:new Set(['knee', 'ask', 'checkin']), events:[], faced:new Set(), seenEpi:new Set(), slowT:0, used:new Set(), seenTells:new Set(), introSeen:new Set(), spawned:new Set(), beats:{}, narrFlagAt:0, t:0, spraying:0, sprayAng:0,
     crew:null, crewsMade:0, crewsBroken:0, focus:null, nextCrewAt:rand(CREW.firstAt[0], CREW.firstAt[1]) };
   drinks.forEach(d => { d.spiked = false; d.resetT = 0; });

@@ -208,11 +208,23 @@ function startGame(){
   $('startScreen').classList.add('hidden'); $('endScreen').classList.add('hidden');
   $('signNote').textContent='';
 }
+// "Who you took out": one row per kind of creep you put down, with a count and a fate.
 function showEpilogues(){
   const list=$('epiList'); list.innerHTML='';
-  const seen=[...game.faced].filter(k=>VILLAINS[k]&&VILLAINS[k].epilogue);
-  seen.forEach(k=>{ const d=document.createElement('div'); d.className='epi'; const v=VILLAINS[k]; const b=document.createElement('b'); b.textContent=(v.icon?v.icon+' ':'')+v.name+(v.who?' \u00b7 the one who '+v.who:''); d.appendChild(b); d.appendChild(document.createTextNode(VILLAINS[k].epilogue)); list.appendChild(d) });
-  $('epiBox').classList.toggle('hidden',!seen.length);
+  const kinds=Object.keys(VILLAINS).filter(k=>game.kosBy[k]);
+  kinds.forEach(k=>{
+    const v=VILLAINS[k], n=game.kosBy[k];
+    const d=document.createElement('div'); d.className='epi';
+    const top=document.createElement('div'); top.className='epitop';
+    const name=document.createElement('b'); name.textContent=(v.icon?v.icon+' ':'')+v.name;
+    const cnt=document.createElement('span'); cnt.className='epin'; cnt.textContent='×'+n;
+    top.append(name,cnt); d.appendChild(top);
+    if(v.epilogue){ const f=document.createElement('div'); f.className='epif'; f.textContent=v.epilogue; d.appendChild(f) }
+    list.appendChild(d);
+  });
+  const q=TALLY.filter(t=>game.kos>=t.min).pop();
+  $('epiQuip').textContent=q?q.text:'';
+  $('epiBox').classList.toggle('hidden',!kinds.length);
 }
 function endGame(win){
   if(state!=='play') return; state='end'; countRun(); pointer.down=false; $('narr').classList.remove('show');

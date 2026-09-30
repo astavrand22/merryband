@@ -52,6 +52,14 @@ const VILLAINS = {
   grabber:  { name:'The Grabber',  behavior:'lunge',        hp:2, tell:[1.0,2.0], windup:0.9, speed:0.9, points:120, hit:34, reachedText:'He got to her.',
               outfit:'#38B6FF', intro:'He\u2019s fast. After his red flag he winds up, then lunges for one of your friends. Hit him first: two hits, or one Knee.', icon:'✋', who:'lunged at her', tellText:'About to grab', epilogue:'Glitter in both hands. It never comes off.', subtlety:[0.1,0.55] }
 };
+// End-screen tally ("Who you took out"): a one-line joke under the heading, picked by total creeps down.
+// Each entry applies from `min` creeps up; the last one that fits wins.
+const TALLY = [
+  { min:1,  text:'One creep. It\u2019s a start.' },
+  { min:3,  text:'The bar has a few fewer creeps in it.' },
+  { min:6,  text:'The bar is honestly nicer now.' },
+  { min:10, text:'Creeps are telling each other about you. In a support group.' }
+];
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
 const EPILOGUE = { enabled:true, slowScale:0.3, slowSeconds:0.35, captionMs:2200 };
 // PACE: how fast flagged creeps close in, as a multiplier on their speed below. Starts gentle and

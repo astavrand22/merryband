@@ -69,9 +69,13 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
 .tips .label{margin-bottom:8px}
 .epis{margin:0 0 16px}
 .epis.hidden{display:none}
-.epi{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.45}
+.epi{padding:8px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.4}
 .epi:first-of-type{border-top:0;padding-top:0}
-.epi b{color:var(--amber);font-size:13px;display:block}
+.epitop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.epi b{color:var(--cream);font-size:15px}
+.epin{color:var(--amber);font-weight:800;font-size:22px}
+.epif{opacity:.8;font-style:italic}
+.epiquip{font-weight:600;color:var(--amber);margin:2px 0 8px}
 .tip{padding:8px 0;border-top:1px solid var(--line)}
 .tip:first-of-type{border-top:0;padding-top:0}
 .tip b{display:block;font-size:15px;margin-bottom:3px;color:var(--cream)}
@@ -173,7 +177,8 @@ h2{font-family:Bungee,'Arial Black',Impact,sans-serif;font-size:30px;line-height
       <div class="stat best"><b id="stBest">0</b><small>Best</small></div>
     </div>
     <div class="epis hidden" id="epiBox">
-      <div class="label">What happened to them</div>
+      <div class="label">Who you took out</div>
+      <div class="epiquip" id="epiQuip"></div>
       <div id="epiList"></div>
     </div>
     <div class="tips" id="tipsEnd">
