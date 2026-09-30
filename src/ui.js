@@ -7,7 +7,7 @@ function toast(msg){const t=$('toast'); t.textContent=msg; t.classList.add('show
 
 // A short line of narration near the bottom: what's happening and what to do about it. Replaces the last one.
 let narrT=0, narrAt=0;
-function narrate(msg,ms=3200){const t=$('narr'); if(!t||state!=='play') return; t.textContent=msg; t.classList.add('show'); clearTimeout(narrT); narrT=setTimeout(()=>t.classList.remove('show'),ms)}
+function narrate(msg,ms=2400){const t=$('narr'); if(!t||state!=='play') return; t.textContent=msg; t.classList.add('show'); clearTimeout(narrT); narrT=setTimeout(()=>t.classList.remove('show'),ms)}
 
 function renderBar(){
   const bar=$('bar'); bar.innerHTML='';
@@ -25,7 +25,9 @@ function renderBar(){
 }
 function selectWeapon(i){
   if(!game||!game.unlocked.has(WEAPONS[i].id)) return;
-  selected=i; pointer.down=false; renderBar(); const q=/[?!]$/.test(WEAPONS[i].name); narrate(WEAPONS[i].name+(q?' ':': ')+WEAPONS[i].hint,3200);
+  selected=i; pointer.down=false; renderBar();
+  if(!game.hinted) game.hinted=new Set();
+  if(!game.hinted.has(WEAPONS[i].id)){ game.hinted.add(WEAPONS[i].id); const q=/[?!]$/.test(WEAPONS[i].name); narrate(WEAPONS[i].name+(q?' ':': ')+WEAPONS[i].hint,2600) }
 }
 function updateHUD(){
   const g=game; if(!g) return;

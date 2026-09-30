@@ -162,29 +162,17 @@ function moveToward(c, tx, ty, sp, dt) {
   if (d <= sp * dt || d < 1) { c.x = tx; c.y = ty; return true; }
   c.x += dx / d * sp * dt; c.y += dy / d * sp * dt; return false;
 }
-const FLAG_LINES = {
-  spiker:   'The Spiker is heading for her drink. Stop him first.',
-  follower: 'The Follower is trailing her. Stop him.',
-  grabber:  'The Grabber is about to lunge. Stop him now.'
-};
-function narrateFlag(c) {
-  const v = VILLAINS[c.kind], g = game;
-  if (!v || !FLAG_LINES[c.kind] || (g.narrFlagAt && g.t - g.narrFlagAt < 4)) return;
-  g.narrFlagAt = g.t;
-  narrate((v.icon ? v.icon + ' ' : '') + FLAG_LINES[c.kind]);
-}
 function flag(c) {
   if (c.flagged) return;
   if (c.crew && c.crew.isActive) return;   // a linked crew member can't be forced to flag early
   c.flagged = true;
-  narrateFlag(c);
   if (game.chars.filter(isThreat).length >= 2) maybeCard('ask');
   const fl = c.view.flag; fl.setVisible(true);
   if (fl.wave && !reduceMotion) S.tweens.add({ targets:fl, scaleX:0.72, duration:200, yoyo:true, repeat:-1 });
-  // Say what the flag means, once per villain type per run. Keeps the screen quiet after the first time.
+  // Say what the flag means once per villain type per browser, so the screen stays quiet after that.
   const tellText = VILLAINS[c.kind].tellText;
-  if (tellText && !game.seenTells.has(c.kind)) {
-    game.seenTells.add(c.kind);
+  if (tellText && !game.seenTells.has(c.kind) && !seenMem.has('tell-' + c.kind)) {
+    game.seenTells.add(c.kind); seenMem.add('tell-' + c.kind); saveSeen();
     floatText(c.x, c.y - 128 * sc(c.y), tellText, '#FF8A80');
   }
   if (c.kind !== 'spiker') c.target = weakestFriend();   // Followers and Grabbers go for whoever's had the worst night
@@ -249,7 +237,7 @@ function applyHit(c, dmg) {
   if (!c.flagged) {
     if (c.hitCool > 0) return;
     c.hitCool = 0.8; game.earlyHits++; game.score = Math.max(0, game.score - 50); game.combo = 0;
-    floatText(c.x, c.y - 96 * s, 'Not yet. Wait for the flag. -50', '#FFF1E0'); return;
+    floatText(c.x, c.y - 96 * s, 'Too early -50', '#FFF1E0'); return;
   }
   c.hp -= dmg * dmgMult(c);
   S.fx.sparks.explode(6, c.x, c.y - 50 * s);
@@ -266,8 +254,7 @@ function ko(c, by = 'knee') {
   if (save) { pts += v.saveBonus; game.saves++; }
   game.score += pts;
   buzz(save ? 'save' : 'ko');
-  floatText(c.x, c.y - 100 * s, (save ? 'SAVED HER +' : 'DOWN +') + pts, save ? '#FF4F9A' : '#F4B942');
-  if (save) narrate('Saved.');
+  floatText(c.x, c.y - 100 * s, (save ? 'SAVED +' : '+') + pts, save ? '#FF4F9A' : '#F4B942');
   S.fx.gold.explode(14, c.x, c.y - 50 * s);
   koBadge(c.x, c.y - 100 * s, s);
   c.view.stunFx.setVisible(false); c.view.sparkles.forEach(p => p.setVisible(false));
@@ -279,11 +266,6 @@ function ko(c, by = 'knee') {
 function epilogueBeat(c, v, s) {
   if (!v.epilogue || !EPILOGUE.enabled) return;
   if (!reduceMotion) game.slowT = EPILOGUE.slowSeconds;   // brief slow-mo, the game keeps running
-  if (game.seenEpi.has(c.kind)) return;                   // caption only the first takedown of each type per run
-  game.seenEpi.add(c.kind);
-  const t = S.add.text(clamp(c.x, W * 0.3, W * 0.7), c.y - 165 * s, (v.icon ? v.icon + ' ' : '') + v.name + '\n' + v.epilogue, { fontFamily:'Rubik, system-ui, sans-serif', fontStyle:'800', fontSize:'15px',
-    color:'#FFF1E0', align:'center', wordWrap:{ width:Math.min(280, W * 0.7) }, stroke:'rgba(26,14,29,0.9)', strokeThickness:5, resolution:TEXT_RES }).setOrigin(0.5, 1).setDepth(9600);
-  S.tweens.add({ targets:t, alpha:0, delay:EPILOGUE.captionMs * 0.6, duration:EPILOGUE.captionMs * 0.4, onComplete:() => t.destroy() });
 }
 function koBadge(x, y, s) {
   const b = S.add.container(x, y).setDepth(9000);
@@ -324,7 +306,6 @@ function hurtFriend(f, amount, msg, why) {
   }
   floatText(W / 2, H * 0.5, msg, '#FFF1E0', true);
   if (f.wellbeing <= 0) { f.out = true; endGame(false); return; }
-  narrate('Your friend is shaken. Only hit flagged creeps.');
   if (f.wellbeing <= 66) maybeCard('youok');
 }
 // A short speech bubble over a friend's head.
@@ -427,7 +408,6 @@ function useKnee() {
   if (c) {
     const before = c.hp, wasFlagged = c.flagged;
     applyHit(c, w.dmg);
-    if (c.kind !== 'bystander' && wasFlagged && before !== undefined) floatText(c.x, c.y - 96 * sc(c.y), 'OOF!', '#FFF1E0');
   }
 }
 function sprayTick(dt) {
@@ -614,7 +594,6 @@ function spawnCrew() {
     c.view.add(c.view.tag);
   }
   g.crew = crew; g.crewsMade++; g.focus = null;
-  toast('Crew after your friend ' + FRIENDS.labels[friend.i] + '. Split them up.');
   if (!maybeCard('crew')) narrate('A crew: matching shirts, and they can\u2019t be hit yet. Pick Ask, then tap a bystander.', 5000);
   return true;
 }
@@ -712,13 +691,12 @@ function soloHelp(c, effect) {
   const s = sc(t.y);
   const walk = { x:t.x + (c.x < t.x ? -48 : 48), y:t.y, t:2.4 };
   switch (h.ability) {
-    case Ability.DIRECT:   scareOff(t); floatText(t.x, t.y - 118 * s, 'Scared off', '#7CFF6B'); break;
-    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); floatText(t.x, t.y - 118 * s, 'Distracted', '#7CFF6B'); break;
+    case Ability.DIRECT:   scareOff(t); break;
+    case Ability.DISTRACT: t.stun = Math.max(t.stun, 2.5); break;
     case Ability.DOCUMENT:
       t.marked = true; S.time.delayedCall(5000, () => { t.marked = false; });
-      floatText(t.x, t.y - 118 * s, 'Filmed: slower, easier to hit', '#7CFF6B'); break;
+      break;
     case Ability.DELEGATE:
-      floatText(W / 2, H * 0.32, 'Staff on the way', '#FFF1E0');
       S.time.delayedCall(effect.arrivalMs, () => { if (isThreat(t)) { scareOff(t); floatText(t.x, t.y - 118 * sc(t.y), 'Staff stepped in', '#7CFF6B'); } });
       c.assist = { x:c.x < W / 2 ? -40 : W + 40, y:c.y, t:6, leave:true };
       return;
@@ -728,7 +706,6 @@ function soloHelp(c, effect) {
 function helperAct(c, effect) {
   const h = c.helper, info = HELPERS[h.ability], s = sc(c.y), k = game.crew;
   floatText(c.x, c.y - 100 * s, info.line, '#F4B942');
-  narrate(k && k.isActive ? 'The ' + info.name + ' steps in. Watch the TEAM bar.' : 'The ' + info.name + ' steps in.');
   ringFx(c.x, c.y - 48 * s, 30 * s + 10, COLORS.amber);
   buzz('tag');
   if (effect.type === 'heal') {
@@ -795,7 +772,7 @@ function drawCrewHud(f) {
 function checkUnlocks() {
   for (const w of WEAPONS) {
     if ((game.simple && !EASY.tools.includes(w.id)) || toolHidden(w)) continue;
-    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); toast(w.name + ' unlocked.'); if (!maybeCard('unlock-' + w.id)) narrate(w.name + ': ' + w.hint, 4000); renderBar(); }
+    if (!game.unlocked.has(w.id) && game.score >= w.unlock) { game.unlocked.add(w.id); if (!maybeCard('unlock-' + w.id)) toast(w.name + ' unlocked.'); renderBar(); }
   }
 }
 function floatText(x, y, text, color, big) {
@@ -852,7 +829,7 @@ function step(dt) {
   const g = game;
   g.t += dt; g.time -= dt;
   if (g.time <= 0) { g.time = 0; endGame(true); return; }
-  for (const [at, line] of [[40, 'Forty seconds to closing.'], [20, 'Twenty seconds. Guard her drink.'], [10, 'Ten seconds. Almost home.']])
+  for (const [at, line] of [[20, 'Last 20 seconds.']])
     if (g.time <= at && !g.beats[at]) { g.beats[at] = true; narrate(line, 2500); }
   if (SWIPE.enabled && !g.crowdCarded && g.t > 6 && g.chars.filter(c => c.kind === 'bystander' && c.state === 'wander').length >= SWIPE.crowdCard) { g.crowdCarded = true; maybeCard('swipe'); }
   const prog = 1 - g.time / CONFIG.levelSeconds, depth = playerY - horizonY;
@@ -928,7 +905,7 @@ function step(dt) {
         c.spikeT -= dt;
         if (c.spikeT <= 0) {
           c.state = 'leave'; c.tx = c.x < W / 2 ? -40 : W + 40;
-          if (friendCatches(game.friends[c.drink])) { game.selfSaves++; friendSays(game.friends[c.drink], 'Hey, that\u2019s mine.'); floatText(c.x, c.y - 100 * sc(c.y), 'She caught him.', '#7CFF6B'); }
+          if (friendCatches(game.friends[c.drink])) { game.selfSaves++; friendSays(game.friends[c.drink], 'Hey, that\u2019s mine.'); }
           else { d.spiked = true; d.resetT = 4; hurtFriend(game.friends[c.drink], v.hit, v.reachedText, 'spiked'); }
         }
       } else if (c.state === 'leave') { if (moveToward(c, c.tx, c.y, 0.1 * W, dt)) c.gone = true; }
