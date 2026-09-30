@@ -232,8 +232,6 @@ function nextTimeTip(g){
   if(g.earlyHits>=1) return fill(NEXT_TIME.early,{n:g.earlyHits}).replace('creep(s)',g.earlyHits===1?'creep':'creeps');
   if(g.bystanderHits) return NEXT_TIME.bystander;
   if(!g.used.has('ask')&&g.kos+Object.keys(g.outcomes).length>0) return NEXT_TIME.ask;
-  const idle=WEAPONS.find(w=>g.unlocked.has(w.id)&&!g.used.has(w.id)&&w.unlock>0);
-  if(idle) return fill(NEXT_TIME.unused,{tool:idle.name});
   return NEXT_TIME.combo;
 }
 function confetti(){

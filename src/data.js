@@ -62,9 +62,6 @@ const TALLY = [
 ];
 const TALLY_LINES = {
   knee:    { icon:'\uD83E\uDDB5', one:'You kneed 1 creep in the groin.',       many:'You kneed {n} creeps in the groin.',      fate:'Thank you for a world with fewer creep descendants.' },
-  spray:   { icon:'\uD83C\uDF36\uFE0F', one:'You pepper-sprayed 1 creep.',      many:'You pepper-sprayed {n} creeps.',           fate:'Eyes will recover. Reputations won\u2019t.' },
-  glitter: { icon:'\u2728',       one:'1 creep got glitter-bombed.',           many:'{n} creeps got glitter-bombed.',          fate:'It never comes off.' },
-  call:    { icon:'\uD83D\uDCF1', one:'1 creep ran off after a fake call.',   many:'{n} creeps ran off after a fake call.',   fate:'Nobody was ever on the phone.' },
   help:    { icon:'\uD83D\uDE4B', one:'A bystander backed you up on 1 creep.', many:'Bystanders backed you up on {n} creeps.', fate:'Bars are full of good people.' },
   friend:  { icon:'\uD83D\uDCAA', one:'A friend handled 1 creep herself.',     many:'Friends handled {n} creeps themselves.',  fate:'Do not mess with her.' }
 };
@@ -75,7 +72,6 @@ const NEXT_TIME = {
   early:    'You hit {n} creep(s) before the red flag, and each cost 50 points. Wait for the flag, then hit.',
   bystander:'You hit a bystander, which shakes a friend. Only hit a creep once his flag is up.',
   ask:      'You never asked a bystander for help. Pick Ask and tap one: it scares a creep off for half points with no risk.',
-  unused:   'You unlocked {tool} but never used it. Give it a try.',
   combo:    'Chain takedowns without a miss: every three in a row raises your multiplier, up to x4.'
 };
 // The takedown beat: a short slow-mo plus the villain's epilogue as a caption. Never pauses the game.
