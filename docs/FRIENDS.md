@@ -41,3 +41,6 @@ Friend lines are about a person being worth watching, never about what he would 
 ## Not built yet
 
 - Friends who move around the room.
+
+## Comfort bars only when needed
+A friend's bar is hidden while she is fine and appears only when her comfort drops below `FRIEND_BAR.showBelow` (70, in `src/data.js`). It sits in a pulsing ring so you can see who needs you. One tap on her checks in on her whatever tool is selected (Knee included), so you never swap tools mid-hunt. She has to be shaken and nobody can be standing in front of her. With Help selected the tap works the same way and the ring pulses brighter.

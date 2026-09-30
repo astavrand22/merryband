@@ -72,7 +72,7 @@ const CARE_LINES = {
 // "Next time": one suggestion picked from how the run went, first match wins (see nextTimeTip in ui.js).
 // {pts} is the check-in bonus, {n} a count from the run.
 const NEXT_TIME = {
-  checkin:  'You never checked in on a friend. Pick Help and tap her: it restores her bar and earns +{pts} points each time.',
+  checkin:  'You never checked in on a friend. When her bar shows, tap her: it restores it and earns +{pts} points each time.',
   early:    'You hit {n} creep(s) before the red flag, and each cost 50 points. Wait for the flag, then hit.',
   bystander:'You hit a bystander, which shakes a friend. Only hit a creep once his flag is up.',
   ask:      'You never asked a bystander for backup. Pick Help and tap one: it scares a creep off for half points with no risk.',
@@ -94,6 +94,8 @@ const PACE = { start: 0.65, end: 1.35 };
 const SPAWN_WEIGHTS = { bystander:0.5, spiker:0.2, follower:0.3, grabber:0.15 };
 // Creeps arrive one type at a time: seconds into the run before each type can spawn.
 // Level 1: the Follower alone to learn on, then the Spiker at 30 s. The Grabber is saved for a later level.
+// A friend's comfort bar shows only while it is below this (0-100), pulsing to say she needs you. One tap on her checks in.
+const FRIEND_BAR = { showBelow:70 };
 const STAGES = { follower:0, spiker:30, grabber:1e9 };
 // A short explainer pops up (and pauses the game) the first time each creep, tool or situation comes up.
 // Each is shown once per browser (see ui.js); everyRun:true brings the creep cards back every run.
